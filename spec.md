@@ -1,6 +1,18 @@
 # Paper Scan Processor
 
-A desktop application (Electron or Tauri) for post-processing PDF files containing batches of scanned documents. The app has two independent modes: **Merge** and **Split**.
+A desktop application for post-processing PDF files containing batches of scanned documents. The app has two independent modes: **Merge** and **Split**.
+
+## Tech stack
+
+- **Desktop framework**: Wails
+- **Backend**: Go
+- **Frontend**: TypeScript + React
+- **UI components**: Mantine + `@mantine/dropzone`
+- **Virtualization**: TanStack Virtual
+- **Drag-and-drop**: dnd-kit
+- **State**: Zustand
+- **PDF manipulation**: pdfcpu
+- **PDF rendering** (thumbnails): bundled `mutool` binary (subprocess)
 
 ## Mode: Merge
 
