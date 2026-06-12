@@ -1,28 +1,39 @@
-import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
-import './App.css';
-import {Greet} from "../wailsjs/go/main/App";
+import { useState } from 'react'
+import { Box, Group, Tabs, Text } from '@mantine/core'
+import MergeMode from './components/MergeMode'
+import SplitMode from './components/SplitMode'
 
-function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e: any) => setName(e.target.value);
-    const updateResultText = (result: string) => setResultText(result);
+type AppMode = 'split' | 'merge'
 
-    function greet() {
-        Greet(name).then(updateResultText);
-    }
+export default function App() {
+  const [mode, setMode] = useState<AppMode>('split')
 
-    return (
-        <div id="App">
-            <img src={logo} id="logo" alt="logo"/>
-            <div id="result" className="result">{resultText}</div>
-            <div id="input" className="input-box">
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
-                <button className="btn" onClick={greet}>Greet</button>
-            </div>
-        </div>
-    )
+  return (
+    <Box style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <Box
+        component="header"
+        style={{
+          height: 48,
+          flexShrink: 0,
+          borderBottom: '1px solid var(--mantine-color-gray-3)',
+          display: 'flex',
+          alignItems: 'center',
+          paddingInline: 'var(--mantine-spacing-md)',
+        }}
+      >
+        <Group justify="space-between" style={{ width: '100%' }}>
+          <Text fw={600} size="sm">Paper Scan Processor</Text>
+          <Tabs value={mode} onChange={(v) => v && setMode(v as AppMode)}>
+            <Tabs.List>
+              <Tabs.Tab value="split">Split</Tabs.Tab>
+              <Tabs.Tab value="merge">Merge</Tabs.Tab>
+            </Tabs.List>
+          </Tabs>
+        </Group>
+      </Box>
+      <Box style={{ flex: 1, overflow: 'hidden' }}>
+        {mode === 'split' ? <SplitMode /> : <MergeMode />}
+      </Box>
+    </Box>
+  )
 }
-
-export default App
