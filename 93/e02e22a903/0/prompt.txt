@@ -1,0 +1,97 @@
+Read spec.md. I'd like your feedback. Help me finish this spec by altering it. Ask me for each change, though.
+
+---
+
+yes
+
+---
+
+yes
+
+---
+
+Let's first clarify 2 things:
+- It should be possible to move the splitting points after they have been set
+- The user should be able to specify a template for the file name. Something like '{YYYY-MM-DD} {name}'. The tool should then prefill the name of each output file.
+
+---
+
+yes
+
+---
+
+Prompt the user: keep,
+     move, or delete)
+
+---
+
+Is there anything left to refine? Any suggestions? Any features that make sense to add?
+
+---
+
+- Let's keep the template simple for now and replace 'YYYY-MM-DD' with '{date}' (which equals 'YYYY-MM-DD')
+- Output filename conflicts: doesn't happen during regular usage. Check for conflicts before the splitting operation starts and abort with error message on conflict.
+- Destination folder: Allow to configure output folder smiliar to the naming template
+
+---
+
+I misread your last question. The output folder should be a static folder that's already existing. Please fix in the spec.
+
+---
+
+New features:
+- Allow to mark pages as deleted (or rather, skipped when exporting)
+- Allow to reorder pages by using drag and drop
+- Allow keyboard shortcuts: R for rotate, add split point,  and tab to access the next input field for the file name
+ - Remember last-used settings — last destination folder and filename template persisted across sessions.
+
+---
+
+Big new feature: Merge PDFs interwoven. Use case: My scanner can scan only the front page. For paper which is printed on both sides I first scan all front sides of a batch and then the back sides. So the tool needs to take 2 PDF files and merge them by altering pages of the input files.
+This feature needs to happen before the splitting starts. Maybe even as a completely separate part, so that the user can choose to either merge or split, and if he wants to do both he would first merge, save the output and only than start the splitting process. I wouldn't mind if both could happen in 1 step, but I'm not sure it's worth the complexity.
+- When merging the user needs to be able to choose which of the input files contains the first page.
+
+---
+
+Which option do you recommend? Two separate modes, or single combined workflow?
+
+---
+
+Yes, keep them separate
+
+---
+
+Let's flesh out Google Drive integration: I've got a certain folder structure in my Drive. I want each output file to be uploaded into the appropriate folder. Note that it is likely that multiple output files of the same batch end up in the same folder. Please suggest a plan for implementation.
+
+---
+
+1. Let's skip mulit-select for now, not sure if I actually need it
+2. Lazily is okay
+3. Yes
+
+---
+
+One more thing. How about mirroring the target folders in Drive also locally? Meaning that the local files will be sorted into folders (matching the Drive folders) locally before being uploaded to Drive. One exception: Locally only the inner most folder is used, not the whole folder hierarchy. Meaning that when in Drive it is `My Drive / Clients / Smith / 2026` locally the file would end up in the folder `2026`. And if there are multiple subfolders with the same name, the parent directory is prefixed to the folder name until uniqueness is achieved.
+What do you think?
+
+---
+
+You're right, this is messy. I don't like the suggestion: Files that end up in separate Drive folders should never end up in the same folder locally. And the user shouldn't have to resolve conflicts.
+
+I'd like to keep my initial suggestion with the following addition: The output folder needs to be empty when opening the input PDF. Would this resolve the concerns?
+
+---
+
+Yes and yes
+
+---
+
+Minor adjustment: Sorting into local folders should also work if Drive intration is disabled.
+
+---
+
+Suggest a commit message
+
+---
+
+git gui&
