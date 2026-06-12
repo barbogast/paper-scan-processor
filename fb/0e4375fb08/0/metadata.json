@@ -1,0 +1,121 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "fb0e4375fb08",
+  "session_id": "13f7da74-a986-4a20-9023-e1884af27cc2",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-12T15:45:56.407206Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "files_touched": [
+    ".gitignore",
+    "README.md",
+    "app.go",
+    "build/README.md",
+    "build/appicon.png",
+    "build/darwin/Info.dev.plist",
+    "build/darwin/Info.plist",
+    "build/windows/icon.ico",
+    "build/windows/info.json",
+    "build/windows/installer/project.nsi",
+    "build/windows/installer/wails_tools.nsh",
+    "build/windows/wails.exe.manifest",
+    "frontend/index.html",
+    "frontend/package-lock.json",
+    "frontend/package.json",
+    "frontend/package.json.md5",
+    "frontend/src/App.css",
+    "frontend/src/App.tsx",
+    "frontend/src/assets/fonts/OFL.txt",
+    "frontend/src/assets/fonts/nunito-v16-latin-regular.woff2",
+    "frontend/src/assets/images/logo-universal.png",
+    "frontend/src/main.tsx",
+    "frontend/src/style.css",
+    "frontend/src/vite-env.d.ts",
+    "frontend/tsconfig.json",
+    "frontend/tsconfig.node.json",
+    "frontend/vite.config.ts",
+    "frontend/wailsjs/go/main/App.d.ts",
+    "frontend/wailsjs/go/main/App.js",
+    "frontend/wailsjs/runtime/package.json",
+    "frontend/wailsjs/runtime/runtime.d.ts",
+    "frontend/wailsjs/runtime/runtime.js",
+    "go.mod",
+    "go.sum",
+    "main.go",
+    "spec.md",
+    "wails.json"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "c2772423afb2",
+  "token_usage": {
+    "input_tokens": 89,
+    "cache_creation_tokens": 26663,
+    "cache_read_tokens": 1609095,
+    "output_tokens": 12765,
+    "api_call_count": 49
+  },
+  "session_metrics": {
+    "turn_count": 19
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-12T15:45:56.399773Z",
+    "agent_lines": 3763,
+    "agent_removed": 1,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 3763,
+    "total_lines_changed": 3764,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 109,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 122,
+      "agent_lines_removed": 1
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 122,
+      "agent_lines_removed": 1
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 122,
+      "agent_lines_removed": 1
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 122,
+      "agent_lines_removed": 1
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 3872,
+      "agent_lines_removed": 1
+    }
+  ]
+}

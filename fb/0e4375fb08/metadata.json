@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "fb0e4375fb08",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "files_touched": [
+    ".gitignore",
+    "README.md",
+    "app.go",
+    "build/README.md",
+    "build/appicon.png",
+    "build/darwin/Info.dev.plist",
+    "build/darwin/Info.plist",
+    "build/windows/icon.ico",
+    "build/windows/info.json",
+    "build/windows/installer/project.nsi",
+    "build/windows/installer/wails_tools.nsh",
+    "build/windows/wails.exe.manifest",
+    "frontend/index.html",
+    "frontend/package-lock.json",
+    "frontend/package.json",
+    "frontend/package.json.md5",
+    "frontend/src/App.css",
+    "frontend/src/App.tsx",
+    "frontend/src/assets/fonts/OFL.txt",
+    "frontend/src/assets/fonts/nunito-v16-latin-regular.woff2",
+    "frontend/src/assets/images/logo-universal.png",
+    "frontend/src/main.tsx",
+    "frontend/src/style.css",
+    "frontend/src/vite-env.d.ts",
+    "frontend/tsconfig.json",
+    "frontend/tsconfig.node.json",
+    "frontend/vite.config.ts",
+    "frontend/wailsjs/go/main/App.d.ts",
+    "frontend/wailsjs/go/main/App.js",
+    "frontend/wailsjs/runtime/package.json",
+    "frontend/wailsjs/runtime/runtime.d.ts",
+    "frontend/wailsjs/runtime/runtime.js",
+    "go.mod",
+    "go.sum",
+    "main.go",
+    "spec.md",
+    "wails.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fb/0e4375fb08/0/metadata.json",
+      "transcript": "/fb/0e4375fb08/0/full.jsonl",
+      "content_hash": "/fb/0e4375fb08/0/content_hash.txt",
+      "prompt": "/fb/0e4375fb08/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 89,
+    "cache_creation_tokens": 26663,
+    "cache_read_tokens": 1609095,
+    "output_tokens": 12765,
+    "api_call_count": 49
+  }
+}

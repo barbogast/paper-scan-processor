@@ -1,0 +1,73 @@
+read spec.md
+
+---
+
+Which tech stack would you suggest. Ignore implied techs (Electron or Tauri) and answer freely. Also ignore my own preferences for now: What would the perfect green field tech stack look like? Let's focus on programming languages for now, list top three.
+
+---
+
+Does Rust have libraries for editing PDFs with native interfaces?
+
+---
+
+How would you then handle PDFs when using Rust?
+
+---
+
+How about Go? Does it have better PDF-handling libraries?
+
+---
+
+What would you use instead of Tauri when using Go? How does it compare to Tauri?
+
+---
+
+Yeah, I want to learn Go, so let's go with Go (hihi).
+
+---
+
+Let's use React
+
+---
+
+Don't start yet. How would you go about building the UI components?
+
+---
+
+Is Zustand still state of the art for React state?
+
+---
+
+How about using radix-ui instead of shadcn/ui? I don't need the flexiblity and rather not deal with tailwind-classes directly?
+
+---
+
+No, I confused radix with mantine. How about this?
+
+---
+
+yes
+
+---
+
+Let's clarify PDF rendering first.
+
+---
+
+Yes. Add tech-stack to spec.md
+
+---
+
+What next?
+
+---
+
+Do 3.
+
+---
+
+which shell are you using?
+
+---
+
+Re-execute .bashrc, then wails should be available
