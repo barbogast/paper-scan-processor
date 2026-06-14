@@ -1,0 +1,9 @@
+Let's add an implementation checklist, staring with the primitives that I suggested earlier.
+
+---
+
+Let's make "Google Drive integration" another ### heading under "Implementation checklist" with sub items
+
+---
+
+and move "Polish" below "Google Drive ..."
