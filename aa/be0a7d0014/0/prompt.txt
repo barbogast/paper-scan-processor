@@ -1,0 +1,5 @@
+would it make sense to extract the code to interleave array elements into a separate function that takes generic arrays as input and write unit tests?
+
+---
+
+yes
