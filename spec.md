@@ -33,13 +33,62 @@ The merged PDF can then be opened in Split mode for further processing.
 ### Split workflow
 
 1. The user loads an input PDF via a file picker dialog or by dragging and dropping a file onto the app window.
-2. The app displays all pages of the input PDF as thumbnails in a main panel.
+2. The app displays all pages as thumbnails in the **left panel** (see layout below). Clicking a thumbnail selects it and updates the **detail panel** on the right.
 3. The user defines split points by clicking in the gaps between page thumbnails. A visual divider appears at each split point; clicking again removes it. Dividers can also be repositioned by dragging them to a different gap. Each divider marks where a new output file begins.
 4. The user sets a global filename template using `{date}` (today's date as `YYYY-MM-DD`) and `{name}` (a per-file label). Example: `{date} {name}` → `2026-06-12 invoice.pdf`. The app prefills the filename for each output file using this template. The user can then edit any individual file's name before exporting.
-5. The user sets a global output folder (an existing folder on the local filesystem, or a Google Drive folder if Drive integration is enabled). This folder is used as the destination for all output files. A sidebar panel lists each output file as a row, aligned with its pages. For each output file, the user can adjust:
+5. The user sets a global output folder (an existing folder on the local filesystem, or a Google Drive folder if Drive integration is enabled). This folder is used as the destination for all output files. For each output file, the user can adjust:
    - The prefilled filename (editable)
    - The destination folder (overridable per file)
 6. The user clicks Export. Before splitting, the app checks for filename conflicts at each destination. If any conflict is found, the export is aborted and an error message identifies the conflicting files. Once resolved, the app splits the input PDF and writes (or uploads) each output file. Afterwards, the app prompts the user to keep, move, or delete the input file.
+
+## Split mode layout
+
+Split mode uses a two-column layout:
+
+- **Left panel** (adjustable width, drag handle on right edge) — a single vertically scrolling area that combines the thumbnail strip and output file controls. See structure below.
+- **Right panel** (fills remaining space) — the page detail view.
+
+### Left panel structure
+
+The left panel is a continuous scroll area. Pages are grouped by output file. Each group is preceded by a compact **output file header** containing the editable filename field and (when applicable) destination folder. Split-point dividers between groups are the visual boundary between one output file and the next.
+
+Concretely, the left panel renders as:
+
+```
+┌─ invoice.pdf ──────────────────────┐
+│ folder: /Documents                 │
+└────────────────────────────────────┘
+  [page 1 thumbnail]
+  [page 2 thumbnail]
+  [page 3 thumbnail]
+  ──────── [drag handle / gap] ───────
+┌─ receipt.pdf ──────────────────────┐
+│ folder: /Documents                 │
+└────────────────────────────────────┘
+  [page 4 thumbnail]
+  [page 5 thumbnail]
+```
+
+Clicking a gap (between thumbnails, within the same group or at the bottom of a group) toggles a split point there and creates a new output file section. The filename and folder fields for each section appear immediately above its pages, so the association is always visible without cross-panel alignment.
+
+Thumbnail rendering is on-demand and virtualized — only visible thumbnails (plus a small overscan buffer) are rendered. The Go backend exposes a per-page render method returning a base64-encoded PNG; the frontend requests thumbnails as they scroll into view (`mutool draw` subprocess).
+
+Thumbnails scale to fill the panel width; resizing the panel reflows them.
+
+## Page detail panel
+
+The right panel shows the currently selected page at reading resolution. It is always visible once a PDF is loaded; selecting a thumbnail updates it.
+
+Supports:
+- **Pan**: drag to pan.
+- **Zoom**: scroll wheel or trackpad pinch to zoom in/out.
+- Keyboard: `←` / `→` navigate to the previous/next page.
+
+Implemented with `react-zoom-pan-pinch`.
+
+## Merge: unequal page counts
+
+If the front and back PDFs have different page counts, the app shows a warning before proceeding: "Front has X pages, back has Y pages. The extra Z page(s) will be appended at the end." The user can cancel or continue. The extra pages from the longer file are appended in order after the interleaved section.
 
 ## Error handling
 
