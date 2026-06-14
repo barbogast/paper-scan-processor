@@ -1,0 +1,28 @@
+let's start with merge
+
+---
+
+Let's first plan a bit: how can the implemenation be split into pieces? Also, can you generate a static image of the UI you're planning to implement?
+
+---
+
+I first want to try out a couple of building blocks to see if it works at all:
+- splitting and merging of PDF files. Harcoded paths, without any UI. Just to see that it's actually possible.
+- Thumbnail pannel: A scrollable vertical pannel which shows the pages of an actual PDF file as thumbnails. The width should be adjustable and the thumbnails should resize
+- A detail panel for showing a page of a PDF. Optional scrollbars, the image should be pannable and scrollable.
+
+Give feedback and then add it to spec.md
+
+---
+
+2 adjustments: 
+- I'd like the detail panel in the main window. Layout similar to the Preview app of MacOS
+- When merging, display a warning if number of pages in the PDFs doesn't match.
+
+---
+
+Concerning split mode layout: if thumbnails and output panel are separated by the detail panel: will it still be possible to see which thumbnail corresponds to which output file?
+
+---
+
+I'd like the detail panel to be permanently visilbe, so I prefer option c
