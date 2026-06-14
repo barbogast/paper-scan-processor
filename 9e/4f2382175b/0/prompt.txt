@@ -1,0 +1,5 @@
+Regarding layout for merge mode: I'd like to have 2 thumbnail panels on the left, one for each input file. The thumbnails of the thumbnail panel containing the second page (of the output PDF) should be vertically offset by half a thumbnails height to indicate the ordering in the output PDF.
+
+---
+
+Yeah, add to the layout that there will also be a detail panel right of the 2 thumbnail panels showing the page that was selected in either thumbnail panel
