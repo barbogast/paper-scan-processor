@@ -26,18 +26,19 @@ The Go backend exposes a per-page render method returning a base64-encoded PNG; 
 
 #### Keyboard shortcuts
 
-| Key | Action |
-|-----|--------|
-| `R` | Rotate selected page clockwise 90° |
-| `Shift+R` | Rotate selected page counter-clockwise 90° |
-| `Delete` / `Backspace` | Toggle skip on the selected page |
-| `←` / `→` | Select previous / next page |
+| Key                    | Action                                     |
+| ---------------------- | ------------------------------------------ |
+| `R`                    | Rotate selected page clockwise 90°         |
+| `Shift+R`              | Rotate selected page counter-clockwise 90° |
+| `Delete` / `Backspace` | Toggle skip on the selected page           |
+| `←` / `→`              | Select previous / next page                |
 
 ### Page detail panel
 
 Shows the currently selected page at reading resolution. Selecting a thumbnail updates it.
 
 Supports:
+
 - **Pan**: drag to pan.
 - **Zoom**: scroll wheel or trackpad pinch to zoom in/out.
 - **Navigate**: `←` / `→` to move to the previous/next page.
@@ -143,10 +144,10 @@ Clicking a gap toggles a split point there and creates a new output file section
 
 ### Keyboard shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Space` | Toggle a split point after the selected page |
-| `Tab` | Move focus to the next filename input in the left panel |
+| Key     | Action                                                  |
+| ------- | ------------------------------------------------------- |
+| `Space` | Toggle a split point after the selected page            |
+| `Tab`   | Move focus to the next filename input in the left panel |
 
 ### Google Drive integration (optional)
 
@@ -165,6 +166,7 @@ Each output file can be assigned a subfolder name. The file is then saved to `[o
 When Drive is enabled, the subfolder name is derived automatically from the innermost component of the Drive folder path (e.g. `My Drive / Clients / Smith / 2026` → subfolder `2026`). When Drive is disabled, the user enters the subfolder name manually in the left panel header.
 
 If two or more output files in the same batch share the same subfolder name, the app prefixes the parent folder name to disambiguate. If the parent name is also shared, it walks further up the hierarchy until uniqueness is achieved. Examples:
+
 - `Clients / Smith / 2026` and `Clients / Jones / 2026` → `Smith - 2026` and `Jones - 2026`
 - `Clients / Smith / 2026` and `Archive / Smith / 2026` → `Clients - Smith - 2026` and `Archive - Smith - 2026`
 
@@ -175,6 +177,7 @@ To ensure disambiguation is fully deterministic, **the output folder must be emp
 ### Persisted settings
 
 The following settings are saved across sessions:
+
 - Last-used output folder
 - Filename template
 
