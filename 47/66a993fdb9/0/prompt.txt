@@ -1,0 +1,11 @@
+Is spec.md still organized well?
+
+---
+
+before you do, the follwing additions:
+- "Error handling" belongs to "Split mode" (and I don't like the current proposal. Let's flag it as TBD)
+- I'd like to have another section with common elements: both modes need a thumbnail panel and a detail panel. They should both support deleting and rotating pages.
+
+---
+
+Move "Persisted settings" under "Mode: Split" and the keyboard shortcuts for "Rotate and skip" and "select prev / next" under "thumbnail panel"
