@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -106,6 +107,47 @@ func assertOrder(t *testing.T, data []byte, ordered []string) {
 			t.Errorf("label %q (pos %d) should appear before %q (pos %d)",
 				ordered[i-1], pos[i-1], ordered[i], pos[i])
 		}
+	}
+}
+
+// --- interleave unit tests ---
+
+func TestInterleaveEqual(t *testing.T) {
+	got := interleave([]string{"A", "B", "C"}, []string{"X", "Y", "Z"})
+	want := []string{"A", "X", "B", "Y", "C", "Z"}
+	if !slices.Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+func TestInterleaveFirstLonger(t *testing.T) {
+	got := interleave([]string{"A", "B", "C", "D"}, []string{"X", "Y"})
+	want := []string{"A", "X", "B", "Y", "C", "D"}
+	if !slices.Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+func TestInterleaveSecondLonger(t *testing.T) {
+	got := interleave([]string{"A"}, []string{"X", "Y", "Z"})
+	want := []string{"A", "X", "Y", "Z"}
+	if !slices.Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+func TestInterleaveFirstEmpty(t *testing.T) {
+	got := interleave([]string{}, []string{"X", "Y"})
+	want := []string{"X", "Y"}
+	if !slices.Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+func TestInterleaveBothEmpty(t *testing.T) {
+	got := interleave([]string{}, []string{})
+	if len(got) != 0 {
+		t.Errorf("got %v, want empty slice", got)
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -48,20 +49,10 @@ func mergePDFs(frontPath, backPath, outPath string, reverseBack bool) error {
 	}
 
 	if reverseBack {
-		for i, j := 0, len(backPages)-1; i < j; i, j = i+1, j-1 {
-			backPages[i], backPages[j] = backPages[j], backPages[i]
-		}
+		slices.Reverse(backPages)
 	}
 
-	n := min(len(frontPages), len(backPages))
-	interleaved := make([]string, 0, len(frontPages)+len(backPages))
-	for i := range n {
-		interleaved = append(interleaved, frontPages[i], backPages[i])
-	}
-	interleaved = append(interleaved, frontPages[n:]...)
-	interleaved = append(interleaved, backPages[n:]...)
-
-	return api.MergeCreateFile(interleaved, outPath, false, nil)
+	return api.MergeCreateFile(interleave(frontPages, backPages), outPath, false, nil)
 }
 
 // splitPDF splits the PDF at inPath at the given page boundaries and writes
@@ -122,6 +113,20 @@ func sortedPDFsInDir(dir string) ([]string, error) {
 		result[i] = f.path
 	}
 	return result, nil
+}
+
+// interleave merges two slices by alternating elements: a[0], b[0], a[1], b[1], ...
+// If the slices have different lengths, the remaining elements of the longer
+// slice are appended in order after the interleaved section.
+func interleave[T any](a, b []T) []T {
+	n := min(len(a), len(b))
+	out := make([]T, 0, len(a)+len(b))
+	for i := range n {
+		out = append(out, a[i], b[i])
+	}
+	out = append(out, a[n:]...)
+	out = append(out, b[n:]...)
+	return out
 }
 
 func copyFile(src, dst string) error {
