@@ -1,0 +1,17 @@
+Let's start with the PDF merge/split primitive
+
+---
+
+You got stuck somewhere along the previous reply, so I pressed escape. Please resume
+
+---
+
+What's the purpose of using api.TrimFile() when splitAfter is empty, as opposed to just copying the file?
+
+---
+
+The tests only verify page counts and not contents. Is there a simple way to extract simple textual contents from PDFs?
+
+---
+
+Let's go with option 3 for now
