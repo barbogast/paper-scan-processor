@@ -189,7 +189,7 @@ TBD.
 
 ### Primitives
 
-- [ ] **Go: PDF merge/split** — interleave and split PDFs with pdfcpu; hardcoded paths; `_test.go` harness, no UI
+- [x] **Go: PDF merge/split** — interleave and split PDFs with pdfcpu; hardcoded paths; `_test.go` harness, no UI
 - [ ] **Frontend: Thumbnail panel** — virtualized vertical scroll, on-demand per-page render via Go/mutool, resizable width with drag handle
 - [ ] **Frontend: Detail panel** — pan and zoom with `react-zoom-pan-pinch`, driven by selected page
 
