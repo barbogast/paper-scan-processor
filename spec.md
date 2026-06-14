@@ -70,6 +70,32 @@ The merged PDF can then be opened in Split mode for further processing.
 
 If the front and back PDFs have different page counts, the app shows a warning before proceeding: "Front has X pages, back has Y pages. The extra Z page(s) will be appended at the end." The user can cancel or continue. The extra pages from the longer file are appended in order after the interleaved section.
 
+### Layout
+
+Merge mode uses a two-column layout:
+
+- **Left panel** — two side-by-side thumbnail strips, one per input file.
+- **Right panel** (fills remaining space) — the page detail view, showing whichever page was most recently selected in either thumbnail strip.
+
+The thumbnail strip for the file containing the second output page is offset downward by half a thumbnail height. This makes the interleaving order visually apparent: the fronts and backs appear to slot between each other.
+
+```
+  Fronts          Backs
+  ┌──────────┐
+  │ front 1  │
+  └──────────┘  ┌──────────┐
+                │  back 1  │
+  ┌──────────┐  └──────────┘
+  │ front 2  │
+  └──────────┘  ┌──────────┐
+                │  back 2  │
+  ┌──────────┐  └──────────┘
+  │ front 3  │
+  └──────────┘
+```
+
+The "Fronts" / "Backs" labels above each strip reflect the current **First page is in** selection and update when it changes.
+
 ### Error handling
 
 TBD.
