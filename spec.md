@@ -182,6 +182,44 @@ The following settings are saved across sessions:
 
 TBD.
 
+## Implementation checklist
+
+### Primitives
+
+- [ ] **Go: PDF merge/split** — interleave and split PDFs with pdfcpu; hardcoded paths; `_test.go` harness, no UI
+- [ ] **Frontend: Thumbnail panel** — virtualized vertical scroll, on-demand per-page render via Go/mutool, resizable width with drag handle
+- [ ] **Frontend: Detail panel** — pan and zoom with `react-zoom-pan-pinch`, driven by selected page
+
+### Merge mode
+
+- [ ] **Go: file dialogs** — `OpenFileDialog` / `SaveFileDialog` on the App struct (reused by Split)
+- [ ] **Go: MergePDFs** — backend method wiring pdfcpu interleave logic to Wails RPC
+- [ ] **Frontend: Merge UI** — file pickers, fronts/backs selector, reverse checkbox, page-count mismatch warning, Merge & Save button
+- [ ] **Frontend: Merge layout** — two offset thumbnail strips + detail panel
+- [ ] **Page editing in Merge** — rotate, skip, reorder
+
+### Split mode
+
+- [ ] **Go: render + split** — per-page PNG render and PDF split/export backend methods
+- [ ] **Frontend: Split layout** — resizable left panel + detail panel
+- [ ] **Frontend: Split points** — click gaps to toggle, drag to reposition, visual dividers
+- [ ] **Frontend: Output file headers** — filename template, prefill, per-file folder override
+- [ ] **Frontend: Export flow** — conflict check, keep/move/delete prompt after export
+- [ ] **Page editing in Split** — rotate, skip, reorder
+- [ ] **Keyboard shortcuts**
+
+### Google Drive integration
+
+- [ ] **OAuth authentication** — browser-based sign-in, credentials stored locally and reused across sessions
+- [ ] **Folder browser modal** — lazy-loaded Drive folder tree, opens when clicking a folder field
+- [ ] **Recently used folders** — shown at the top of the folder browser, persisted across sessions
+- [ ] **Upload on export** — per-file upload to designated Drive folder, inline error + Retry on failure
+- [ ] **Local subfolder derivation** — subfolder name derived automatically from the innermost Drive path component; disambiguation when multiple files share the same leaf name
+
+### Polish
+
+- [ ] **Persisted settings** — last-used output folder, filename template
+
 ## Future / out of scope for v1
 
 - **Insert pages from another PDF**: allow the user to pull pages from a second PDF into the current document before splitting. Planned for v2.
