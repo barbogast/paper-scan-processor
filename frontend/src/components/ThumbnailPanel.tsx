@@ -35,10 +35,11 @@ interface Props {
   hideScrollbar?: boolean
   topPadding?: number
   bottomPadding?: number
+  pageNumberLabel?: (index: number) => number
 }
 
 const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function ThumbnailPanel(
-  { pdfPath, pageCount, selectedPage, onSelectPage, label, width: controlledWidth, hideDragHandle, onWidthChange, onScroll, hideScrollbar, topPadding = 0, bottomPadding = 0 },
+  { pdfPath, pageCount, selectedPage, onSelectPage, label, width: controlledWidth, hideDragHandle, onWidthChange, onScroll, hideScrollbar, topPadding = 0, bottomPadding = 0, pageNumberLabel },
   ref,
 ) {
   const [internalWidth, setInternalWidth] = useState(DEFAULT_WIDTH)
@@ -209,7 +210,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
                     lineHeight: `${LABEL_HEIGHT}px`,
                   }}
                 >
-                  {page}
+                  {pageNumberLabel ? pageNumberLabel(item.index) : page}
                 </div>
               </div>
             )

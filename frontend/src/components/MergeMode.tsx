@@ -8,6 +8,21 @@ import ThumbnailPanel, {
   ThumbnailPanelHandle,
 } from './ThumbnailPanel'
 
+// Maps a panel's 0-based page index to its output PDF page number.
+// isFirst: true if this panel's pages go first in the interleave (odd output pages).
+// countOther: page count of the other panel.
+function makePageNumberLabel(isFirst: boolean, countOther: number) {
+  const minCount = countOther  // interleaved section length = min(count, countOther), but we only know countOther here
+  return (index: number) => {
+    const n = index + 1  // 1-based
+    if (n <= minCount) {
+      return isFirst ? 2 * n - 1 : 2 * n
+    }
+    // extra pages appended after interleave
+    return 2 * minCount + (n - minCount)
+  }
+}
+
 function itemHeight(panelWidth: number) {
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
@@ -105,6 +120,10 @@ export default function MergeMode() {
   const bottomPaddingA = firstPageIn === 'a' ? bottomPaddingFirst : bottomPaddingSecond
   const bottomPaddingB = firstPageIn === 'a' ? bottomPaddingSecond : bottomPaddingFirst
 
+  const aIsFirst = firstPageIn === 'a'
+  const pageLabelA = bothLoaded ? makePageNumberLabel(aIsFirst,  aIsFirst ? countB : countA) : undefined
+  const pageLabelB = bothLoaded ? makePageNumberLabel(!aIsFirst, aIsFirst ? countA : countB) : undefined
+
   // A has no drag handle; B has one — toolbar columns match accordingly
   const colWidthA = sharedWidth
   const colWidthB = sharedWidth + DRAG_HANDLE_WIDTH
@@ -165,6 +184,7 @@ export default function MergeMode() {
             hideScrollbar
             topPadding={topPaddingA}
             bottomPadding={bottomPaddingA}
+            pageNumberLabel={pageLabelA}
           />
         )}
         {pathB && (
@@ -179,6 +199,7 @@ export default function MergeMode() {
             onScroll={handleScrollB}
             topPadding={topPaddingB}
             bottomPadding={bottomPaddingB}
+            pageNumberLabel={pageLabelB}
           />
         )}
         {!pathA && !pathB && (
