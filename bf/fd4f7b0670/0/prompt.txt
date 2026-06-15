@@ -35,3 +35,7 @@ Add a short comment to the code to explain that
 ---
 
 Would it be possible to extract handling of cacheRef, loadingRef and failedRef together with fetching of images into a separate hook with an explicit API?
+
+---
+
+commit
