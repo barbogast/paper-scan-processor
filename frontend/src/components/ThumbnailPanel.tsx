@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
-import { useThumbnailLoader } from '../hooks/useThumbnailLoader'
+import { usePageLoader } from '../hooks/usePageLoader'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
@@ -41,7 +41,11 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
   }, [itemHeight])
 
   const virtualItems = virtualizer.getVirtualItems()
-  const { getSrc, isLoading, invalidate } = useThumbnailLoader(pdfPath, thumbWidth, virtualItems)
+  const { getSrc, isLoading, load, invalidate } = usePageLoader(pdfPath, thumbWidth)
+
+  useEffect(() => {
+    for (const item of virtualItems) load(item.index + 1)
+  })
 
   // Scroll selected page into view (e.g. after keyboard navigation)
   useEffect(() => {
