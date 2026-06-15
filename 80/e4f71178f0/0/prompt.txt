@@ -1,0 +1,9 @@
+implement the detail panel
+
+---
+
+propose a plan for imlementing the detail panel
+
+---
+
+go ahead
