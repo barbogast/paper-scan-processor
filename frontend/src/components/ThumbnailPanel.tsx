@@ -30,10 +30,11 @@ interface Props {
   label?: string
   onWidthChange?: (width: number) => void
   onScroll?: (scrollTop: number) => void
+  hideScrollbar?: boolean
 }
 
 const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function ThumbnailPanel(
-  { pdfPath, pageCount, selectedPage, onSelectPage, label, onWidthChange, onScroll },
+  { pdfPath, pageCount, selectedPage, onSelectPage, label, onWidthChange, onScroll, hideScrollbar },
   ref,
 ) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
@@ -132,6 +133,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
+        className={hideScrollbar ? 'hide-scrollbar' : undefined}
         style={{
           flex: 1,
           minHeight: 0,

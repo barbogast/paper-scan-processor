@@ -137,6 +137,7 @@ export default function MergeMode() {
                 onSelectPage={setPageA}
                 onWidthChange={setWidthA}
                 onScroll={handleScrollA}
+                hideScrollbar
               />
             </StripColumn>
             <StripColumn offset={offsetB}>
