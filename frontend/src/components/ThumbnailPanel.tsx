@@ -7,11 +7,11 @@ const MIN_WIDTH = 120
 const MAX_WIDTH = 480
 export const DEFAULT_WIDTH = 220
 export const DRAG_HANDLE_WIDTH = 4
-const ITEM_PADDING = 8
-const ITEM_GAP = 0
-const LABEL_HEIGHT = 20
+export const ITEM_PADDING = 8
+export const ITEM_GAP = 0
+export const LABEL_HEIGHT = 20
 // DIN A4 portrait aspect ratio (210 × 297 mm)
-const PAGE_ASPECT = 297 / 210
+export const PAGE_ASPECT = 297 / 210
 
 const DEFAULT_THUMB_HEIGHT = Math.round((DEFAULT_WIDTH - ITEM_PADDING * 2) * PAGE_ASPECT)
 export const HALF_THUMB_HEIGHT = Math.round(DEFAULT_THUMB_HEIGHT / 2)
@@ -31,10 +31,12 @@ interface Props {
   onWidthChange?: (width: number) => void
   onScroll?: (scrollTop: number) => void
   hideScrollbar?: boolean
+  topPadding?: number
+  bottomPadding?: number
 }
 
 const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function ThumbnailPanel(
-  { pdfPath, pageCount, selectedPage, onSelectPage, label, onWidthChange, onScroll, hideScrollbar },
+  { pdfPath, pageCount, selectedPage, onSelectPage, label, onWidthChange, onScroll, hideScrollbar, topPadding = 0, bottomPadding = 0 },
   ref,
 ) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
@@ -50,6 +52,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
     getScrollElement: () => scrollRef.current,
     estimateSize: () => itemHeight,
     overscan: 3,
+    paddingStart: topPadding,
   })
 
   // Re-estimate row heights when panel is resized
@@ -143,7 +146,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
           background: 'var(--mantine-color-gray-3)',
         }}
       >
-        <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+        <div style={{ height: virtualizer.getTotalSize() + bottomPadding, position: 'relative' }}>
           {virtualizer.getVirtualItems().map(item => {
             const page = item.index + 1
             const src = getSrc(page)

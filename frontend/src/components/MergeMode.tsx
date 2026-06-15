@@ -2,7 +2,17 @@ import { useRef, useState } from 'react'
 import { Box, Button, Center, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../wailsjs/go/main/App'
-import ThumbnailPanel, { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, HALF_THUMB_HEIGHT, ThumbnailPanelHandle } from './ThumbnailPanel'
+import ThumbnailPanel, {
+  DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, HALF_THUMB_HEIGHT,
+  ITEM_PADDING, ITEM_GAP, LABEL_HEIGHT, PAGE_ASPECT,
+  ThumbnailPanelHandle,
+} from './ThumbnailPanel'
+
+function itemHeight(panelWidth: number) {
+  const thumbWidth = panelWidth - ITEM_PADDING * 2
+  const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
+  return thumbHeight + LABEL_HEIGHT + ITEM_PADDING + ITEM_GAP
+}
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
@@ -76,8 +86,25 @@ export default function MergeMode() {
 
   const bothLoaded = pathA !== null && pathB !== null
 
-  const offsetA = firstPageIn === 'b' ? HALF_THUMB_HEIGHT : 0
-  const offsetB = firstPageIn === 'a' ? HALF_THUMB_HEIGHT : 0
+  // Second strip gets topPadding inside its scroll content so the offset scrolls
+  // away with the pages rather than being a fixed visual gap.
+  const topPaddingA = firstPageIn === 'b' ? HALF_THUMB_HEIGHT : 0
+  const topPaddingB = firstPageIn === 'a' ? HALF_THUMB_HEIGHT : 0
+
+  // Equalise the maximum scrollTop of both strips.
+  // maxScroll_first  = countFirst  * ihFirst  + 0             - H
+  // maxScroll_second = countSecond * ihSecond + HALF_THUMB_HEIGHT - H
+  // diff = maxScroll_second - maxScroll_first
+  // bottomPadding_first  = max(0,  diff)
+  // bottomPadding_second = max(0, -diff)
+  const [countFirst, ihFirst, countSecond, ihSecond] = firstPageIn === 'a'
+    ? [countA, itemHeight(widthA), countB, itemHeight(widthB)]
+    : [countB, itemHeight(widthB), countA, itemHeight(widthA)]
+  const diff = countSecond * ihSecond - countFirst * ihFirst + HALF_THUMB_HEIGHT
+  const bottomPaddingFirst  = Math.max(0,  diff)
+  const bottomPaddingSecond = Math.max(0, -diff)
+  const bottomPaddingA = firstPageIn === 'a' ? bottomPaddingFirst : bottomPaddingSecond
+  const bottomPaddingB = firstPageIn === 'a' ? bottomPaddingSecond : bottomPaddingFirst
 
   // Total visual column width = scroll area + drag handle
   const colWidthA = widthA + DRAG_HANDLE_WIDTH
@@ -128,7 +155,7 @@ export default function MergeMode() {
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
         {bothLoaded ? (
           <>
-            <StripColumn offset={offsetA}>
+            <StripColumn>
               <ThumbnailPanel
                 ref={refA}
                 pdfPath={pathA}
@@ -138,9 +165,11 @@ export default function MergeMode() {
                 onWidthChange={setWidthA}
                 onScroll={handleScrollA}
                 hideScrollbar
+                topPadding={topPaddingA}
+                bottomPadding={bottomPaddingA}
               />
             </StripColumn>
-            <StripColumn offset={offsetB}>
+            <StripColumn>
               <ThumbnailPanel
                 ref={refB}
                 pdfPath={pathB}
@@ -149,6 +178,8 @@ export default function MergeMode() {
                 onSelectPage={setPageB}
                 onWidthChange={setWidthB}
                 onScroll={handleScrollB}
+                topPadding={topPaddingB}
+                bottomPadding={bottomPaddingB}
               />
             </StripColumn>
           </>
@@ -162,9 +193,9 @@ export default function MergeMode() {
   )
 }
 
-function StripColumn({ offset, children }: { offset: number; children: React.ReactNode }) {
+function StripColumn({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ height: '100%', paddingTop: offset, boxSizing: 'border-box', flexShrink: 0, background: 'var(--mantine-color-gray-3)' }}>
+    <div style={{ height: '100%', flexShrink: 0 }}>
       {children}
     </div>
   )
