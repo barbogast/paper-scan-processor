@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Box, Button, Center, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../wailsjs/go/main/App'
-import ThumbnailPanel, { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, HALF_THUMB_HEIGHT } from './ThumbnailPanel'
+import ThumbnailPanel, { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, HALF_THUMB_HEIGHT, ThumbnailPanelHandle } from './ThumbnailPanel'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
@@ -21,6 +21,23 @@ export default function MergeMode() {
   const [widthA, setWidthA] = useState(DEFAULT_WIDTH)
   const [widthB, setWidthB] = useState(DEFAULT_WIDTH)
   const [merging, setMerging] = useState(false)
+  const refA = useRef<ThumbnailPanelHandle>(null)
+  const refB = useRef<ThumbnailPanelHandle>(null)
+  const syncing = useRef(false)
+
+  const handleScrollA = (top: number) => {
+    if (syncing.current) return
+    syncing.current = true
+    refB.current?.scrollTo(top)
+    syncing.current = false
+  }
+
+  const handleScrollB = (top: number) => {
+    if (syncing.current) return
+    syncing.current = true
+    refA.current?.scrollTo(top)
+    syncing.current = false
+  }
 
   const handleChooseA = async () => {
     const p = await OpenPDF()
@@ -113,20 +130,24 @@ export default function MergeMode() {
           <>
             <StripColumn offset={offsetA}>
               <ThumbnailPanel
+                ref={refA}
                 pdfPath={pathA}
                 pageCount={countA}
                 selectedPage={pageA}
                 onSelectPage={setPageA}
                 onWidthChange={setWidthA}
+                onScroll={handleScrollA}
               />
             </StripColumn>
             <StripColumn offset={offsetB}>
               <ThumbnailPanel
+                ref={refB}
                 pdfPath={pathB}
                 pageCount={countB}
                 selectedPage={pageB}
                 onSelectPage={setPageB}
                 onWidthChange={setWidthB}
+                onScroll={handleScrollB}
               />
             </StripColumn>
           </>

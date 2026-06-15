@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
 import { usePageLoader } from '../hooks/usePageLoader'
@@ -18,6 +18,10 @@ export const HALF_THUMB_HEIGHT = Math.round(DEFAULT_THUMB_HEIGHT / 2)
 
 const STRIP_LABEL_HEIGHT = 28
 
+export interface ThumbnailPanelHandle {
+  scrollTo: (top: number) => void
+}
+
 interface Props {
   pdfPath: string
   pageCount: number
@@ -25,9 +29,13 @@ interface Props {
   onSelectPage: (page: number) => void
   label?: string
   onWidthChange?: (width: number) => void
+  onScroll?: (scrollTop: number) => void
 }
 
-export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSelectPage, label, onWidthChange }: Props) {
+const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function ThumbnailPanel(
+  { pdfPath, pageCount, selectedPage, onSelectPage, label, onWidthChange, onScroll },
+  ref,
+) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
@@ -61,6 +69,10 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
     virtualizer.scrollToIndex(selectedPage - 1, { align: 'auto' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPage])
+
+  useImperativeHandle(ref, () => ({
+    scrollTo: (top) => { if (scrollRef.current) scrollRef.current.scrollTop = top },
+  }))
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'ArrowLeft' && selectedPage > 1) {
@@ -119,6 +131,7 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
         ref={scrollRef}
         tabIndex={0}
         onKeyDown={handleKeyDown}
+        onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
         style={{
           flex: 1,
           minHeight: 0,
@@ -210,4 +223,6 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
       />
     </div>
   )
-}
+})
+
+export default ThumbnailPanel
