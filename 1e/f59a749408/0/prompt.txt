@@ -1,0 +1,9 @@
+read spec.md. no reply
+
+---
+
+Propose a plan for implementing merge mode. Don't split work by files, but start with the most basic workflow than slowly add features.
+
+---
+
+yes. add that as a checkbox plan to spec.md
