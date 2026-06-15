@@ -1,0 +1,13 @@
+Similar to how the ThumbnailPanel with the second page has a offset on top, add a similar whitespace after the last page of the ThumbnailPanel with the first page. Without that the illusion of a single scrollable panel breaks when the user tries to scroll to the bottom of the panel with the second page.
+
+---
+
+That's not enough, though. You also need to account for the case when one of the documents has more pages than the other one.
+
+---
+
+The offset on top of the pages should be part of the scollable area, so it apears with the page when the panel is scrolled
+
+---
+
+commit
