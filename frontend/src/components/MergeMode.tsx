@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Box, Button, Center, Divider, Group, SegmentedControl, Text } from '@mantine/core'
+import { Box, Button, Center, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../wailsjs/go/main/App'
-import ThumbnailPanel, { HALF_THUMB_HEIGHT } from './ThumbnailPanel'
+import ThumbnailPanel, { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, HALF_THUMB_HEIGHT } from './ThumbnailPanel'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
@@ -18,6 +18,8 @@ export default function MergeMode() {
   const [pageA, setPageA] = useState(1)
   const [pageB, setPageB] = useState(1)
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
+  const [widthA, setWidthA] = useState(DEFAULT_WIDTH)
+  const [widthB, setWidthB] = useState(DEFAULT_WIDTH)
   const [merging, setMerging] = useState(false)
 
   const handleChooseA = async () => {
@@ -57,44 +59,55 @@ export default function MergeMode() {
 
   const bothLoaded = pathA !== null && pathB !== null
 
-  // Strip labels reflect which file goes first in the interleave
   const labelA = firstPageIn === 'a' ? 'A' : 'B'
   const labelB = firstPageIn === 'a' ? 'B' : 'A'
   const offsetA = firstPageIn === 'b' ? HALF_THUMB_HEIGHT : 0
   const offsetB = firstPageIn === 'a' ? HALF_THUMB_HEIGHT : 0
 
+  // Total visual column width = scroll area + drag handle
+  const colWidthA = widthA + DRAG_HANDLE_WIDTH
+  const colWidthB = widthB + DRAG_HANDLE_WIDTH
+
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Toolbar: columns A and B aligned with their strips, then controls on the right */}
       <Box
         style={{
           flexShrink: 0,
           borderBottom: '1px solid var(--mantine-color-gray-3)',
-          padding: '6px 12px',
           display: 'flex',
-          alignItems: 'center',
-          gap: 12,
+          alignItems: 'stretch',
         }}
       >
-        <FilePickerInline label="File A" path={pathA} onChoose={handleChooseA} />
-        <Divider orientation="vertical" />
-        <FilePickerInline label="File B" path={pathB} onChoose={handleChooseB} />
-        <Divider orientation="vertical" />
-        <Group gap={8}>
-          <Text size="sm" c="dimmed">First page in</Text>
-          <SegmentedControl
-            size="xs"
-            value={firstPageIn}
-            onChange={(v) => setFirstPageIn(v as FirstPageIn)}
-            data={[
-              { label: 'File A', value: 'a' },
-              { label: 'File B', value: 'b' },
-            ]}
-          />
+        <FilePickerColumn
+          label="File A"
+          path={pathA}
+          width={colWidthA}
+          onChoose={handleChooseA}
+        />
+        <FilePickerColumn
+          label="File B"
+          path={pathB}
+          width={colWidthB}
+          onChoose={handleChooseB}
+        />
+        <Group gap={12} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <Group gap={8}>
+            <Text size="sm" c="dimmed">First page in</Text>
+            <SegmentedControl
+              size="xs"
+              value={firstPageIn}
+              onChange={(v) => setFirstPageIn(v as FirstPageIn)}
+              data={[
+                { label: 'File A', value: 'a' },
+                { label: 'File B', value: 'b' },
+              ]}
+            />
+          </Group>
+          <Button size="sm" disabled={!bothLoaded} loading={merging} onClick={handleMerge}>
+            Merge & Save
+          </Button>
         </Group>
-        <Box style={{ flex: 1 }} />
-        <Button size="sm" disabled={!bothLoaded} loading={merging} onClick={handleMerge}>
-          Merge & Save
-        </Button>
       </Box>
 
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
@@ -107,6 +120,7 @@ export default function MergeMode() {
                 selectedPage={pageA}
                 onSelectPage={setPageA}
                 label={labelA}
+                onWidthChange={setWidthA}
               />
             </StripColumn>
             <StripColumn offset={offsetB}>
@@ -116,6 +130,7 @@ export default function MergeMode() {
                 selectedPage={pageB}
                 onSelectPage={setPageB}
                 label={labelB}
+                onWidthChange={setWidthB}
               />
             </StripColumn>
           </>
@@ -131,37 +146,47 @@ export default function MergeMode() {
 
 function StripColumn({ offset, children }: { offset: number; children: React.ReactNode }) {
   return (
-    <div
-      style={{
-        height: '100%',
-        paddingTop: offset,
-        boxSizing: 'border-box',
-        flexShrink: 0,
-      }}
-    >
+    <div style={{ height: '100%', paddingTop: offset, boxSizing: 'border-box', flexShrink: 0 }}>
       {children}
     </div>
   )
 }
 
-function FilePickerInline({
+function FilePickerColumn({
   label,
   path,
+  width,
   onChoose,
 }: {
   label: string
   path: string | null
+  width: number
   onChoose: () => void
 }) {
   return (
-    <Group gap={8}>
-      <Text size="sm" c="dimmed">{label}</Text>
-      <Text size="sm" style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+    <Box
+      style={{
+        width,
+        flexShrink: 0,
+        padding: '6px 8px',
+        borderRight: '1px solid var(--mantine-color-gray-3)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 2,
+      }}
+    >
+      <Group justify="space-between" gap={4} wrap="nowrap">
+        <Text size="xs" c="dimmed">{label}</Text>
+        <Button size="xs" variant="default" onClick={onChoose}>Choose…</Button>
+      </Group>
+      <Text
+        size="xs"
+        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        title={path ?? undefined}
+      >
         {path ? basename(path) : '—'}
       </Text>
-      <Button size="xs" variant="default" onClick={onChoose}>
-        Choose…
-      </Button>
-    </Group>
+    </Box>
   )
 }

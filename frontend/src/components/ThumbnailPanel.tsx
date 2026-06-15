@@ -5,7 +5,8 @@ import { usePageLoader } from '../hooks/usePageLoader'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
-const DEFAULT_WIDTH = 220
+export const DEFAULT_WIDTH = 220
+export const DRAG_HANDLE_WIDTH = 4
 const ITEM_PADDING = 8
 const LABEL_HEIGHT = 20
 // DIN A4 portrait aspect ratio (210 × 297 mm)
@@ -22,9 +23,10 @@ interface Props {
   selectedPage: number   // 1-indexed
   onSelectPage: (page: number) => void
   label?: string
+  onWidthChange?: (width: number) => void
 }
 
-export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSelectPage, label }: Props) {
+export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSelectPage, label, onWidthChange }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
@@ -74,9 +76,15 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
     const startWidth = panelWidth
     const clamp = (w: number) => Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, w))
 
-    const onMove = (ev: MouseEvent) => setPanelWidth(clamp(startWidth + ev.clientX - startX))
+    const onMove = (ev: MouseEvent) => {
+      const w = clamp(startWidth + ev.clientX - startX)
+      setPanelWidth(w)
+      onWidthChange?.(w)
+    }
     const onUp = (ev: MouseEvent) => {
-      setPanelWidth(clamp(startWidth + ev.clientX - startX))
+      const w = clamp(startWidth + ev.clientX - startX)
+      setPanelWidth(w)
+      onWidthChange?.(w)
       invalidate()
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
