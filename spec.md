@@ -59,17 +59,17 @@ For scanners that can only scan one side at a time. The user scans all front pag
 
 ### Workflow
 
-1. The user loads two PDF files — one containing front pages, one containing back pages.
-2. The user selects which file contains the first page (i.e. designates which is "fronts" and which is "backs").
-3. A **Reverse back pages** checkbox controls whether the back PDF is reversed before interleaving. This should be checked when the paper stack was flipped between scans (the typical case), causing backs to be in reverse order.
-4. The app interleaves the pages: front 1, back 1, front 2, back 2, etc.
+1. The user loads two PDF files, labelled **File A** and **File B**.
+2. The user selects which file contains the first page (**First page in: File A / File B**).
+3. A **Reverse File B** checkbox controls whether File B is reversed before interleaving. This should be checked when the paper stack was flipped between scans (the typical case, when scanning one side at a time), causing the second-scanned pages to be in reverse order.
+4. The app interleaves the pages: A1, B1, A2, B2, etc.
 5. The user saves the merged result as a new PDF file on disk.
 
 The merged PDF can then be opened in Split mode for further processing.
 
 ### Unequal page counts
 
-If the front and back PDFs have different page counts, the app shows a warning before proceeding: "Front has X pages, back has Y pages. The extra Z page(s) will be appended at the end." The user can cancel or continue. The extra pages from the longer file are appended in order after the interleaved section.
+If File A and File B have different page counts, the app shows a warning before proceeding: "File A has X pages, File B has Y pages. The extra Z page(s) will be appended at the end." The user can cancel or continue. The extra pages from the longer file are appended in order after the interleaved section.
 
 ### Layout
 
@@ -78,24 +78,24 @@ Merge mode uses a two-column layout:
 - **Left panel** — two side-by-side thumbnail strips, one per input file.
 - **Right panel** (fills remaining space) — the page detail view, showing whichever page was most recently selected in either thumbnail strip.
 
-The thumbnail strip for the file containing the second output page is offset downward by half a thumbnail height. This makes the interleaving order visually apparent: the fronts and backs appear to slot between each other.
+The thumbnail strip for the file containing the second output page is offset downward by half a thumbnail height. This makes the interleaving order visually apparent: the two files' pages appear to slot between each other.
 
 ```
-  Fronts          Backs
+  A               B
   ┌──────────┐
-  │ front 1  │
+  │   A1     │
   └──────────┘  ┌──────────┐
-                │  back 1  │
+                │   B1     │
   ┌──────────┐  └──────────┘
-  │ front 2  │
+  │   A2     │
   └──────────┘  ┌──────────┐
-                │  back 2  │
+                │   B2     │
   ┌──────────┐  └──────────┘
-  │ front 3  │
+  │   A3     │
   └──────────┘
 ```
 
-The "Fronts" / "Backs" labels above each strip reflect the current **First page is in** selection and update when it changes.
+The **A** / **B** labels above each strip reflect the current **First page is in** selection and update when it changes.
 
 ### Error handling
 
@@ -197,8 +197,8 @@ TBD.
 
 - [x] **Step 1: End-to-end merge pipeline** — Go `OpenFileDialog` / `SaveFileDialog` RPCs; `MergePDFs` Wails RPC; minimal UI with two file-picker buttons and a Merge & Save button; no thumbnails
 - [x] **Step 2: Thumbnail strips** — two-column layout using existing `ThumbnailPanel` primitive, one per file, side by side; Merge & Save moves to toolbar
-- [ ] **Step 3: Fronts/backs selector + visual offset** — "First page is in" toggle; "Fronts" / "Backs" strip labels update on change; second strip offset down by half a thumbnail height
-- [ ] **Step 4: Reverse checkbox + page-count warning** — "Reverse back pages" checkbox wired into merge call; detect unequal counts and show confirmation modal before merging
+- [x] **Step 3: A/B selector + visual offset** — "First page in" toggle (File A / File B); strip labels update on change; second strip offset down by half a thumbnail height
+- [ ] **Step 4: Reverse checkbox + page-count warning** — "Reverse File B" checkbox wired into merge call; detect unequal counts and show confirmation modal before merging
 - [ ] **Step 5: Detail panel** — existing `DetailPanel` primitive on the right; selection in either strip updates it; `←` / `→` keyboard navigation
 - [ ] **Step 6: Page editing** — rotate, skip, reorder within the merge view, applied before the merge call
 

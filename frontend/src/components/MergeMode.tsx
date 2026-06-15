@@ -8,45 +8,45 @@ function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
 }
 
-type FirstPageIn = 'front' | 'back'
+type FirstPageIn = 'a' | 'b'
 
 export default function MergeMode() {
-  const [frontPath, setFrontPath] = useState<string | null>(null)
-  const [frontCount, setFrontCount] = useState(0)
-  const [backPath, setBackPath] = useState<string | null>(null)
-  const [backCount, setBackCount] = useState(0)
-  const [frontPage, setFrontPage] = useState(1)
-  const [backPage, setBackPage] = useState(1)
-  const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('front')
+  const [pathA, setPathA] = useState<string | null>(null)
+  const [countA, setCountA] = useState(0)
+  const [pathB, setPathB] = useState<string | null>(null)
+  const [countB, setCountB] = useState(0)
+  const [pageA, setPageA] = useState(1)
+  const [pageB, setPageB] = useState(1)
+  const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [merging, setMerging] = useState(false)
 
-  const handleChooseFront = async () => {
+  const handleChooseA = async () => {
     const p = await OpenPDF()
     if (!p) return
     const count = await PageCount(p)
-    setFrontPath(p)
-    setFrontCount(count)
-    setFrontPage(1)
+    setPathA(p)
+    setCountA(count)
+    setPageA(1)
   }
 
-  const handleChooseBack = async () => {
+  const handleChooseB = async () => {
     const p = await OpenPDF()
     if (!p) return
     const count = await PageCount(p)
-    setBackPath(p)
-    setBackCount(count)
-    setBackPage(1)
+    setPathB(p)
+    setCountB(count)
+    setPageB(1)
   }
 
   const handleMerge = async () => {
-    if (!frontPath || !backPath) return
+    if (!pathA || !pathB) return
     const outPath = await SavePDF()
     if (!outPath) return
     setMerging(true)
     try {
-      const effectiveFront = firstPageIn === 'front' ? frontPath : backPath
-      const effectiveBack = firstPageIn === 'front' ? backPath : frontPath
-      await MergePDFs(effectiveFront, effectiveBack, outPath, false)
+      const effectiveFirst = firstPageIn === 'a' ? pathA : pathB
+      const effectiveSecond = firstPageIn === 'a' ? pathB : pathA
+      await MergePDFs(effectiveFirst, effectiveSecond, outPath, false)
       notifications.show({ message: `Saved to ${outPath}`, color: 'green' })
     } catch (e) {
       notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })
@@ -55,13 +55,13 @@ export default function MergeMode() {
     }
   }
 
-  const bothLoaded = frontPath !== null && backPath !== null
+  const bothLoaded = pathA !== null && pathB !== null
 
-  // Which strip contains the first output page (labeled "Fronts"), and which is offset
-  const frontLabel = firstPageIn === 'front' ? 'Fronts' : 'Backs'
-  const backLabel = firstPageIn === 'front' ? 'Backs' : 'Fronts'
-  const frontOffset = firstPageIn === 'back' ? HALF_THUMB_HEIGHT : 0
-  const backOffset = firstPageIn === 'front' ? HALF_THUMB_HEIGHT : 0
+  // Strip labels reflect which file goes first in the interleave
+  const labelA = firstPageIn === 'a' ? 'A' : 'B'
+  const labelB = firstPageIn === 'a' ? 'B' : 'A'
+  const offsetA = firstPageIn === 'b' ? HALF_THUMB_HEIGHT : 0
+  const offsetB = firstPageIn === 'a' ? HALF_THUMB_HEIGHT : 0
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -75,9 +75,9 @@ export default function MergeMode() {
           gap: 12,
         }}
       >
-        <FilePickerInline label="Front PDF" path={frontPath} onChoose={handleChooseFront} />
+        <FilePickerInline label="File A" path={pathA} onChoose={handleChooseA} />
         <Divider orientation="vertical" />
-        <FilePickerInline label="Back PDF" path={backPath} onChoose={handleChooseBack} />
+        <FilePickerInline label="File B" path={pathB} onChoose={handleChooseB} />
         <Divider orientation="vertical" />
         <Group gap={8}>
           <Text size="sm" c="dimmed">First page in</Text>
@@ -86,8 +86,8 @@ export default function MergeMode() {
             value={firstPageIn}
             onChange={(v) => setFirstPageIn(v as FirstPageIn)}
             data={[
-              { label: 'Front file', value: 'front' },
-              { label: 'Back file', value: 'back' },
+              { label: 'File A', value: 'a' },
+              { label: 'File B', value: 'b' },
             ]}
           />
         </Group>
@@ -100,22 +100,22 @@ export default function MergeMode() {
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
         {bothLoaded ? (
           <>
-            <StripColumn offset={frontOffset}>
+            <StripColumn offset={offsetA}>
               <ThumbnailPanel
-                pdfPath={frontPath}
-                pageCount={frontCount}
-                selectedPage={frontPage}
-                onSelectPage={setFrontPage}
-                label={frontLabel}
+                pdfPath={pathA}
+                pageCount={countA}
+                selectedPage={pageA}
+                onSelectPage={setPageA}
+                label={labelA}
               />
             </StripColumn>
-            <StripColumn offset={backOffset}>
+            <StripColumn offset={offsetB}>
               <ThumbnailPanel
-                pdfPath={backPath}
-                pageCount={backCount}
-                selectedPage={backPage}
-                onSelectPage={setBackPage}
-                label={backLabel}
+                pdfPath={pathB}
+                pageCount={countB}
+                selectedPage={pageB}
+                onSelectPage={setPageB}
+                label={labelB}
               />
             </StripColumn>
           </>
