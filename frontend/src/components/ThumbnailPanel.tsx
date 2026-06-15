@@ -8,6 +8,7 @@ const MAX_WIDTH = 480
 export const DEFAULT_WIDTH = 220
 export const DRAG_HANDLE_WIDTH = 4
 const ITEM_PADDING = 8
+const ITEM_GAP = 0
 const LABEL_HEIGHT = 20
 // DIN A4 portrait aspect ratio (210 × 297 mm)
 const PAGE_ASPECT = 297 / 210
@@ -31,7 +32,7 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
-  const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING * 2
+  const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + ITEM_GAP
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -124,6 +125,7 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
           overflowY: 'auto',
           overflowX: 'hidden',
           outline: 'none',
+          background: 'var(--mantine-color-gray-3)',
         }}
       >
         <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
@@ -181,7 +183,7 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
                   style={{
                     textAlign: 'center',
                     fontSize: 11,
-                    color: 'var(--mantine-color-dimmed)',
+                    color: 'var(--mantine-color-gray-7)',
                     height: LABEL_HEIGHT,
                     lineHeight: `${LABEL_HEIGHT}px`,
                   }}

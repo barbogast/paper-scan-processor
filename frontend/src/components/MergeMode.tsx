@@ -142,7 +142,7 @@ export default function MergeMode() {
 
 function StripColumn({ offset, children }: { offset: number; children: React.ReactNode }) {
   return (
-    <div style={{ height: '100%', paddingTop: offset, boxSizing: 'border-box', flexShrink: 0 }}>
+    <div style={{ height: '100%', paddingTop: offset, boxSizing: 'border-box', flexShrink: 0, background: 'var(--mantine-color-gray-3)' }}>
       {children}
     </div>
   )
