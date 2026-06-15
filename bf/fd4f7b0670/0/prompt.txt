@@ -1,0 +1,37 @@
+read spec.md
+
+---
+
+implement the thumbnail panel primitive. Let's first break this down into further subtasks, though.
+
+---
+
+it's fine, go ahead
+
+---
+
+The thumbnail is empty when opening a PDF file
+
+---
+
+change PAGE_ASPECT to match DIN A4
+
+---
+
+renderWidth seems to be a derivative of panelWidth. Does it need to be state?
+
+---
+
+commit changes
+
+---
+
+What's the purpose of the `setTick` function?
+
+---
+
+Add a short comment to the code to explain that
+
+---
+
+Would it be possible to extract handling of cacheRef, loadingRef and failedRef together with fetching of images into a separate hook with an explicit API?
