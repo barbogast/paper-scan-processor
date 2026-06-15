@@ -1,0 +1,5 @@
+There is a label "A" directly above the ThumbnailPanel for file A, same with "B" for file B. Those labels seems to differ from the "A" in "File A". What do they stand for?
+
+---
+
+1.
