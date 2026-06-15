@@ -28,6 +28,8 @@ interface Props {
   selectedPage: number   // 1-indexed
   onSelectPage: (page: number) => void
   label?: string
+  width?: number
+  hideDragHandle?: boolean
   onWidthChange?: (width: number) => void
   onScroll?: (scrollTop: number) => void
   hideScrollbar?: boolean
@@ -36,10 +38,11 @@ interface Props {
 }
 
 const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function ThumbnailPanel(
-  { pdfPath, pageCount, selectedPage, onSelectPage, label, onWidthChange, onScroll, hideScrollbar, topPadding = 0, bottomPadding = 0 },
+  { pdfPath, pageCount, selectedPage, onSelectPage, label, width: controlledWidth, hideDragHandle, onWidthChange, onScroll, hideScrollbar, topPadding = 0, bottomPadding = 0 },
   ref,
 ) {
-  const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
+  const [internalWidth, setInternalWidth] = useState(DEFAULT_WIDTH)
+  const panelWidth = controlledWidth ?? internalWidth
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
@@ -95,12 +98,12 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
 
     const onMove = (ev: MouseEvent) => {
       const w = clamp(startWidth + ev.clientX - startX)
-      setPanelWidth(w)
+      setInternalWidth(w)
       onWidthChange?.(w)
     }
     const onUp = (ev: MouseEvent) => {
       const w = clamp(startWidth + ev.clientX - startX)
-      setPanelWidth(w)
+      setInternalWidth(w)
       onWidthChange?.(w)
       invalidate()
       document.removeEventListener('mousemove', onMove)
@@ -216,16 +219,18 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
       </div>
 
       {/* Resize drag handle */}
-      <div
-        onMouseDown={startDrag}
-        style={{
-          width: 4,
-          height: '100%',
-          cursor: 'col-resize',
-          flexShrink: 0,
-          background: 'var(--mantine-color-gray-3)',
-        }}
-      />
+      {!hideDragHandle && (
+        <div
+          onMouseDown={startDrag}
+          style={{
+            width: 4,
+            height: '100%',
+            cursor: 'col-resize',
+            flexShrink: 0,
+            background: 'var(--mantine-color-gray-3)',
+          }}
+        />
+      )}
     </div>
   )
 })

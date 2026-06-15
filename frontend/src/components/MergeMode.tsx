@@ -28,8 +28,7 @@ export default function MergeMode() {
   const [pageA, setPageA] = useState(1)
   const [pageB, setPageB] = useState(1)
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
-  const [widthA, setWidthA] = useState(DEFAULT_WIDTH)
-  const [widthB, setWidthB] = useState(DEFAULT_WIDTH)
+  const [sharedWidth, setSharedWidth] = useState(DEFAULT_WIDTH)
   const [merging, setMerging] = useState(false)
   const refA = useRef<ThumbnailPanelHandle>(null)
   const refB = useRef<ThumbnailPanelHandle>(null)
@@ -97,18 +96,19 @@ export default function MergeMode() {
   // diff = maxScroll_second - maxScroll_first
   // bottomPadding_first  = max(0,  diff)
   // bottomPadding_second = max(0, -diff)
+  const ih = itemHeight(sharedWidth)
   const [countFirst, ihFirst, countSecond, ihSecond] = firstPageIn === 'a'
-    ? [countA, itemHeight(widthA), countB, itemHeight(widthB)]
-    : [countB, itemHeight(widthB), countA, itemHeight(widthA)]
+    ? [countA, ih, countB, ih]
+    : [countB, ih, countA, ih]
   const diff = countSecond * ihSecond - countFirst * ihFirst + HALF_THUMB_HEIGHT
   const bottomPaddingFirst  = Math.max(0,  diff)
   const bottomPaddingSecond = Math.max(0, -diff)
   const bottomPaddingA = firstPageIn === 'a' ? bottomPaddingFirst : bottomPaddingSecond
   const bottomPaddingB = firstPageIn === 'a' ? bottomPaddingSecond : bottomPaddingFirst
 
-  // Total visual column width = scroll area + drag handle
-  const colWidthA = widthA + DRAG_HANDLE_WIDTH
-  const colWidthB = widthB + DRAG_HANDLE_WIDTH
+  // A has no drag handle; B has one — toolbar columns match accordingly
+  const colWidthA = sharedWidth
+  const colWidthB = sharedWidth + DRAG_HANDLE_WIDTH
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -161,7 +161,8 @@ export default function MergeMode() {
               pageCount={countA}
               selectedPage={pageA}
               onSelectPage={setPageA}
-              onWidthChange={setWidthA}
+              width={sharedWidth}
+              hideDragHandle
               onScroll={handleScrollA}
               hideScrollbar
               topPadding={topPaddingA}
@@ -173,7 +174,8 @@ export default function MergeMode() {
               pageCount={countB}
               selectedPage={pageB}
               onSelectPage={setPageB}
-              onWidthChange={setWidthB}
+              width={sharedWidth}
+              onWidthChange={setSharedWidth}
               onScroll={handleScrollB}
               topPadding={topPaddingB}
               bottomPadding={bottomPaddingB}
