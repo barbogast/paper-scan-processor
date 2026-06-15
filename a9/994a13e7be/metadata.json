@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a9994a13e7be",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "frontend/src/components/MergeMode.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a9/994a13e7be/0/metadata.json",
+      "transcript": "/a9/994a13e7be/0/full.jsonl",
+      "content_hash": "/a9/994a13e7be/0/content_hash.txt",
+      "prompt": "/a9/994a13e7be/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 7,
+    "cache_creation_tokens": 4427,
+    "cache_read_tokens": 777316,
+    "output_tokens": 3347,
+    "api_call_count": 5
+  }
+}
