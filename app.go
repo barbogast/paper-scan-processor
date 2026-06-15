@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -77,4 +78,28 @@ func (a *App) RenderPage(path string, pageNum int, widthPx int) (string, error) 
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(data), nil
+}
+
+// SavePDF shows a save-file dialog filtered to PDFs and returns the chosen path.
+// Returns an empty string if the user cancels.
+func (a *App) SavePDF() (string, error) {
+	path, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		Title:           "Save Merged PDF",
+		DefaultFilename: "merged.pdf",
+		Filters: []runtime.FileFilter{
+			{DisplayName: "PDF Files (*.pdf)", Pattern: "*.pdf"},
+		},
+	})
+	if err != nil || path == "" {
+		return path, err
+	}
+	if !strings.HasSuffix(strings.ToLower(path), ".pdf") {
+		path += ".pdf"
+	}
+	return path, nil
+}
+
+// MergePDFs interleaves pages from frontPath and backPath and writes the result to outPath.
+func (a *App) MergePDFs(frontPath, backPath, outPath string, reverseBack bool) error {
+	return mergePDFs(frontPath, backPath, outPath, reverseBack)
 }
