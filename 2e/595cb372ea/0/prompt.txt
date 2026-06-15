@@ -1,0 +1,1 @@
+Sync the numbers below each page across both panels so that they form a continuous series, representing the page numbers of the output pdf.
