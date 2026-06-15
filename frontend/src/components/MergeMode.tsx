@@ -155,33 +155,29 @@ export default function MergeMode() {
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
         {bothLoaded ? (
           <>
-            <StripColumn>
-              <ThumbnailPanel
-                ref={refA}
-                pdfPath={pathA}
-                pageCount={countA}
-                selectedPage={pageA}
-                onSelectPage={setPageA}
-                onWidthChange={setWidthA}
-                onScroll={handleScrollA}
-                hideScrollbar
-                topPadding={topPaddingA}
-                bottomPadding={bottomPaddingA}
-              />
-            </StripColumn>
-            <StripColumn>
-              <ThumbnailPanel
-                ref={refB}
-                pdfPath={pathB}
-                pageCount={countB}
-                selectedPage={pageB}
-                onSelectPage={setPageB}
-                onWidthChange={setWidthB}
-                onScroll={handleScrollB}
-                topPadding={topPaddingB}
-                bottomPadding={bottomPaddingB}
-              />
-            </StripColumn>
+            <ThumbnailPanel
+              ref={refA}
+              pdfPath={pathA}
+              pageCount={countA}
+              selectedPage={pageA}
+              onSelectPage={setPageA}
+              onWidthChange={setWidthA}
+              onScroll={handleScrollA}
+              hideScrollbar
+              topPadding={topPaddingA}
+              bottomPadding={bottomPaddingA}
+            />
+            <ThumbnailPanel
+              ref={refB}
+              pdfPath={pathB}
+              pageCount={countB}
+              selectedPage={pageB}
+              onSelectPage={setPageB}
+              onWidthChange={setWidthB}
+              onScroll={handleScrollB}
+              topPadding={topPaddingB}
+              bottomPadding={bottomPaddingB}
+            />
           </>
         ) : (
           <Center style={{ flex: 1 }}>
@@ -193,13 +189,6 @@ export default function MergeMode() {
   )
 }
 
-function StripColumn({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ height: '100%', flexShrink: 0 }}>
-      {children}
-    </div>
-  )
-}
 
 function FilePickerColumn({
   label,
