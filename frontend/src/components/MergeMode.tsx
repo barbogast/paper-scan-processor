@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Box, Button, Center, Group, Stack, Text } from '@mantine/core'
+import { Box, Button, Center, Divider, Group, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { MergePDFs, OpenPDF, SavePDF } from '../../wailsjs/go/main/App'
+import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../wailsjs/go/main/App'
+import ThumbnailPanel from './ThumbnailPanel'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
@@ -9,17 +10,29 @@ function basename(p: string) {
 
 export default function MergeMode() {
   const [frontPath, setFrontPath] = useState<string | null>(null)
+  const [frontCount, setFrontCount] = useState(0)
   const [backPath, setBackPath] = useState<string | null>(null)
+  const [backCount, setBackCount] = useState(0)
+  const [frontPage, setFrontPage] = useState(1)
+  const [backPage, setBackPage] = useState(1)
   const [merging, setMerging] = useState(false)
 
   const handleChooseFront = async () => {
     const p = await OpenPDF()
-    if (p) setFrontPath(p)
+    if (!p) return
+    const count = await PageCount(p)
+    setFrontPath(p)
+    setFrontCount(count)
+    setFrontPage(1)
   }
 
   const handleChooseBack = async () => {
     const p = await OpenPDF()
-    if (p) setBackPath(p)
+    if (!p) return
+    const count = await PageCount(p)
+    setBackPath(p)
+    setBackCount(count)
+    setBackPage(1)
   }
 
   const handleMerge = async () => {
@@ -37,26 +50,56 @@ export default function MergeMode() {
     }
   }
 
+  const bothLoaded = frontPath !== null && backPath !== null
+
   return (
-    <Center style={{ height: '100%' }}>
-      <Stack gap="md" style={{ minWidth: 420 }}>
-        <FilePicker label="Front PDF" path={frontPath} onChoose={handleChooseFront} />
-        <FilePicker label="Back PDF" path={backPath} onChoose={handleChooseBack} />
-        <Box style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button
-            onClick={handleMerge}
-            disabled={!frontPath || !backPath}
-            loading={merging}
-          >
-            Merge & Save
-          </Button>
-        </Box>
-      </Stack>
-    </Center>
+    <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box
+        style={{
+          flexShrink: 0,
+          borderBottom: '1px solid var(--mantine-color-gray-3)',
+          padding: '6px 12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}
+      >
+        <FilePickerInline label="Front PDF" path={frontPath} onChoose={handleChooseFront} />
+        <Divider orientation="vertical" />
+        <FilePickerInline label="Back PDF" path={backPath} onChoose={handleChooseBack} />
+        <Box style={{ flex: 1 }} />
+        <Button size="sm" disabled={!bothLoaded} loading={merging} onClick={handleMerge}>
+          Merge & Save
+        </Button>
+      </Box>
+
+      <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
+        {bothLoaded ? (
+          <>
+            <ThumbnailPanel
+              pdfPath={frontPath}
+              pageCount={frontCount}
+              selectedPage={frontPage}
+              onSelectPage={setFrontPage}
+            />
+            <ThumbnailPanel
+              pdfPath={backPath}
+              pageCount={backCount}
+              selectedPage={backPage}
+              onSelectPage={setBackPage}
+            />
+          </>
+        ) : (
+          <Center style={{ flex: 1 }}>
+            <Text c="dimmed" size="sm">Choose both PDF files above to begin</Text>
+          </Center>
+        )}
+      </Box>
+    </Box>
   )
 }
 
-function FilePicker({
+function FilePickerInline({
   label,
   path,
   onChoose,
@@ -66,12 +109,12 @@ function FilePicker({
   onChoose: () => void
 }) {
   return (
-    <Group gap="sm">
-      <Text size="sm" style={{ width: 72, flexShrink: 0 }}>{label}</Text>
-      <Text size="sm" c={path ? undefined : 'dimmed'} style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {path ? basename(path) : 'not selected'}
+    <Group gap={8}>
+      <Text size="sm" c="dimmed">{label}</Text>
+      <Text size="sm" style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {path ? basename(path) : '—'}
       </Text>
-      <Button size="xs" variant="default" onClick={onChoose} style={{ flexShrink: 0 }}>
+      <Button size="xs" variant="default" onClick={onChoose}>
         Choose…
       </Button>
     </Group>

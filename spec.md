@@ -196,7 +196,7 @@ TBD.
 ### Merge mode
 
 - [x] **Step 1: End-to-end merge pipeline** — Go `OpenFileDialog` / `SaveFileDialog` RPCs; `MergePDFs` Wails RPC; minimal UI with two file-picker buttons and a Merge & Save button; no thumbnails
-- [ ] **Step 2: Thumbnail strips** — two-column layout using existing `ThumbnailPanel` primitive, one per file, side by side; Merge & Save moves to toolbar
+- [x] **Step 2: Thumbnail strips** — two-column layout using existing `ThumbnailPanel` primitive, one per file, side by side; Merge & Save moves to toolbar
 - [ ] **Step 3: Fronts/backs selector + visual offset** — "First page is in" toggle; "Fronts" / "Backs" strip labels update on change; second strip offset down by half a thumbnail height
 - [ ] **Step 4: Reverse checkbox + page-count warning** — "Reverse back pages" checkbox wired into merge call; detect unequal counts and show confirmation modal before merging
 - [ ] **Step 5: Detail panel** — existing `DetailPanel` primitive on the right; selection in either strip updates it; `←` / `→` keyboard navigation
