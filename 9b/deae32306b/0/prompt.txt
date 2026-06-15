@@ -1,0 +1,21 @@
+read spec.md
+
+---
+
+implement the thumbnail panel primitive. Let's first break this down into further subtasks, though.
+
+---
+
+it's fine, go ahead
+
+---
+
+The thumbnail is empty when opening a PDF file
+
+---
+
+change PAGE_ASPECT to match DIN A4
+
+---
+
+renderWidth seems to be a derivative of panelWidth. Does it need to be state?
