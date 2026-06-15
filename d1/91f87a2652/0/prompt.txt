@@ -1,0 +1,13 @@
+Would it be possible to reuse the useThumbnailLoader hook for DetailPanel?
+
+---
+
+Would it work if the useEffect hook would be move out into ThumbnailPanel?
+
+---
+
+yes
+
+---
+
+yes
