@@ -1,0 +1,1 @@
+StripColumn no longer deserves to be a separate component, does it?
