@@ -11,14 +11,20 @@ const LABEL_HEIGHT = 20
 // DIN A4 portrait aspect ratio (210 × 297 mm)
 const PAGE_ASPECT = 297 / 210
 
+const DEFAULT_THUMB_HEIGHT = Math.round((DEFAULT_WIDTH - ITEM_PADDING * 2) * PAGE_ASPECT)
+export const HALF_THUMB_HEIGHT = Math.round(DEFAULT_THUMB_HEIGHT / 2)
+
+const STRIP_LABEL_HEIGHT = 28
+
 interface Props {
   pdfPath: string
   pageCount: number
   selectedPage: number   // 1-indexed
   onSelectPage: (page: number) => void
+  label?: string
 }
 
-export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSelectPage }: Props) {
+export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSelectPage, label }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
@@ -82,13 +88,31 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
 
   return (
     <div style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: panelWidth, height: '100%' }}>
+        {label && (
+          <div
+            style={{
+              height: STRIP_LABEL_HEIGHT,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 11,
+              fontWeight: 600,
+              color: 'var(--mantine-color-dimmed)',
+              borderBottom: '1px solid var(--mantine-color-gray-2)',
+            }}
+          >
+            {label}
+          </div>
+        )}
       <div
         ref={scrollRef}
         tabIndex={0}
         onKeyDown={handleKeyDown}
         style={{
-          width: panelWidth,
-          height: '100%',
+          flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
           overflowX: 'hidden',
           outline: 'none',
@@ -160,6 +184,7 @@ export default function ThumbnailPanel({ pdfPath, pageCount, selectedPage, onSel
             )
           })}
         </div>
+      </div>
       </div>
 
       {/* Resize drag handle */}

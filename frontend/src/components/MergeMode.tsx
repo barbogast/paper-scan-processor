@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { Box, Button, Center, Divider, Group, Text } from '@mantine/core'
+import { Box, Button, Center, Divider, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../wailsjs/go/main/App'
-import ThumbnailPanel from './ThumbnailPanel'
+import ThumbnailPanel, { HALF_THUMB_HEIGHT } from './ThumbnailPanel'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
 }
+
+type FirstPageIn = 'front' | 'back'
 
 export default function MergeMode() {
   const [frontPath, setFrontPath] = useState<string | null>(null)
@@ -15,6 +17,7 @@ export default function MergeMode() {
   const [backCount, setBackCount] = useState(0)
   const [frontPage, setFrontPage] = useState(1)
   const [backPage, setBackPage] = useState(1)
+  const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('front')
   const [merging, setMerging] = useState(false)
 
   const handleChooseFront = async () => {
@@ -41,7 +44,9 @@ export default function MergeMode() {
     if (!outPath) return
     setMerging(true)
     try {
-      await MergePDFs(frontPath, backPath, outPath, false)
+      const effectiveFront = firstPageIn === 'front' ? frontPath : backPath
+      const effectiveBack = firstPageIn === 'front' ? backPath : frontPath
+      await MergePDFs(effectiveFront, effectiveBack, outPath, false)
       notifications.show({ message: `Saved to ${outPath}`, color: 'green' })
     } catch (e) {
       notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })
@@ -51,6 +56,12 @@ export default function MergeMode() {
   }
 
   const bothLoaded = frontPath !== null && backPath !== null
+
+  // Which strip contains the first output page (labeled "Fronts"), and which is offset
+  const frontLabel = firstPageIn === 'front' ? 'Fronts' : 'Backs'
+  const backLabel = firstPageIn === 'front' ? 'Backs' : 'Fronts'
+  const frontOffset = firstPageIn === 'back' ? HALF_THUMB_HEIGHT : 0
+  const backOffset = firstPageIn === 'front' ? HALF_THUMB_HEIGHT : 0
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -67,6 +78,19 @@ export default function MergeMode() {
         <FilePickerInline label="Front PDF" path={frontPath} onChoose={handleChooseFront} />
         <Divider orientation="vertical" />
         <FilePickerInline label="Back PDF" path={backPath} onChoose={handleChooseBack} />
+        <Divider orientation="vertical" />
+        <Group gap={8}>
+          <Text size="sm" c="dimmed">First page in</Text>
+          <SegmentedControl
+            size="xs"
+            value={firstPageIn}
+            onChange={(v) => setFirstPageIn(v as FirstPageIn)}
+            data={[
+              { label: 'Front file', value: 'front' },
+              { label: 'Back file', value: 'back' },
+            ]}
+          />
+        </Group>
         <Box style={{ flex: 1 }} />
         <Button size="sm" disabled={!bothLoaded} loading={merging} onClick={handleMerge}>
           Merge & Save
@@ -76,18 +100,24 @@ export default function MergeMode() {
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
         {bothLoaded ? (
           <>
-            <ThumbnailPanel
-              pdfPath={frontPath}
-              pageCount={frontCount}
-              selectedPage={frontPage}
-              onSelectPage={setFrontPage}
-            />
-            <ThumbnailPanel
-              pdfPath={backPath}
-              pageCount={backCount}
-              selectedPage={backPage}
-              onSelectPage={setBackPage}
-            />
+            <StripColumn offset={frontOffset}>
+              <ThumbnailPanel
+                pdfPath={frontPath}
+                pageCount={frontCount}
+                selectedPage={frontPage}
+                onSelectPage={setFrontPage}
+                label={frontLabel}
+              />
+            </StripColumn>
+            <StripColumn offset={backOffset}>
+              <ThumbnailPanel
+                pdfPath={backPath}
+                pageCount={backCount}
+                selectedPage={backPage}
+                onSelectPage={setBackPage}
+                label={backLabel}
+              />
+            </StripColumn>
           </>
         ) : (
           <Center style={{ flex: 1 }}>
@@ -96,6 +126,21 @@ export default function MergeMode() {
         )}
       </Box>
     </Box>
+  )
+}
+
+function StripColumn({ offset, children }: { offset: number; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        height: '100%',
+        paddingTop: offset,
+        boxSizing: 'border-box',
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </div>
   )
 }
 
