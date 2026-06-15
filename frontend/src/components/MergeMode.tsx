@@ -59,8 +59,6 @@ export default function MergeMode() {
 
   const bothLoaded = pathA !== null && pathB !== null
 
-  const labelA = firstPageIn === 'a' ? 'A' : 'B'
-  const labelB = firstPageIn === 'a' ? 'B' : 'A'
   const offsetA = firstPageIn === 'b' ? HALF_THUMB_HEIGHT : 0
   const offsetB = firstPageIn === 'a' ? HALF_THUMB_HEIGHT : 0
 
@@ -119,7 +117,6 @@ export default function MergeMode() {
                 pageCount={countA}
                 selectedPage={pageA}
                 onSelectPage={setPageA}
-                label={labelA}
                 onWidthChange={setWidthA}
               />
             </StripColumn>
@@ -129,7 +126,6 @@ export default function MergeMode() {
                 pageCount={countB}
                 selectedPage={pageB}
                 onSelectPage={setPageB}
-                label={labelB}
                 onWidthChange={setWidthB}
               />
             </StripColumn>

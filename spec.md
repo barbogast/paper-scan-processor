@@ -95,7 +95,7 @@ The thumbnail strip for the file containing the second output page is offset dow
   └──────────┘
 ```
 
-The **A** / **B** labels above each strip reflect the current **First page is in** selection and update when it changes.
+The offset makes the interleaving order visually apparent without needing labels.
 
 ### Error handling
 
@@ -197,7 +197,7 @@ TBD.
 
 - [x] **Step 1: End-to-end merge pipeline** — Go `OpenFileDialog` / `SaveFileDialog` RPCs; `MergePDFs` Wails RPC; minimal UI with two file-picker buttons and a Merge & Save button; no thumbnails
 - [x] **Step 2: Thumbnail strips** — two-column layout using existing `ThumbnailPanel` primitive, one per file, side by side; Merge & Save moves to toolbar
-- [x] **Step 3: A/B selector + visual offset** — "First page in" toggle (File A / File B); strip labels update on change; second strip offset down by half a thumbnail height
+- [x] **Step 3: A/B selector + visual offset** — "First page in" toggle (File A / File B); second strip offset down by half a thumbnail height
 - [ ] **Step 4: Reverse checkbox + page-count warning** — "Reverse File B" checkbox wired into merge call; detect unequal counts and show confirmation modal before merging
 - [ ] **Step 5: Detail panel** — existing `DetailPanel` primitive on the right; selection in either strip updates it; `←` / `→` keyboard navigation
 - [ ] **Step 6: Page editing** — rotate, skip, reorder within the merge view, applied before the merge call
