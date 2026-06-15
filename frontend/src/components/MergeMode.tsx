@@ -85,10 +85,9 @@ export default function MergeMode() {
 
   const bothLoaded = pathA !== null && pathB !== null
 
-  // Second strip gets topPadding inside its scroll content so the offset scrolls
-  // away with the pages rather than being a fixed visual gap.
-  const topPaddingA = firstPageIn === 'b' ? HALF_THUMB_HEIGHT : 0
-  const topPaddingB = firstPageIn === 'a' ? HALF_THUMB_HEIGHT : 0
+  // Offsets only apply once both files are loaded (they describe interleave order).
+  const topPaddingA = bothLoaded && firstPageIn === 'b' ? HALF_THUMB_HEIGHT : 0
+  const topPaddingB = bothLoaded && firstPageIn === 'a' ? HALF_THUMB_HEIGHT : 0
 
   // Equalise the maximum scrollTop of both strips.
   // maxScroll_first  = countFirst  * ihFirst  + 0             - H
@@ -153,37 +152,38 @@ export default function MergeMode() {
       </Box>
 
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
-        {bothLoaded ? (
-          <>
-            <ThumbnailPanel
-              ref={refA}
-              pdfPath={pathA}
-              pageCount={countA}
-              selectedPage={pageA}
-              onSelectPage={setPageA}
-              width={sharedWidth}
-              hideDragHandle
-              onScroll={handleScrollA}
-              hideScrollbar
-              topPadding={topPaddingA}
-              bottomPadding={bottomPaddingA}
-            />
-            <ThumbnailPanel
-              ref={refB}
-              pdfPath={pathB}
-              pageCount={countB}
-              selectedPage={pageB}
-              onSelectPage={setPageB}
-              width={sharedWidth}
-              onWidthChange={setSharedWidth}
-              onScroll={handleScrollB}
-              topPadding={topPaddingB}
-              bottomPadding={bottomPaddingB}
-            />
-          </>
-        ) : (
+        {pathA && (
+          <ThumbnailPanel
+            ref={refA}
+            pdfPath={pathA}
+            pageCount={countA}
+            selectedPage={pageA}
+            onSelectPage={setPageA}
+            width={sharedWidth}
+            hideDragHandle
+            onScroll={handleScrollA}
+            hideScrollbar
+            topPadding={topPaddingA}
+            bottomPadding={bottomPaddingA}
+          />
+        )}
+        {pathB && (
+          <ThumbnailPanel
+            ref={refB}
+            pdfPath={pathB}
+            pageCount={countB}
+            selectedPage={pageB}
+            onSelectPage={setPageB}
+            width={sharedWidth}
+            onWidthChange={setSharedWidth}
+            onScroll={handleScrollB}
+            topPadding={topPaddingB}
+            bottomPadding={bottomPaddingB}
+          />
+        )}
+        {!pathA && !pathB && (
           <Center style={{ flex: 1 }}>
-            <Text c="dimmed" size="sm">Choose both PDF files above to begin</Text>
+            <Text c="dimmed" size="sm">Choose PDF files above to begin</Text>
           </Center>
         )}
       </Box>
