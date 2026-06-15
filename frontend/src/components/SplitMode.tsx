@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Box, Button, Center, Text } from '@mantine/core'
+import { Box, Button, Center } from '@mantine/core'
 import ThumbnailPanel from './ThumbnailPanel'
+import DetailPanel from './DetailPanel'
 import { OpenPDF, PageCount } from '../../wailsjs/go/main/App'
 
 export default function SplitMode() {
@@ -28,17 +29,20 @@ export default function SplitMode() {
         />
       ) : null}
 
-      <Box style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        {pdfPath ? (
-          <Center style={{ height: '100%' }}>
-            <Text c="dimmed" size="sm">Page {selectedPage} of {pageCount}</Text>
-          </Center>
-        ) : (
-          <Center style={{ height: '100%' }}>
+      {pdfPath ? (
+        <DetailPanel
+          pdfPath={pdfPath}
+          pageNum={selectedPage}
+          pageCount={pageCount}
+          onNavigate={setSelectedPage}
+        />
+      ) : (
+        <Box style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Center>
             <Button onClick={handleOpen}>Open PDF</Button>
           </Center>
-        )}
-      </Box>
+        </Box>
+      )}
     </Box>
   )
 }
