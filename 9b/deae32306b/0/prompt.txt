@@ -19,3 +19,7 @@ change PAGE_ASPECT to match DIN A4
 ---
 
 renderWidth seems to be a derivative of panelWidth. Does it need to be state?
+
+---
+
+commit changes
