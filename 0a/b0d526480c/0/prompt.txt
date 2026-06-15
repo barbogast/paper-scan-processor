@@ -1,0 +1,21 @@
+Use a darker background for ThumbnailPanel, so it's clearer where the page starts
+
+---
+
+There is white background above the ThumbnailPanel for the file which has the second page.
+
+---
+
+Increase the opacity of the page numbers in the ThumbnailPanel
+
+---
+
+commit
+
+---
+
+decrease the distance between each page in ThumbnailPanel
+
+---
+
+no, revert the latest change. Decrease the vertical space _between_ each thumbnail.
