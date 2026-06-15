@@ -195,11 +195,12 @@ TBD.
 
 ### Merge mode
 
-- [ ] **Go: file dialogs** — `OpenFileDialog` / `SaveFileDialog` on the App struct (reused by Split)
-- [ ] **Go: MergePDFs** — backend method wiring pdfcpu interleave logic to Wails RPC
-- [ ] **Frontend: Merge UI** — file pickers, fronts/backs selector, reverse checkbox, page-count mismatch warning, Merge & Save button
-- [ ] **Frontend: Merge layout** — two offset thumbnail strips + detail panel
-- [ ] **Page editing in Merge** — rotate, skip, reorder
+- [ ] **Step 1: End-to-end merge pipeline** — Go `OpenFileDialog` / `SaveFileDialog` RPCs; `MergePDFs` Wails RPC; minimal UI with two file-picker buttons and a Merge & Save button; no thumbnails
+- [ ] **Step 2: Thumbnail strips** — two-column layout using existing `ThumbnailPanel` primitive, one per file, side by side; Merge & Save moves to toolbar
+- [ ] **Step 3: Fronts/backs selector + visual offset** — "First page is in" toggle; "Fronts" / "Backs" strip labels update on change; second strip offset down by half a thumbnail height
+- [ ] **Step 4: Reverse checkbox + page-count warning** — "Reverse back pages" checkbox wired into merge call; detect unequal counts and show confirmation modal before merging
+- [ ] **Step 5: Detail panel** — existing `DetailPanel` primitive on the right; selection in either strip updates it; `←` / `→` keyboard navigation
+- [ ] **Step 6: Page editing** — rotate, skip, reorder within the merge view, applied before the merge call
 
 ### Split mode
 
