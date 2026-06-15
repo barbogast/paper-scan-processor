@@ -1,0 +1,5 @@
+Would it be possible to have both ThumbnailPanels scroll as one?
+
+---
+
+yes
