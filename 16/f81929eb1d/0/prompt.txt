@@ -1,0 +1,5 @@
+How about both components actually share the cache? Not only the code but the actual cache ref on the page?
+
+---
+
+Okay, then tick off Detail Panel in spec.md and commit
