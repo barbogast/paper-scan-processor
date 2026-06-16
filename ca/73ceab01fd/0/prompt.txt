@@ -1,0 +1,1 @@
+Let's remove the old ThumbnailPanel (but let's keep the file for now) and use MergModeThumbnailPanel
