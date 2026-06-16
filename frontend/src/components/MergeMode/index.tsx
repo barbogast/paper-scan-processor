@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Box, Button, Checkbox, Group, SegmentedControl, Text } from '@mantine/core'
+import { Box, Button, Checkbox, Group, SegmentedControl, Text, Tooltip } from '@mantine/core'
+import { IconAlertTriangle } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
@@ -50,6 +51,7 @@ export default function MergeMode() {
   }
 
   const bothLoaded = pathA !== null && pathB !== null
+  const unequalCounts = bothLoaded && countA !== countB
   const selectedPath = selectedPage.file === 'a' ? pathA : pathB
   const selectedCount = selectedPage.file === 'a' ? countA : countB
 
@@ -67,6 +69,15 @@ export default function MergeMode() {
         {/* Add 26 px to account for scrollbar + gap */}
         <FilePickerColumn label="File B" path={pathB} width={colWidth + 26} onChoose={() => handleChoose('b')} />
         <Group gap={8} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
+          {unequalCounts && (
+            <Tooltip
+              label={`File A has ${countA} page${countA !== 1 ? 's' : ''}, File B has ${countB} page${countB !== 1 ? 's' : ''}. The extra ${Math.abs(countA - countB)} page${Math.abs(countA - countB) !== 1 ? 's' : ''} will be appended at the end.`}
+              multiline
+              w={280}
+            >
+              <IconAlertTriangle size={18} color="var(--mantine-color-yellow-6)" />
+            </Tooltip>
+          )}
           <Checkbox
             size="sm"
             label="Reverse File B"
