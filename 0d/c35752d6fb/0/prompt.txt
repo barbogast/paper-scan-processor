@@ -27,3 +27,7 @@ How come you implemented reverseFront? Doesn't make sense, and it's not in the s
 ---
 
 When the flag is enabled, it should display the second column of thumbnails reversed, like they will appear in the output file
+
+---
+
+commit
