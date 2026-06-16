@@ -63,3 +63,7 @@ Implement skipping pages
 ---
 
 make the x icon on the thumbnail look differently if the page is to be skipped
+
+---
+
+commit
