@@ -9,14 +9,15 @@ const MAX_TOTAL_WIDTH = 960
 export const DEFAULT_TOTAL_WIDTH = DEFAULT_WIDTH * 2
 
 type FirstPageIn = 'a' | 'b'
+export type SelectedPage = { file: FirstPageIn, page: number }
 
 interface Props {
   pathA: string | null
   countA: number
   pathB: string | null
   countB: number
-  selectedPage: { file: 'a' | 'b', page: number }
-  onSelectPage: (file: 'a' | 'b', page: number) => void
+  selectedPage: SelectedPage
+  onSelectPage: (file: FirstPageIn, page: number) => void
   firstPageIn: FirstPageIn
   totalWidth: number
   onWidthChange: (w: number) => void

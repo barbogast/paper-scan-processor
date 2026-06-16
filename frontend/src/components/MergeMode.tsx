@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Box, Button, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../wailsjs/go/main/App'
-import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH } from './MergeModeThumbnailPanel'
+import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, SelectedPage } from './MergeModeThumbnailPanel'
 
 type FirstPageIn = 'a' | 'b'
 
@@ -15,7 +15,7 @@ export default function MergeMode() {
   const [countA, setCountA] = useState(0)
   const [pathB, setPathB] = useState<string | null>(null)
   const [countB, setCountB] = useState(0)
-  const [selectedPage, setSelectedPage] = useState<{ file: 'a' | 'b', page: number }>({ file: 'a', page: 1 })
+  const [selectedPage, setSelectedPage] = useState<SelectedPage>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [merging, setMerging] = useState(false)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
