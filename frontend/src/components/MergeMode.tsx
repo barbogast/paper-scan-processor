@@ -7,6 +7,7 @@ import ThumbnailPanel, {
   ITEM_PADDING, ITEM_GAP, LABEL_HEIGHT, PAGE_ASPECT,
   ThumbnailPanelHandle,
 } from './ThumbnailPanel'
+import MergeModeThumbnailPanel from './MergeModeThumbnailPanel'
 
 // Maps a panel's 0-based page index to its output PDF page number.
 // isFirst: true if this panel's pages go first in the interleave (odd output pages).
@@ -207,6 +208,23 @@ export default function MergeMode() {
             <Text c="dimmed" size="sm">Choose PDF files above to begin</Text>
           </Center>
         )}
+
+        {/* Separator between old and new panel */}
+        <div style={{ width: 3, height: '100%', flexShrink: 0, background: 'var(--mantine-color-red-5)' }} />
+
+        <MergeModeThumbnailPanel
+          pathA={pathA}
+          countA={countA}
+          pathB={pathB}
+          countB={countB}
+          selectedPageA={pageA}
+          selectedPageB={pageB}
+          onSelectPageA={setPageA}
+          onSelectPageB={setPageB}
+          firstPageIn={firstPageIn}
+          onChooseA={handleChooseA}
+          onChooseB={handleChooseB}
+        />
       </Box>
     </Box>
   )
