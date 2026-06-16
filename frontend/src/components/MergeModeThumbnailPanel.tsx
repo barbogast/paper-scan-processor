@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { useVirtualizer, Virtualizer } from '@tanstack/react-virtual'
 import { Box, Button, Group, Loader, Text } from '@mantine/core'
 import { usePageLoader } from '../hooks/usePageLoader'
 import { ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT, DRAG_HANDLE_WIDTH, DEFAULT_WIDTH } from './ThumbnailPanel'
@@ -142,93 +142,30 @@ export default function MergeModeThumbnailPanel({
           }}
         >
           <div style={{ height: totalHeight, position: 'relative' }}>
-            {/* Column A */}
-            <div style={{ position: 'absolute', left: 0, top: 0, width: colWidth, height: '100%' }}>
-              {virtualizerA.getVirtualItems().map(item => {
-                const page = item.index + 1
-                const src = getSrcA(page)
-                const isSelected = page === selectedPageA
-                return (
-                  <div
-                    key={item.key}
-                    onClick={() => onSelectPageA(page)}
-                    style={{
-                      position: 'absolute',
-                      top: item.start,
-                      left: 0,
-                      width: '100%',
-                      height: item.size,
-                      padding: ITEM_PADDING,
-                      paddingBottom: 0,
-                      boxSizing: 'border-box',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <div style={{
-                      border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      background: 'var(--mantine-color-gray-1)',
-                    }}>
-                      {src ? (
-                        <img src={src} alt={`A page ${page}`} style={{ width: '100%', display: 'block' }} draggable={false} />
-                      ) : (
-                        <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {pathA && isLoadingA(page) && <Loader size="xs" />}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--mantine-color-gray-7)', height: LABEL_HEIGHT, lineHeight: `${LABEL_HEIGHT}px` }}>
-                      {pageLabelA ? pageLabelA(item.index) : page}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Column B */}
-            <div style={{ position: 'absolute', left: colWidth, top: 0, width: colWidth, height: '100%' }}>
-              {virtualizerB.getVirtualItems().map(item => {
-                const page = item.index + 1
-                const src = getSrcB(page)
-                const isSelected = page === selectedPageB
-                return (
-                  <div
-                    key={item.key}
-                    onClick={() => onSelectPageB(page)}
-                    style={{
-                      position: 'absolute',
-                      top: item.start,
-                      left: 0,
-                      width: '100%',
-                      height: item.size,
-                      padding: ITEM_PADDING,
-                      paddingBottom: 0,
-                      boxSizing: 'border-box',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <div style={{
-                      border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      background: 'var(--mantine-color-gray-1)',
-                    }}>
-                      {src ? (
-                        <img src={src} alt={`B page ${page}`} style={{ width: '100%', display: 'block' }} draggable={false} />
-                      ) : (
-                        <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {pathB && isLoadingB(page) && <Loader size="xs" />}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--mantine-color-gray-7)', height: LABEL_HEIGHT, lineHeight: `${LABEL_HEIGHT}px` }}>
-                      {pageLabelB ? pageLabelB(item.index) : page}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+            <ThumbColumn
+              virtualizer={virtualizerA}
+              left={0}
+              colWidth={colWidth}
+              thumbHeight={thumbHeight}
+              active={pathA !== null}
+              getSrc={getSrcA}
+              isLoading={isLoadingA}
+              selectedPage={selectedPageA}
+              onSelectPage={onSelectPageA}
+              pageLabel={pageLabelA}
+            />
+            <ThumbColumn
+              virtualizer={virtualizerB}
+              left={colWidth}
+              colWidth={colWidth}
+              thumbHeight={thumbHeight}
+              active={pathB !== null}
+              getSrc={getSrcB}
+              isLoading={isLoadingB}
+              selectedPage={selectedPageB}
+              onSelectPage={onSelectPageB}
+              pageLabel={pageLabelB}
+            />
           </div>
         </div>
       </Box>
@@ -245,6 +182,66 @@ export default function MergeModeThumbnailPanel({
         }}
       />
     </Box>
+  )
+}
+
+interface ThumbColumnProps {
+  virtualizer: Virtualizer<HTMLDivElement, Element>
+  left: number
+  colWidth: number
+  thumbHeight: number
+  active: boolean
+  getSrc: (page: number) => string | undefined
+  isLoading: (page: number) => boolean
+  selectedPage: number
+  onSelectPage: (page: number) => void
+  pageLabel?: (index: number) => number
+}
+
+function ThumbColumn({ virtualizer, left, colWidth, thumbHeight, active, getSrc, isLoading, selectedPage, onSelectPage, pageLabel }: ThumbColumnProps) {
+  return (
+    <div style={{ position: 'absolute', left, top: 0, width: colWidth, height: '100%' }}>
+      {virtualizer.getVirtualItems().map(item => {
+        const page = item.index + 1
+        const src = getSrc(page)
+        const isSelected = page === selectedPage
+        return (
+          <div
+            key={item.key}
+            onClick={() => onSelectPage(page)}
+            style={{
+              position: 'absolute',
+              top: item.start,
+              left: 0,
+              width: '100%',
+              height: item.size,
+              padding: ITEM_PADDING,
+              paddingBottom: 0,
+              boxSizing: 'border-box',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{
+              border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
+              borderRadius: 4,
+              overflow: 'hidden',
+              background: 'var(--mantine-color-gray-1)',
+            }}>
+              {src ? (
+                <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block' }} draggable={false} />
+              ) : (
+                <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {active && isLoading(page) && <Loader size="xs" />}
+                </div>
+              )}
+            </div>
+            <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--mantine-color-gray-7)', height: LABEL_HEIGHT, lineHeight: `${LABEL_HEIGHT}px` }}>
+              {pageLabel ? pageLabel(item.index) : page}
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
