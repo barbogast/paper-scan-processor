@@ -18,6 +18,8 @@ export default function MergeMode() {
   const [selectedPage, setSelectedPage] = useState<SelectedPage>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [reverseB, setReverseB] = useState(true)
+  const [skippedA, setSkippedA] = useState<Set<number>>(() => new Set())
+  const [skippedB, setSkippedB] = useState<Set<number>>(() => new Set())
   const [merging, setMerging] = useState(false)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
 
@@ -28,8 +30,8 @@ export default function MergeMode() {
     const p = await OpenPDF()
     if (!p) return
     const count = await PageCount(p)
-    if (file === 'a') { setPathA(p); setCountA(count) }
-    else { setPathB(p); setCountB(count) }
+    if (file === 'a') { setPathA(p); setCountA(count); setSkippedA(new Set()) }
+    else { setPathB(p); setCountB(count); setSkippedB(new Set()) }
     setSelectedPage({ file, page: 1 })
   }
 
@@ -41,13 +43,24 @@ export default function MergeMode() {
     try {
       const effectiveFirst = firstPageIn === 'a' ? pathA : pathB
       const effectiveSecond = firstPageIn === 'a' ? pathB : pathA
-      await MergePDFs(effectiveFirst, effectiveSecond, outPath, reverseB)
+      const skipFront = [...(firstPageIn === 'a' ? skippedA : skippedB)]
+      const skipBack = [...(firstPageIn === 'a' ? skippedB : skippedA)]
+      await MergePDFs(effectiveFirst, effectiveSecond, outPath, reverseB, skipFront, skipBack)
       notifications.show({ message: `Saved to ${outPath}`, color: 'green' })
     } catch (e) {
       notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })
     } finally {
       setMerging(false)
     }
+  }
+
+  const toggleSkip = (file: FirstPageIn, page: number) => {
+    const setter = file === 'a' ? setSkippedA : setSkippedB
+    setter(prev => {
+      const next = new Set(prev)
+      if (next.has(page)) next.delete(page); else next.add(page)
+      return next
+    })
   }
 
   const bothLoaded = pathA !== null && pathB !== null
@@ -113,6 +126,9 @@ export default function MergeMode() {
           onWidthChange={setTotalWidth}
           colWidth={colWidth}
           reverseB={reverseB}
+          skippedA={skippedA}
+          skippedB={skippedB}
+          onToggleSkip={toggleSkip}
         />
         {selectedPath && (
           <DetailPanel
@@ -120,6 +136,7 @@ export default function MergeMode() {
             pageNum={selectedPage.page}
             pageCount={selectedCount}
             onNavigate={(page) => setSelectedPage({ file: selectedPage.file, page })}
+            onToggleSkip={() => toggleSkip(selectedPage.file, selectedPage.page)}
           />
         )}
       </Box>

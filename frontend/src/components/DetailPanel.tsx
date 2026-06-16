@@ -10,9 +10,10 @@ interface Props {
   pageNum: number
   pageCount: number
   onNavigate: (page: number) => void
+  onToggleSkip?: () => void
 }
 
-export default function DetailPanel({ pdfPath, pageNum, pageCount, onNavigate }: Props) {
+export default function DetailPanel({ pdfPath, pageNum, pageCount, onNavigate, onToggleSkip }: Props) {
   const { getSrc, isLoading, load } = usePageLoader(pdfPath, DETAIL_WIDTH)
   const transformRef = useRef<ReactZoomPanPinchRef>(null)
 
@@ -31,6 +32,9 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, onNavigate }:
     } else if (e.key === 'ArrowRight' && pageNum < pageCount) {
       e.preventDefault()
       onNavigate(pageNum + 1)
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && onToggleSkip) {
+      e.preventDefault()
+      onToggleSkip()
     }
   }, [pageNum, pageCount, onNavigate])
 

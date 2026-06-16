@@ -17,7 +17,7 @@ import (
 // which is the typical case when the paper stack was flipped between scans.
 // If the page counts differ, the extra pages from the longer file are
 // appended in order after the interleaved section.
-func mergePDFs(frontPath, backPath, outPath string, reverseBack bool) error {
+func mergePDFs(frontPath, backPath, outPath string, reverseBack bool, skipFront, skipBack []int) error {
 	tmpDir, err := os.MkdirTemp("", "psp-merge-*")
 	if err != nil {
 		return err
@@ -48,11 +48,30 @@ func mergePDFs(frontPath, backPath, outPath string, reverseBack bool) error {
 		return fmt.Errorf("listing back pages: %w", err)
 	}
 
+	frontPages = filterSkipped(frontPages, skipFront)
+	backPages = filterSkipped(backPages, skipBack)
 	if reverseBack {
 		slices.Reverse(backPages)
 	}
 
 	return api.MergeCreateFile(interleave(frontPages, backPages), outPath, false, nil)
+}
+
+func filterSkipped(pages []string, skip []int) []string {
+	if len(skip) == 0 {
+		return pages
+	}
+	skipSet := make(map[int]bool, len(skip))
+	for _, p := range skip {
+		skipSet[p] = true
+	}
+	out := make([]string, 0, len(pages))
+	for i, p := range pages {
+		if !skipSet[i+1] {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 // splitPDF splits the PDF at inPath at the given page boundaries and writes

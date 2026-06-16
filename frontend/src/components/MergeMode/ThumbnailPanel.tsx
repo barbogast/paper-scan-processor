@@ -1,6 +1,7 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Loader } from '@mantine/core'
+import { IconX } from '@tabler/icons-react'
 import { PageLoader, usePageLoader } from '../../hooks/usePageLoader'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 
@@ -23,6 +24,9 @@ interface Props {
   onWidthChange: (w: number) => void
   colWidth: number
   reverseB: boolean
+  skippedA: Set<number>
+  skippedB: Set<number>
+  onToggleSkip: (file: FirstPageIn, page: number) => void
 }
 
 function makePageNumberLabel(isFirst: boolean, countOther: number) {
@@ -36,7 +40,7 @@ function makePageNumberLabel(isFirst: boolean, countOther: number) {
 export default function MergeModeThumbnailPanel({
   pathA, countA, pathB, countB,
   selectedPage, onSelectPage,
-  firstPageIn, totalWidth, onWidthChange, colWidth, reverseB
+  firstPageIn, totalWidth, onWidthChange, colWidth, reverseB, skippedA, skippedB, onToggleSkip
 }: Props) {
   const selectedPageA = selectedPage.file === 'a' ? selectedPage.page : null
   const selectedPageB = selectedPage.file === 'b' ? selectedPage.page : null
@@ -104,6 +108,8 @@ export default function MergeModeThumbnailPanel({
                 selectedPage={selectedPageA}
                 onSelectPage={(page) => onSelectPage('a', page)}
                 pageLabel={pageLabelA}
+                skipped={skippedA}
+                onToggleSkip={(page) => onToggleSkip('a', page)}
               />
             </div>
             <div style={{ position: 'absolute', left: colWidth, top: 0, width: colWidth, height: '100%' }}>
@@ -118,6 +124,8 @@ export default function MergeModeThumbnailPanel({
                 onSelectPage={(page) => onSelectPage('b', page)}
                 pageLabel={pageLabelB}
                 reverse={reverseB}
+                skipped={skippedB}
+                onToggleSkip={(page) => onToggleSkip('b', page)}
               />
             </div>
           </div>
@@ -150,15 +158,18 @@ interface ThumbColumnProps {
   onSelectPage: (page: number) => void
   pageLabel?: (index: number) => number
   reverse?: boolean
+  skipped?: Set<number>
+  onToggleSkip?: (page: number) => void
 }
 
 function ThumbColumn({
   scrollRef, count, itemHeight, paddingStart,
   thumbHeight, loader,
   selectedPage, onSelectPage, pageLabel,
-  reverse,
+  reverse, skipped, onToggleSkip,
 }: ThumbColumnProps) {
   const pageAt = (index: number) => reverse ? count - index : index + 1
+  const [hoveredPage, setHoveredPage] = useState<number | null>(null)
   const virtualizer = useVirtualizer({
     count,
     getScrollElement: () => scrollRef.current,
@@ -188,10 +199,14 @@ function ThumbColumn({
     const page = pageAt(item.index)
     const src = loader.getSrc(page)
     const isSelected = page === selectedPage
+    const isSkipped = skipped?.has(page) ?? false
+    const showSkipBtn = hoveredPage === page || isSkipped
     return (
       <div
         key={item.key}
         onClick={() => onSelectPage(page)}
+        onMouseEnter={() => setHoveredPage(page)}
+        onMouseLeave={() => setHoveredPage(null)}
         style={{
           position: 'absolute',
           top: item.start,
@@ -205,20 +220,35 @@ function ThumbColumn({
         }}
       >
         <div style={{
+          position: 'relative',
           border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
           borderRadius: 4,
-          overflow: 'hidden',
-          background: 'var(--mantine-color-gray-1)',
         }}>
-          {src ? (
-            <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block' }} draggable={false} />
-          ) : (
-            <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {loader.isLoading(page) && <Loader size="xs" />}
+          <div style={{ overflow: 'hidden', borderRadius: 2, background: 'var(--mantine-color-gray-1)' }}>
+            {src ? (
+              <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block', opacity: isSkipped ? 0.3 : 1 }} draggable={false} />
+            ) : (
+              <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {loader.isLoading(page) && <Loader size="xs" />}
+              </div>
+            )}
+          </div>
+          {showSkipBtn && onToggleSkip && (
+            <div
+              onClick={(e) => { e.stopPropagation(); onToggleSkip(page) }}
+              style={{
+                position: 'absolute', top: 3, right: 3,
+                width: 16, height: 16, borderRadius: 3,
+                background: isSkipped ? 'var(--mantine-color-orange-6)' : 'rgba(0,0,0,0.45)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: 'white',
+              }}
+            >
+              <IconX size={10} stroke={3} />
             </div>
           )}
         </div>
-        <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--mantine-color-gray-7)', height: LABEL_HEIGHT, lineHeight: `${LABEL_HEIGHT}px` }}>
+        <div style={{ textAlign: 'center', fontSize: 11, color: isSkipped ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-7)', height: LABEL_HEIGHT, lineHeight: `${LABEL_HEIGHT}px` }}>
           {pageLabel ? pageLabel(item.index) : page}
         </div>
       </div>

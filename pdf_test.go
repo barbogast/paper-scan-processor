@@ -162,7 +162,7 @@ func TestMergePDFs(t *testing.T) {
 	writePDF(t, front, []string{"F1", "F2", "F3"})
 	writePDF(t, back, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(front, back, out, false); err != nil {
+	if err := mergePDFs(front, back, out, false, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -188,7 +188,7 @@ func TestMergePDFsReverseBack(t *testing.T) {
 	writePDF(t, front, []string{"F1", "F2", "F3"})
 	writePDF(t, back, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(front, back, out, true); err != nil {
+	if err := mergePDFs(front, back, out, true, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -216,7 +216,7 @@ func TestMergePDFsUnequalCounts(t *testing.T) {
 	writePDF(t, front, []string{"F1", "F2", "F3", "F4"})
 	writePDF(t, back, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(front, back, out, false); err != nil {
+	if err := mergePDFs(front, back, out, false, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -232,6 +232,40 @@ func TestMergePDFsUnequalCounts(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertOrder(t, data, []string{"F1", "B1", "F2", "B2", "F3", "B3", "F4"})
+}
+
+func TestMergePDFsSkip(t *testing.T) {
+	tmp := t.TempDir()
+	front := filepath.Join(tmp, "front.pdf")
+	back := filepath.Join(tmp, "back.pdf")
+	out := filepath.Join(tmp, "merged.pdf")
+
+	writePDF(t, front, []string{"F1", "F2", "F3"})
+	writePDF(t, back, []string{"B1", "B2", "B3"})
+
+	// Skip front page 2 and back page 1 → front=[F1,F3], back=[B2,B3]
+	// interleaved: F1,B2, F3,B3
+	if err := mergePDFs(front, back, out, false, []int{2}, []int{1}); err != nil {
+		t.Fatal(err)
+	}
+
+	if count, err := pdfPageCount(out); err != nil {
+		t.Fatal(err)
+	} else if count != 4 {
+		t.Errorf("got %d pages, want 4", count)
+	}
+
+	data, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertOrder(t, data, []string{"F1", "B2", "F3", "B3"})
+	if bytes.Contains(data, []byte("F2")) {
+		t.Error("skipped page F2 found in output")
+	}
+	if bytes.Contains(data, []byte("B1")) {
+		t.Error("skipped page B1 found in output")
+	}
 }
 
 // --- Split tests ---
