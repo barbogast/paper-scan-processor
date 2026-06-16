@@ -1,12 +1,12 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Box, Button, Group, Loader, Text } from '@mantine/core'
+import { Box, Loader } from '@mantine/core'
 import { PageLoader, usePageLoader } from '../hooks/usePageLoader'
 import { ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT, DRAG_HANDLE_WIDTH, DEFAULT_WIDTH } from './ThumbnailPanel'
 
 const MIN_TOTAL_WIDTH = 240
 const MAX_TOTAL_WIDTH = 960
-const DEFAULT_TOTAL_WIDTH = DEFAULT_WIDTH * 2
+export const DEFAULT_TOTAL_WIDTH = DEFAULT_WIDTH * 2
 
 type FirstPageIn = 'a' | 'b'
 
@@ -20,8 +20,8 @@ interface Props {
   onSelectPageA: (page: number) => void
   onSelectPageB: (page: number) => void
   firstPageIn: FirstPageIn
-  onChooseA: () => void
-  onChooseB: () => void
+  totalWidth: number
+  onWidthChange: (w: number) => void
 }
 
 function makePageNumberLabel(isFirst: boolean, countOther: number) {
@@ -32,16 +32,11 @@ function makePageNumberLabel(isFirst: boolean, countOther: number) {
   }
 }
 
-function basename(p: string) {
-  return p.split(/[\\/]/).pop() ?? p
-}
-
 export default function MergeModeThumbnailPanel({
   pathA, countA, pathB, countB,
   selectedPageA, selectedPageB, onSelectPageA, onSelectPageB,
-  firstPageIn, onChooseA, onChooseB,
+  firstPageIn, totalWidth, onWidthChange,
 }: Props) {
-  const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
   const colWidth = Math.floor(totalWidth / 2)
   const thumbWidth = colWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
@@ -68,9 +63,9 @@ export default function MergeModeThumbnailPanel({
     const startWidth = totalWidth
     const clamp = (w: number) => Math.max(MIN_TOTAL_WIDTH, Math.min(MAX_TOTAL_WIDTH, w))
 
-    const onMove = (ev: MouseEvent) => setTotalWidth(clamp(startWidth + ev.clientX - startX))
+    const onMove = (ev: MouseEvent) => onWidthChange(clamp(startWidth + ev.clientX - startX))
     const onUp = (ev: MouseEvent) => {
-      setTotalWidth(clamp(startWidth + ev.clientX - startX))
+      onWidthChange(clamp(startWidth + ev.clientX - startX))
       loaderA.invalidate()
       loaderB.invalidate()
       document.removeEventListener('mousemove', onMove)
@@ -84,12 +79,6 @@ export default function MergeModeThumbnailPanel({
   return (
     <Box style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
       <Box style={{ display: 'flex', flexDirection: 'column', width: totalWidth, height: '100%' }}>
-        {/* Column headers */}
-        <Box style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid var(--mantine-color-gray-3)' }}>
-          <ColumnHeader label="File A" path={pathA} width={colWidth} onChoose={onChooseA} borderRight />
-          <ColumnHeader label="File B" path={pathB} width={colWidth} onChoose={onChooseB} />
-        </Box>
-
         {/* Single scroll area with two absolute columns */}
         <div
           ref={scrollRef}
@@ -229,39 +218,3 @@ function ThumbColumn({
 }
     
 
-function ColumnHeader({
-  label, path, width, onChoose, borderRight,
-}: {
-  label: string
-  path: string | null
-  width: number
-  onChoose: () => void
-  borderRight?: boolean
-}) {
-  return (
-    <Box
-      style={{
-        width,
-        flexShrink: 0,
-        padding: '6px 8px',
-        borderRight: borderRight ? '1px solid var(--mantine-color-gray-3)' : undefined,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        gap: 2,
-      }}
-    >
-      <Group justify="space-between" gap={4} wrap="nowrap">
-        <Text size="xs" c="dimmed">{label}</Text>
-        <Button size="xs" variant="default" onClick={onChoose}>Choose…</Button>
-      </Group>
-      <Text
-        size="xs"
-        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        title={path ?? undefined}
-      >
-        {path ? basename(path) : '—'}
-      </Text>
-    </Box>
-  )
-}

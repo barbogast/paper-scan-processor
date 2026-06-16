@@ -2,9 +2,13 @@ import { useState } from 'react'
 import { Box, Button, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../wailsjs/go/main/App'
-import MergeModeThumbnailPanel from './MergeModeThumbnailPanel'
+import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH } from './MergeModeThumbnailPanel'
 
 type FirstPageIn = 'a' | 'b'
+
+function basename(p: string) {
+  return p.split(/[\\/]/).pop() ?? p
+}
 
 export default function MergeMode() {
   const [pathA, setPathA] = useState<string | null>(null)
@@ -15,6 +19,9 @@ export default function MergeMode() {
   const [pageB, setPageB] = useState(1)
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [merging, setMerging] = useState(false)
+  const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
+
+  const colWidth = Math.floor(totalWidth / 2)
 
   const handleChooseA = async () => {
     const p = await OpenPDF()
@@ -60,14 +67,12 @@ export default function MergeMode() {
           flexShrink: 0,
           borderBottom: '1px solid var(--mantine-color-gray-3)',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: 12,
-          paddingInline: 12,
-          height: 48,
+          alignItems: 'stretch',
         }}
       >
-        <Group gap={8}>
+        <FilePickerColumn label="File A" path={pathA} width={colWidth} onChoose={handleChooseA} />
+        <FilePickerColumn label="File B" path={pathB} width={colWidth} onChoose={handleChooseB} />
+        <Group gap={8} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
           <Text size="sm" c="dimmed">First page in</Text>
           <SegmentedControl
             size="xs"
@@ -78,10 +83,10 @@ export default function MergeMode() {
               { label: 'File B', value: 'b' },
             ]}
           />
+          <Button size="sm" disabled={!bothLoaded} loading={merging} onClick={handleMerge}>
+            Merge & Save
+          </Button>
         </Group>
-        <Button size="sm" disabled={!bothLoaded} loading={merging} onClick={handleMerge}>
-          Merge & Save
-        </Button>
       </Box>
 
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
@@ -95,10 +100,46 @@ export default function MergeMode() {
           onSelectPageA={setPageA}
           onSelectPageB={setPageB}
           firstPageIn={firstPageIn}
-          onChooseA={handleChooseA}
-          onChooseB={handleChooseB}
+          totalWidth={totalWidth}
+          onWidthChange={setTotalWidth}
         />
       </Box>
+    </Box>
+  )
+}
+
+function FilePickerColumn({
+  label, path, width, onChoose,
+}: {
+  label: string
+  path: string | null
+  width: number
+  onChoose: () => void
+}) {
+  return (
+    <Box
+      style={{
+        width,
+        flexShrink: 0,
+        padding: '6px 8px',
+        borderRight: '1px solid var(--mantine-color-gray-3)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 2,
+      }}
+    >
+      <Group justify="space-between" gap={4} wrap="nowrap">
+        <Text size="xs" c="dimmed">{label}</Text>
+        <Button size="xs" variant="default" onClick={onChoose}>Choose…</Button>
+      </Group>
+      <Text
+        size="xs"
+        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        title={path ?? undefined}
+      >
+        {path ? basename(path) : '—'}
+      </Text>
     </Box>
   )
 }
