@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Box, Button, Center } from '@mantine/core'
-import ThumbnailPanel from '../ThumbnailPanel'
+import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { OpenPDF, PageCount } from '../../../wailsjs/go/main/App'
 

@@ -1,17 +1,11 @@
 import { useRef, useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
-import { usePageLoader } from '../hooks/usePageLoader'
+import { usePageLoader } from '../../hooks/usePageLoader'
+import { DEFAULT_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, ITEM_GAP } from '../../constants'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
-export const DEFAULT_WIDTH = 220
-export const DRAG_HANDLE_WIDTH = 4
-export const ITEM_PADDING = 8
-export const ITEM_GAP = 0
-export const LABEL_HEIGHT = 20
-// DIN A4 portrait aspect ratio (210 × 297 mm)
-export const PAGE_ASPECT = 297 / 210
 
 const DEFAULT_THUMB_HEIGHT = Math.round((DEFAULT_WIDTH - ITEM_PADDING * 2) * PAGE_ASPECT)
 export const HALF_THUMB_HEIGHT = Math.round(DEFAULT_THUMB_HEIGHT / 2)
