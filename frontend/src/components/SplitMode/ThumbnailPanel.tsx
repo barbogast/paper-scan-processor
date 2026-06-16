@@ -2,13 +2,10 @@ import { useRef, useState, useEffect, useCallback, forwardRef, useImperativeHand
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
 import { usePageLoader } from '../../hooks/usePageLoader'
-import { DEFAULT_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, ITEM_GAP } from '../../constants'
+import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT } from '../../constants'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
-
-const DEFAULT_THUMB_HEIGHT = Math.round((DEFAULT_WIDTH - ITEM_PADDING * 2) * PAGE_ASPECT)
-export const HALF_THUMB_HEIGHT = Math.round(DEFAULT_THUMB_HEIGHT / 2)
 
 const STRIP_LABEL_HEIGHT = 28
 
@@ -129,88 +126,88 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
             {label}
           </div>
         )}
-      <div
-        ref={scrollRef}
-        tabIndex={0}
-        onKeyDown={handleKeyDown}
-        onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
-        className={hideScrollbar ? 'hide-scrollbar' : undefined}
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          outline: 'none',
-          background: 'var(--mantine-color-gray-3)',
-        }}
-      >
-        <div style={{ height: virtualizer.getTotalSize() + bottomPadding, position: 'relative' }}>
-          {virtualizer.getVirtualItems().map(item => {
-            const page = item.index + 1
-            const src = getSrc(page)
-            const isSelected = page === selectedPage
+        <div
+          ref={scrollRef}
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
+          className={hideScrollbar ? 'hide-scrollbar' : undefined}
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            outline: 'none',
+            background: 'var(--mantine-color-gray-3)',
+          }}
+        >
+          <div style={{ height: virtualizer.getTotalSize() + bottomPadding, position: 'relative' }}>
+            {virtualizer.getVirtualItems().map(item => {
+              const page = item.index + 1
+              const src = getSrc(page)
+              const isSelected = page === selectedPage
 
-            return (
-              <div
-                key={item.key}
-                style={{
-                  position: 'absolute',
-                  top: item.start,
-                  left: 0,
-                  width: '100%',
-                  height: item.size,
-                  padding: ITEM_PADDING,
-                  paddingBottom: 0,
-                  boxSizing: 'border-box',
-                  cursor: 'pointer',
-                }}
-                onClick={() => onSelectPage(page)}
-              >
+              return (
                 <div
+                  key={item.key}
                   style={{
-                    border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    background: 'var(--mantine-color-gray-1)',
+                    position: 'absolute',
+                    top: item.start,
+                    left: 0,
+                    width: '100%',
+                    height: item.size,
+                    padding: ITEM_PADDING,
+                    paddingBottom: 0,
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
                   }}
+                  onClick={() => onSelectPage(page)}
                 >
-                  {src ? (
-                    <img
-                      src={src}
-                      alt={`Page ${page}`}
-                      style={{ width: '100%', display: 'block' }}
-                      draggable={false}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: '100%',
-                        height: thumbHeight,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {isLoading(page) && <Loader size="xs" />}
-                    </div>
-                  )}
+                  <div
+                    style={{
+                      border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                      background: 'var(--mantine-color-gray-1)',
+                    }}
+                  >
+                    {src ? (
+                      <img
+                        src={src}
+                        alt={`Page ${page}`}
+                        style={{ width: '100%', display: 'block' }}
+                        draggable={false}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: thumbHeight,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {isLoading(page) && <Loader size="xs" />}
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      fontSize: 11,
+                      color: 'var(--mantine-color-gray-7)',
+                      height: LABEL_HEIGHT,
+                      lineHeight: `${LABEL_HEIGHT}px`,
+                    }}
+                  >
+                    {pageNumberLabel ? pageNumberLabel(item.index) : page}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    textAlign: 'center',
-                    fontSize: 11,
-                    color: 'var(--mantine-color-gray-7)',
-                    height: LABEL_HEIGHT,
-                    lineHeight: `${LABEL_HEIGHT}px`,
-                  }}
-                >
-                  {pageNumberLabel ? pageNumberLabel(item.index) : page}
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Resize drag handle */}
@@ -218,7 +215,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
         <div
           onMouseDown={startDrag}
           style={{
-            width: 4,
+            width: DRAG_HANDLE_WIDTH,
             height: '100%',
             cursor: 'col-resize',
             flexShrink: 0,
