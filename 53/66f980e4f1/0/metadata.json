@@ -1,0 +1,66 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "5366f980e4f1",
+  "session_id": "7e498368-1a83-4ba2-bae3-6e5b0fcd30fa",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-16T09:24:32.760313Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "frontend/src/components/MergeMode/ThumbnailPanel.tsx",
+    "frontend/src/components/SplitMode/ThumbnailPanel.tsx",
+    "frontend/src/components/SplitMode/index.tsx",
+    "frontend/src/components/ThumbnailPanel.tsx",
+    "frontend/src/constants.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "c94b635a5e2d",
+  "checkpoint_transcript_start": 413,
+  "transcript_lines_at_start": 413,
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 3823,
+    "cache_read_tokens": 287438,
+    "output_tokens": 484,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-16T09:24:32.740763Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 241,
+    "total_committed": 0,
+    "total_lines_changed": 241,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 359,
+      "user_lines_removed": 241,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 8,
+        "frontend/src/components/MergeMode/ThumbnailPanel.tsx": 1,
+        "frontend/src/components/SplitMode/ThumbnailPanel.tsx": 233,
+        "frontend/src/components/SplitMode/index.tsx": 1,
+        "frontend/src/constants.ts": 7
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/MergeMode/ThumbnailPanel.tsx": 1,
+        "frontend/src/components/SplitMode/index.tsx": 1,
+        "frontend/src/components/ThumbnailPanel.tsx": 239
+      }
+    }
+  ]
+}
