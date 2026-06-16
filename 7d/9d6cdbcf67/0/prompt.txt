@@ -95,3 +95,11 @@ Let's pass the object as is; I can live with ThumbnailPanel having access to loa
 ---
 
 Also pass the object to ThumbColumn
+
+---
+
+commit
+
+---
+
+commit using a commit msg that describes the whole change, not just the latest part
