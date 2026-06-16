@@ -1,0 +1,5 @@
+There is quite some code duplication for handling both columns. Would it make sense to extract the code into a separate component that is used for both columns?
+
+---
+
+yes
