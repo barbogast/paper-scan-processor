@@ -3,6 +3,7 @@ import { Box, Button, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
+import DetailPanel from '../DetailPanel'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
@@ -47,6 +48,8 @@ export default function MergeMode() {
   }
 
   const bothLoaded = pathA !== null && pathB !== null
+  const selectedPath = selectedPage.file === 'a' ? pathA : pathB
+  const selectedCount = selectedPage.file === 'a' ? countA : countB
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -89,6 +92,14 @@ export default function MergeMode() {
           totalWidth={totalWidth}
           onWidthChange={setTotalWidth}
         />
+        {selectedPath && (
+          <DetailPanel
+            pdfPath={selectedPath}
+            pageNum={selectedPage.page}
+            pageCount={selectedCount}
+            onNavigate={(page) => setSelectedPage({ file: selectedPage.file, page })}
+          />
+        )}
       </Box>
     </Box>
   )
