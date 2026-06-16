@@ -15,10 +15,8 @@ interface Props {
   countA: number
   pathB: string | null
   countB: number
-  selectedPageA: number
-  selectedPageB: number
-  onSelectPageA: (page: number) => void
-  onSelectPageB: (page: number) => void
+  selectedPage: { file: 'a' | 'b', page: number }
+  onSelectPage: (file: 'a' | 'b', page: number) => void
   firstPageIn: FirstPageIn
   totalWidth: number
   onWidthChange: (w: number) => void
@@ -34,9 +32,11 @@ function makePageNumberLabel(isFirst: boolean, countOther: number) {
 
 export default function MergeModeThumbnailPanel({
   pathA, countA, pathB, countB,
-  selectedPageA, selectedPageB, onSelectPageA, onSelectPageB,
+  selectedPage, onSelectPage,
   firstPageIn, totalWidth, onWidthChange,
 }: Props) {
+  const selectedPageA = selectedPage.file === 'a' ? selectedPage.page : null
+  const selectedPageB = selectedPage.file === 'b' ? selectedPage.page : null
   const colWidth = Math.floor(totalWidth / 2)
   const thumbWidth = colWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
@@ -100,7 +100,7 @@ export default function MergeModeThumbnailPanel({
                 thumbHeight={thumbHeight}
                 loader={loaderA}
                 selectedPage={selectedPageA}
-                onSelectPage={onSelectPageA}
+                onSelectPage={(page) => onSelectPage('a', page)}
                 pageLabel={pageLabelA}
               />
             </div>
@@ -113,7 +113,7 @@ export default function MergeModeThumbnailPanel({
                 thumbHeight={thumbHeight}
                 loader={loaderB}
                 selectedPage={selectedPageB}
-                onSelectPage={onSelectPageB}
+                onSelectPage={(page) => onSelectPage('b', page)}
                 pageLabel={pageLabelB}
               />
             </div>
@@ -143,7 +143,7 @@ interface ThumbColumnProps {
   paddingStart: number
   thumbHeight: number
   loader: PageLoader
-  selectedPage: number
+  selectedPage: number | null
   onSelectPage: (page: number) => void
   pageLabel?: (index: number) => number
 }
@@ -171,7 +171,7 @@ function ThumbColumn({
   })
 
   useEffect(() => {
-    if (count > 0) virtualizer.scrollToIndex(selectedPage - 1, { align: 'auto' })
+    if (selectedPage !== null && count > 0) virtualizer.scrollToIndex(selectedPage - 1, { align: 'auto' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPage])
 

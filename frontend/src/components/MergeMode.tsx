@@ -15,8 +15,7 @@ export default function MergeMode() {
   const [countA, setCountA] = useState(0)
   const [pathB, setPathB] = useState<string | null>(null)
   const [countB, setCountB] = useState(0)
-  const [pageA, setPageA] = useState(1)
-  const [pageB, setPageB] = useState(1)
+  const [selectedPage, setSelectedPage] = useState<{ file: 'a' | 'b', page: number }>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [merging, setMerging] = useState(false)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
@@ -29,7 +28,7 @@ export default function MergeMode() {
     const count = await PageCount(p)
     setPathA(p)
     setCountA(count)
-    setPageA(1)
+    setSelectedPage({ file: 'a', page: 1 })
   }
 
   const handleChooseB = async () => {
@@ -38,7 +37,7 @@ export default function MergeMode() {
     const count = await PageCount(p)
     setPathB(p)
     setCountB(count)
-    setPageB(1)
+    setSelectedPage({ file: 'b', page: 1 })
   }
 
   const handleMerge = async () => {
@@ -95,10 +94,8 @@ export default function MergeMode() {
           countA={countA}
           pathB={pathB}
           countB={countB}
-          selectedPageA={pageA}
-          selectedPageB={pageB}
-          onSelectPageA={setPageA}
-          onSelectPageB={setPageB}
+          selectedPage={selectedPage}
+          onSelectPage={(file, page) => setSelectedPage({ file, page })}
           firstPageIn={firstPageIn}
           totalWidth={totalWidth}
           onWidthChange={setTotalWidth}
