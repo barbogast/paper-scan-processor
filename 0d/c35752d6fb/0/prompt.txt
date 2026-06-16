@@ -1,0 +1,29 @@
+Add a margin around DetailPanle
+
+---
+
+In MergeMode: Add a 8px space between the right ThumbnailPanel and the scrollbar
+
+---
+
+Doesn't work. The space is too small, and now the right thumbnails are smaller than the left ones. they should have the same size
+
+---
+
+Re-read files changed in latest commit
+
+---
+
+Re-read files changed in latest commit. don't comment
+
+---
+
+Let's implement "reverse checkbox", according to spec.md
+
+---
+
+How come you implemented reverseFront? Doesn't make sense, and it's not in the spec
+
+---
+
+When the flag is enabled, it should display the second column of thumbnails reversed, like they will appear in the output file
