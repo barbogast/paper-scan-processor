@@ -22,6 +22,7 @@ interface Props {
   totalWidth: number
   onWidthChange: (w: number) => void
   colWidth: number
+  reverseB: boolean
 }
 
 function makePageNumberLabel(isFirst: boolean, countOther: number) {
@@ -35,7 +36,7 @@ function makePageNumberLabel(isFirst: boolean, countOther: number) {
 export default function MergeModeThumbnailPanel({
   pathA, countA, pathB, countB,
   selectedPage, onSelectPage,
-  firstPageIn, totalWidth, onWidthChange, colWidth
+  firstPageIn, totalWidth, onWidthChange, colWidth, reverseB
 }: Props) {
   const selectedPageA = selectedPage.file === 'a' ? selectedPage.page : null
   const selectedPageB = selectedPage.file === 'b' ? selectedPage.page : null
@@ -116,6 +117,7 @@ export default function MergeModeThumbnailPanel({
                 selectedPage={selectedPageB}
                 onSelectPage={(page) => onSelectPage('b', page)}
                 pageLabel={pageLabelB}
+                reverse={reverseB}
               />
             </div>
           </div>
@@ -147,13 +149,16 @@ interface ThumbColumnProps {
   selectedPage: number | null
   onSelectPage: (page: number) => void
   pageLabel?: (index: number) => number
+  reverse?: boolean
 }
 
 function ThumbColumn({
   scrollRef, count, itemHeight, paddingStart,
   thumbHeight, loader,
   selectedPage, onSelectPage, pageLabel,
+  reverse,
 }: ThumbColumnProps) {
+  const pageAt = (index: number) => reverse ? count - index : index + 1
   const virtualizer = useVirtualizer({
     count,
     getScrollElement: () => scrollRef.current,
@@ -168,16 +173,19 @@ function ThumbColumn({
   }, [itemHeight])
 
   useEffect(() => {
-    for (const item of virtualizer.getVirtualItems()) loader.load(item.index + 1)
+    for (const item of virtualizer.getVirtualItems()) loader.load(pageAt(item.index))
   })
 
   useEffect(() => {
-    if (selectedPage !== null && count > 0) virtualizer.scrollToIndex(selectedPage - 1, { align: 'auto' })
+    if (selectedPage !== null && count > 0) {
+      const displayIndex = reverse ? count - selectedPage : selectedPage - 1
+      virtualizer.scrollToIndex(displayIndex, { align: 'auto' })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPage])
 
   return virtualizer.getVirtualItems().map(item => {
-    const page = item.index + 1
+    const page = pageAt(item.index)
     const src = loader.getSrc(page)
     const isSelected = page === selectedPage
     return (

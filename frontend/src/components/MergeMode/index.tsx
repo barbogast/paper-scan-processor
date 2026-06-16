@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Button, Group, SegmentedControl, Text } from '@mantine/core'
+import { Box, Button, Checkbox, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
@@ -16,6 +16,7 @@ export default function MergeMode() {
   const [countB, setCountB] = useState(0)
   const [selectedPage, setSelectedPage] = useState<SelectedPage>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
+  const [reverseB, setReverseB] = useState(true)
   const [merging, setMerging] = useState(false)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
 
@@ -39,7 +40,7 @@ export default function MergeMode() {
     try {
       const effectiveFirst = firstPageIn === 'a' ? pathA : pathB
       const effectiveSecond = firstPageIn === 'a' ? pathB : pathA
-      await MergePDFs(effectiveFirst, effectiveSecond, outPath, false)
+      await MergePDFs(effectiveFirst, effectiveSecond, outPath, reverseB)
       notifications.show({ message: `Saved to ${outPath}`, color: 'green' })
     } catch (e) {
       notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })
@@ -66,6 +67,12 @@ export default function MergeMode() {
         {/* Add 26 px to account for scrollbar + gap */}
         <FilePickerColumn label="File B" path={pathB} width={colWidth + 26} onChoose={() => handleChoose('b')} />
         <Group gap={8} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <Checkbox
+            size="sm"
+            label="Reverse File B"
+            checked={reverseB}
+            onChange={(e) => setReverseB(e.currentTarget.checked)}
+          />
           <Text size="sm" c="dimmed">First page in</Text>
           <SegmentedControl
             size="xs"
@@ -94,6 +101,7 @@ export default function MergeMode() {
           totalWidth={totalWidth}
           onWidthChange={setTotalWidth}
           colWidth={colWidth}
+          reverseB={reverseB}
         />
         {selectedPath && (
           <DetailPanel
