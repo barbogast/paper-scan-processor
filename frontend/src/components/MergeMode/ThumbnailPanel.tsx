@@ -1,8 +1,8 @@
 import { useRef, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Loader } from '@mantine/core'
-import { PageLoader, usePageLoader } from '../hooks/usePageLoader'
-import { ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT, DRAG_HANDLE_WIDTH, DEFAULT_WIDTH } from './ThumbnailPanel'
+import { PageLoader, usePageLoader } from '../../hooks/usePageLoader'
+import { ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT, DRAG_HANDLE_WIDTH, DEFAULT_WIDTH } from '../ThumbnailPanel'
 
 const MIN_TOTAL_WIDTH = 240
 const MAX_TOTAL_WIDTH = 960
