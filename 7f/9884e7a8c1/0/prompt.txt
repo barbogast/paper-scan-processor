@@ -1,0 +1,12 @@
+I think ThumbnailPanel is too complex. And a lot of the complexity stems from it trying to serve for both Merge mode and Split mode. I now realise, that the Modes have quite different requirements for the
+  panel. So I suggest to not reuse ThumbnailPanel and implement it separately for each mode. Would it be feasable to have only one panel / scroll area for Merge mode? Than all the synchronisation and aritifical top/bottom offset wouldn't be necessary.
+
+---
+
+Okay. Here's the plan:
+Build a new MergeModeThumbnailPanel in a new file and render it next to the existing one, so I can compare visually. The new panel should look and behave pretty much like the combination of the existing 2 panels:
+- one scroll area containing both columns
+- column containing the second page should be offset by halve a page height
+- right vertical border of the panel should allow to resize the whole panel; both columns adapt there width simultaniously
+- numbering of pages should remain as is: the numbers should match the pages as they appear in the output PDF
+- top row with labels, buttons and filenames as is.
