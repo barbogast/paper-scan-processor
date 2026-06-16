@@ -21,6 +21,7 @@ interface Props {
   firstPageIn: FirstPageIn
   totalWidth: number
   onWidthChange: (w: number) => void
+  colWidth: number
 }
 
 function makePageNumberLabel(isFirst: boolean, countOther: number) {
@@ -34,11 +35,10 @@ function makePageNumberLabel(isFirst: boolean, countOther: number) {
 export default function MergeModeThumbnailPanel({
   pathA, countA, pathB, countB,
   selectedPage, onSelectPage,
-  firstPageIn, totalWidth, onWidthChange,
+  firstPageIn, totalWidth, onWidthChange, colWidth
 }: Props) {
   const selectedPageA = selectedPage.file === 'a' ? selectedPage.page : null
   const selectedPageB = selectedPage.file === 'b' ? selectedPage.page : null
-  const colWidth = Math.floor(totalWidth / 2)
   const thumbWidth = colWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
   const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING

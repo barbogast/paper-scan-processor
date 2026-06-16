@@ -19,7 +19,8 @@ export default function MergeMode() {
   const [merging, setMerging] = useState(false)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
 
-  const colWidth = Math.floor(totalWidth / 2)
+  // Subtract 22px to account for scrollbar + gap
+  const colWidth = Math.floor((totalWidth - 22) / 2)
 
   const handleChoose = async (file: FirstPageIn) => {
     const p = await OpenPDF()
@@ -62,7 +63,8 @@ export default function MergeMode() {
         }}
       >
         <FilePickerColumn label="File A" path={pathA} width={colWidth} onChoose={() => handleChoose('a')} />
-        <FilePickerColumn label="File B" path={pathB} width={colWidth} onChoose={() => handleChoose('b')} />
+        {/* Add 26 px to account for scrollbar + gap */}
+        <FilePickerColumn label="File B" path={pathB} width={colWidth + 26} onChoose={() => handleChoose('b')} />
         <Group gap={8} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
           <Text size="sm" c="dimmed">First page in</Text>
           <SegmentedControl
@@ -91,6 +93,7 @@ export default function MergeMode() {
           firstPageIn={firstPageIn}
           totalWidth={totalWidth}
           onWidthChange={setTotalWidth}
+          colWidth={colWidth}
         />
         {selectedPath && (
           <DetailPanel

@@ -47,6 +47,7 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, onNavigate }:
         outline: 'none',
         position: 'relative',
         background: 'var(--mantine-color-gray-1)',
+        padding: 8,
       }}
     >
       {isLoading(pageNum) && (
