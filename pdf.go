@@ -12,49 +12,53 @@ import (
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
-// mergePDFs interleaves pages from frontPath and backPath into outPath.
-// If reverseBack is true the back pages are reversed before interleaving,
+// mergePDFs interleaves pages from pathA and pathB into outPath.
+// If firstPageInA is true, file A contributes the odd-numbered output pages (1, 3, 5, …);
+// otherwise file B does. If reverseB is true, file B's pages are reversed before interleaving,
 // which is the typical case when the paper stack was flipped between scans.
 // If the page counts differ, the extra pages from the longer file are
 // appended in order after the interleaved section.
-func mergePDFs(frontPath, backPath, outPath string, reverseBack bool, skipFront, skipBack []int) error {
+func mergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int) error {
 	tmpDir, err := os.MkdirTemp("", "psp-merge-*")
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(tmpDir)
 
-	frontDir := filepath.Join(tmpDir, "front")
-	backDir := filepath.Join(tmpDir, "back")
-	for _, d := range []string{frontDir, backDir} {
+	dirA := filepath.Join(tmpDir, "a")
+	dirB := filepath.Join(tmpDir, "b")
+	for _, d := range []string{dirA, dirB} {
 		if err := os.MkdirAll(d, 0o755); err != nil {
 			return err
 		}
 	}
 
-	if err := api.SplitFile(frontPath, frontDir, 1, nil); err != nil {
-		return fmt.Errorf("splitting front PDF: %w", err)
+	if err := api.SplitFile(pathA, dirA, 1, nil); err != nil {
+		return fmt.Errorf("splitting file A: %w", err)
 	}
-	if err := api.SplitFile(backPath, backDir, 1, nil); err != nil {
-		return fmt.Errorf("splitting back PDF: %w", err)
+	if err := api.SplitFile(pathB, dirB, 1, nil); err != nil {
+		return fmt.Errorf("splitting file B: %w", err)
 	}
 
-	frontPages, err := sortedPDFsInDir(frontDir)
+	pagesA, err := sortedPDFsInDir(dirA)
 	if err != nil {
-		return fmt.Errorf("listing front pages: %w", err)
+		return fmt.Errorf("listing file A pages: %w", err)
 	}
-	backPages, err := sortedPDFsInDir(backDir)
+	pagesB, err := sortedPDFsInDir(dirB)
 	if err != nil {
-		return fmt.Errorf("listing back pages: %w", err)
+		return fmt.Errorf("listing file B pages: %w", err)
 	}
 
-	frontPages = filterSkipped(frontPages, skipFront)
-	backPages = filterSkipped(backPages, skipBack)
-	if reverseBack {
-		slices.Reverse(backPages)
+	pagesA = filterSkipped(pagesA, skipA)
+	pagesB = filterSkipped(pagesB, skipB)
+	if reverseB {
+		slices.Reverse(pagesB)
 	}
 
-	return api.MergeCreateFile(interleave(frontPages, backPages), outPath, false, nil)
+	if firstPageInA {
+		return api.MergeCreateFile(interleave(pagesA, pagesB), outPath, false, nil)
+	}
+	return api.MergeCreateFile(interleave(pagesB, pagesA), outPath, false, nil)
 }
 
 func filterSkipped(pages []string, skip []int) []string {

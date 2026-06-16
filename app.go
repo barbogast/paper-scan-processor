@@ -99,7 +99,7 @@ func (a *App) SavePDF() (string, error) {
 	return path, nil
 }
 
-// MergePDFs interleaves pages from frontPath and backPath and writes the result to outPath.
-func (a *App) MergePDFs(frontPath, backPath, outPath string, reverseBack bool, skipFront, skipBack []int) error {
-	return mergePDFs(frontPath, backPath, outPath, reverseBack, skipFront, skipBack)
+// MergePDFs interleaves pages from pathA and pathB and writes the result to outPath.
+func (a *App) MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int) error {
+	return mergePDFs(pathA, pathB, outPath, firstPageInA, reverseB, skipA, skipB)
 }

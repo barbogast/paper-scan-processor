@@ -41,11 +41,7 @@ export default function MergeMode() {
     if (!outPath) return
     setMerging(true)
     try {
-      const effectiveFirst = firstPageIn === 'a' ? pathA : pathB
-      const effectiveSecond = firstPageIn === 'a' ? pathB : pathA
-      const skipFront = [...(firstPageIn === 'a' ? skippedA : skippedB)]
-      const skipBack = [...(firstPageIn === 'a' ? skippedB : skippedA)]
-      await MergePDFs(effectiveFirst, effectiveSecond, outPath, reverseB, skipFront, skipBack)
+      await MergePDFs(pathA, pathB, outPath, firstPageIn === 'a', reverseB, [...skippedA], [...skippedB])
       notifications.show({ message: `Saved to ${outPath}`, color: 'green' })
     } catch (e) {
       notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })

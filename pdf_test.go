@@ -155,14 +155,14 @@ func TestInterleaveBothEmpty(t *testing.T) {
 
 func TestMergePDFs(t *testing.T) {
 	tmp := t.TempDir()
-	front := filepath.Join(tmp, "front.pdf")
-	back := filepath.Join(tmp, "back.pdf")
+	fileA := filepath.Join(tmp, "a.pdf")
+	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, front, []string{"F1", "F2", "F3"})
-	writePDF(t, back, []string{"B1", "B2", "B3"})
+	writePDF(t, fileA, []string{"A1", "A2", "A3"})
+	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(front, back, out, false, nil, nil); err != nil {
+	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -176,19 +176,39 @@ func TestMergePDFs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"F1", "B1", "F2", "B2", "F3", "B3"})
+	assertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
 }
 
-func TestMergePDFsReverseBack(t *testing.T) {
+func TestMergePDFsFirstPageInB(t *testing.T) {
 	tmp := t.TempDir()
-	front := filepath.Join(tmp, "front.pdf")
-	back := filepath.Join(tmp, "back.pdf")
+	fileA := filepath.Join(tmp, "a.pdf")
+	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, front, []string{"F1", "F2", "F3"})
-	writePDF(t, back, []string{"B1", "B2", "B3"})
+	writePDF(t, fileA, []string{"A1", "A2", "A3"})
+	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(front, back, out, true, nil, nil); err != nil {
+	if err := mergePDFs(fileA, fileB, out, false, false, nil, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertOrder(t, data, []string{"B1", "A1", "B2", "A2", "B3", "A3"})
+}
+
+func TestMergePDFsReverseB(t *testing.T) {
+	tmp := t.TempDir()
+	fileA := filepath.Join(tmp, "a.pdf")
+	fileB := filepath.Join(tmp, "b.pdf")
+	out := filepath.Join(tmp, "merged.pdf")
+
+	writePDF(t, fileA, []string{"A1", "A2", "A3"})
+	writePDF(t, fileB, []string{"B1", "B2", "B3"})
+
+	if err := mergePDFs(fileA, fileB, out, true, true, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -198,29 +218,28 @@ func TestMergePDFsReverseBack(t *testing.T) {
 		t.Errorf("got %d pages, want 6", count)
 	}
 
-	// With reverseBack the backs are reversed: B3, B2, B1
-	// so output order is F1,B3, F2,B2, F3,B1
+	// reverseB reverses file B: B3, B2, B1 → output: A1,B3, A2,B2, A3,B1
 	data, err := os.ReadFile(out)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"F1", "B3", "F2", "B2", "F3", "B1"})
+	assertOrder(t, data, []string{"A1", "B3", "A2", "B2", "A3", "B1"})
 }
 
 func TestMergePDFsUnequalCounts(t *testing.T) {
 	tmp := t.TempDir()
-	front := filepath.Join(tmp, "front.pdf")
-	back := filepath.Join(tmp, "back.pdf")
+	fileA := filepath.Join(tmp, "a.pdf")
+	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, front, []string{"F1", "F2", "F3", "F4"})
-	writePDF(t, back, []string{"B1", "B2", "B3"})
+	writePDF(t, fileA, []string{"A1", "A2", "A3", "A4"})
+	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(front, back, out, false, nil, nil); err != nil {
+	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
-	// 3 interleaved pairs + 1 extra front page = 7
+	// 3 interleaved pairs + 1 extra A page = 7
 	if count, err := pdfPageCount(out); err != nil {
 		t.Fatal(err)
 	} else if count != 7 {
@@ -231,21 +250,20 @@ func TestMergePDFsUnequalCounts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"F1", "B1", "F2", "B2", "F3", "B3", "F4"})
+	assertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3", "A4"})
 }
 
 func TestMergePDFsSkip(t *testing.T) {
 	tmp := t.TempDir()
-	front := filepath.Join(tmp, "front.pdf")
-	back := filepath.Join(tmp, "back.pdf")
+	fileA := filepath.Join(tmp, "a.pdf")
+	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, front, []string{"F1", "F2", "F3"})
-	writePDF(t, back, []string{"B1", "B2", "B3"})
+	writePDF(t, fileA, []string{"A1", "A2", "A3"})
+	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	// Skip front page 2 and back page 1 → front=[F1,F3], back=[B2,B3]
-	// interleaved: F1,B2, F3,B3
-	if err := mergePDFs(front, back, out, false, []int{2}, []int{1}); err != nil {
+	// Skip A page 2 and B page 1 → A=[A1,A3], B=[B2,B3] → interleaved: A1,B2, A3,B3
+	if err := mergePDFs(fileA, fileB, out, true, false, []int{2}, []int{1}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -259,9 +277,9 @@ func TestMergePDFsSkip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"F1", "B2", "F3", "B3"})
-	if bytes.Contains(data, []byte("F2")) {
-		t.Error("skipped page F2 found in output")
+	assertOrder(t, data, []string{"A1", "B2", "A3", "B3"})
+	if bytes.Contains(data, []byte("A2")) {
+		t.Error("skipped page A2 found in output")
 	}
 	if bytes.Contains(data, []byte("B1")) {
 		t.Error("skipped page B1 found in output")
