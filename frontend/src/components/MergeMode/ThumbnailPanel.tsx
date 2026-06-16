@@ -8,7 +8,7 @@ const MIN_TOTAL_WIDTH = 240
 const MAX_TOTAL_WIDTH = 960
 export const DEFAULT_TOTAL_WIDTH = DEFAULT_WIDTH * 2
 
-type FirstPageIn = 'a' | 'b'
+export type FirstPageIn = 'a' | 'b'
 export type SelectedPage = { file: FirstPageIn, page: number }
 
 interface Props {

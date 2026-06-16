@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Box, Button, Group, SegmentedControl, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../../wailsjs/go/main/App'
-import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, SelectedPage } from './ThumbnailPanel'
-
-type FirstPageIn = 'a' | 'b'
+import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
