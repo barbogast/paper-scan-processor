@@ -1,0 +1,13 @@
+Move calling usePageLoader() into ThumbColumn. Handle invalidation by passing an onResize prop into ThumbColumn
+
+---
+
+Make onResize a simple callback
+
+---
+
+revert the current changes
+
+---
+
+commit
