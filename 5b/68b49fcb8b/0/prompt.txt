@@ -1,0 +1,1 @@
+Let's move files for Merge mode into a separate folder
