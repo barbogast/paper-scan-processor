@@ -1,0 +1,1 @@
+Could you also move the useVirtualizer() call and related code into ThumbColumn?
