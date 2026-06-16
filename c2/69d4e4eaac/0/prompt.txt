@@ -1,0 +1,1 @@
+Move the ColumnHeader up into the row that also contains the Merge button
