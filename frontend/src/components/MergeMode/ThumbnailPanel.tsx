@@ -3,6 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Loader } from '@mantine/core'
 import { IconX } from '@tabler/icons-react'
 import { PageLoader, usePageLoader } from '../../hooks/usePageLoader'
+import { PDFFile } from '../../hooks/usePDFFile'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 
 const MIN_TOTAL_WIDTH = 240
@@ -13,10 +14,8 @@ export type FirstPageIn = 'a' | 'b'
 export type SelectedPage = { file: FirstPageIn, page: number }
 
 interface Props {
-  pathA: string | null
-  countA: number
-  pathB: string | null
-  countB: number
+  fileA: PDFFile
+  fileB: PDFFile
   selectedPage: SelectedPage
   onSelectPage: (file: FirstPageIn, page: number) => void
   firstPageIn: FirstPageIn
@@ -24,9 +23,6 @@ interface Props {
   onWidthChange: (w: number) => void
   colWidth: number
   reverseB: boolean
-  skippedA: Set<number>
-  skippedB: Set<number>
-  onToggleSkip: (file: FirstPageIn, page: number) => void
 }
 
 function makePageNumberLabel(isFirst: boolean, countOther: number) {
@@ -38,9 +34,9 @@ function makePageNumberLabel(isFirst: boolean, countOther: number) {
 }
 
 export default function MergeModeThumbnailPanel({
-  pathA, countA, pathB, countB,
+  fileA, fileB,
   selectedPage, onSelectPage,
-  firstPageIn, totalWidth, onWidthChange, colWidth, reverseB, skippedA, skippedB, onToggleSkip
+  firstPageIn, totalWidth, onWidthChange, colWidth, reverseB,
 }: Props) {
   const selectedPageA = selectedPage.file === 'a' ? selectedPage.page : null
   const selectedPageB = selectedPage.file === 'b' ? selectedPage.page : null
@@ -48,21 +44,21 @@ export default function MergeModeThumbnailPanel({
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
   const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING
 
-  const bothLoaded = pathA !== null && pathB !== null
+  const bothLoaded = fileA.path !== null && fileB.path !== null
   const halfThumbHeight = Math.round(thumbHeight / 2)
   const offsetA = bothLoaded && firstPageIn === 'b' ? halfThumbHeight : 0
   const offsetB = bothLoaded && firstPageIn === 'a' ? halfThumbHeight : 0
 
-  const totalHeight = Math.max(offsetA + countA * itemHeight, offsetB + countB * itemHeight, 0)
+  const totalHeight = Math.max(offsetA + fileA.count * itemHeight, offsetB + fileB.count * itemHeight, 0)
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const loaderA = usePageLoader(pathA ?? '', thumbWidth)
-  const loaderB = usePageLoader(pathB ?? '', thumbWidth)
+  const loaderA = usePageLoader(fileA.path ?? '', thumbWidth)
+  const loaderB = usePageLoader(fileB.path ?? '', thumbWidth)
 
   const aIsFirst = firstPageIn === 'a'
-  const pageLabelA = bothLoaded ? makePageNumberLabel(aIsFirst, aIsFirst ? countB : countA) : undefined
-  const pageLabelB = bothLoaded ? makePageNumberLabel(!aIsFirst, aIsFirst ? countA : countB) : undefined
+  const pageLabelA = bothLoaded ? makePageNumberLabel(aIsFirst, aIsFirst ? fileB.count : fileA.count) : undefined
+  const pageLabelB = bothLoaded ? makePageNumberLabel(!aIsFirst, aIsFirst ? fileA.count : fileB.count) : undefined
 
   const startDrag = (e: React.MouseEvent) => {
     const startX = e.clientX
@@ -100,7 +96,7 @@ export default function MergeModeThumbnailPanel({
             <div style={{ position: 'absolute', left: 0, top: 0, width: colWidth, height: '100%' }}>
               <ThumbColumn
                 scrollRef={scrollRef}
-                count={countA}
+                file={fileA}
                 itemHeight={itemHeight}
                 paddingStart={offsetA}
                 thumbHeight={thumbHeight}
@@ -108,14 +104,12 @@ export default function MergeModeThumbnailPanel({
                 selectedPage={selectedPageA}
                 onSelectPage={(page) => onSelectPage('a', page)}
                 pageLabel={pageLabelA}
-                skipped={skippedA}
-                onToggleSkip={(page) => onToggleSkip('a', page)}
               />
             </div>
             <div style={{ position: 'absolute', left: colWidth, top: 0, width: colWidth, height: '100%' }}>
               <ThumbColumn
                 scrollRef={scrollRef}
-                count={countB}
+                file={fileB}
                 itemHeight={itemHeight}
                 paddingStart={offsetB}
                 thumbHeight={thumbHeight}
@@ -124,8 +118,6 @@ export default function MergeModeThumbnailPanel({
                 onSelectPage={(page) => onSelectPage('b', page)}
                 pageLabel={pageLabelB}
                 reverse={reverseB}
-                skipped={skippedB}
-                onToggleSkip={(page) => onToggleSkip('b', page)}
               />
             </div>
           </div>
@@ -149,7 +141,7 @@ export default function MergeModeThumbnailPanel({
 
 interface ThumbColumnProps {
   scrollRef: React.RefObject<HTMLDivElement | null>
-  count: number
+  file: PDFFile
   itemHeight: number
   paddingStart: number
   thumbHeight: number
@@ -158,16 +150,15 @@ interface ThumbColumnProps {
   onSelectPage: (page: number) => void
   pageLabel?: (index: number) => number
   reverse?: boolean
-  skipped?: Set<number>
-  onToggleSkip?: (page: number) => void
 }
 
 function ThumbColumn({
-  scrollRef, count, itemHeight, paddingStart,
+  scrollRef, file, itemHeight, paddingStart,
   thumbHeight, loader,
   selectedPage, onSelectPage, pageLabel,
-  reverse, skipped, onToggleSkip,
+  reverse,
 }: ThumbColumnProps) {
+  const { count, skipped, toggleSkip } = file
   const pageAt = (index: number) => reverse ? count - index : index + 1
   const [hoveredPage, setHoveredPage] = useState<number | null>(null)
   const virtualizer = useVirtualizer({
@@ -199,7 +190,7 @@ function ThumbColumn({
     const page = pageAt(item.index)
     const src = loader.getSrc(page)
     const isSelected = page === selectedPage
-    const isSkipped = skipped?.has(page) ?? false
+    const isSkipped = skipped.has(page)
     const showSkipBtn = hoveredPage === page || isSkipped
     return (
       <div
@@ -233,9 +224,9 @@ function ThumbColumn({
               </div>
             )}
           </div>
-          {showSkipBtn && onToggleSkip && (
+          {showSkipBtn && (
             <div
-              onClick={(e) => { e.stopPropagation(); onToggleSkip(page) }}
+              onClick={(e) => { e.stopPropagation(); toggleSkip(page) }}
               style={{
                 position: 'absolute', top: 3, right: 3,
                 width: 16, height: 16, borderRadius: 3,

@@ -2,24 +2,21 @@ import { useState } from 'react'
 import { Box, Button, Checkbox, Group, SegmentedControl, Text, Tooltip } from '@mantine/core'
 import { IconAlertTriangle } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
-import { MergePDFs, OpenPDF, PageCount, SavePDF } from '../../../wailsjs/go/main/App'
+import { MergePDFs, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
+import { usePDFFile } from '../../hooks/usePDFFile'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
 }
 
 export default function MergeMode() {
-  const [pathA, setPathA] = useState<string | null>(null)
-  const [countA, setCountA] = useState(0)
-  const [pathB, setPathB] = useState<string | null>(null)
-  const [countB, setCountB] = useState(0)
+  const fileA = usePDFFile()
+  const fileB = usePDFFile()
   const [selectedPage, setSelectedPage] = useState<SelectedPage>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [reverseB, setReverseB] = useState(true)
-  const [skippedA, setSkippedA] = useState<Set<number>>(() => new Set())
-  const [skippedB, setSkippedB] = useState<Set<number>>(() => new Set())
   const [merging, setMerging] = useState(false)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
 
@@ -27,21 +24,17 @@ export default function MergeMode() {
   const colWidth = Math.floor((totalWidth - 22) / 2)
 
   const handleChoose = async (file: FirstPageIn) => {
-    const p = await OpenPDF()
-    if (!p) return
-    const count = await PageCount(p)
-    if (file === 'a') { setPathA(p); setCountA(count); setSkippedA(new Set()) }
-    else { setPathB(p); setCountB(count); setSkippedB(new Set()) }
-    setSelectedPage({ file, page: 1 })
+    const loaded = await (file === 'a' ? fileA : fileB).load()
+    if (loaded) setSelectedPage({ file, page: 1 })
   }
 
   const handleMerge = async () => {
-    if (!pathA || !pathB) return
+    if (!fileA.path || !fileB.path) return
     const outPath = await SavePDF()
     if (!outPath) return
     setMerging(true)
     try {
-      await MergePDFs(pathA, pathB, outPath, firstPageIn === 'a', reverseB, [...skippedA], [...skippedB])
+      await MergePDFs(fileA.path, fileB.path, outPath, firstPageIn === 'a', reverseB, [...fileA.skipped], [...fileB.skipped])
       notifications.show({ message: `Saved to ${outPath}`, color: 'green' })
     } catch (e) {
       notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })
@@ -50,19 +43,11 @@ export default function MergeMode() {
     }
   }
 
-  const toggleSkip = (file: FirstPageIn, page: number) => {
-    const setter = file === 'a' ? setSkippedA : setSkippedB
-    setter(prev => {
-      const next = new Set(prev)
-      if (next.has(page)) next.delete(page); else next.add(page)
-      return next
-    })
-  }
-
-  const bothLoaded = pathA !== null && pathB !== null
-  const unequalCounts = bothLoaded && countA !== countB
-  const selectedPath = selectedPage.file === 'a' ? pathA : pathB
-  const selectedCount = selectedPage.file === 'a' ? countA : countB
+  const bothLoaded = fileA.path !== null && fileB.path !== null
+  const unequalCounts = bothLoaded && fileA.count !== fileB.count
+  const selectedFile = selectedPage.file === 'a' ? fileA : fileB
+  const selectedPath = selectedFile.path
+  const selectedCount = selectedFile.count
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -74,13 +59,13 @@ export default function MergeMode() {
           alignItems: 'stretch',
         }}
       >
-        <FilePickerColumn label="File A" path={pathA} width={colWidth} onChoose={() => handleChoose('a')} />
+        <FilePickerColumn label="File A" path={fileA.path} width={colWidth} onChoose={() => handleChoose('a')} />
         {/* Add 26 px to account for scrollbar + gap */}
-        <FilePickerColumn label="File B" path={pathB} width={colWidth + 26} onChoose={() => handleChoose('b')} />
+        <FilePickerColumn label="File B" path={fileB.path} width={colWidth + 26} onChoose={() => handleChoose('b')} />
         <Group gap={8} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
           {unequalCounts && (
             <Tooltip
-              label={`File A has ${countA} page${countA !== 1 ? 's' : ''}, File B has ${countB} page${countB !== 1 ? 's' : ''}. The extra ${Math.abs(countA - countB)} page${Math.abs(countA - countB) !== 1 ? 's' : ''} will be appended at the end.`}
+              label={`File A has ${fileA.count} page${fileA.count !== 1 ? 's' : ''}, File B has ${fileB.count} page${fileB.count !== 1 ? 's' : ''}. The extra ${Math.abs(fileA.count - fileB.count)} page${Math.abs(fileA.count - fileB.count) !== 1 ? 's' : ''} will be appended at the end.`}
               multiline
               w={280}
             >
@@ -111,10 +96,8 @@ export default function MergeMode() {
 
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
         <MergeModeThumbnailPanel
-          pathA={pathA}
-          countA={countA}
-          pathB={pathB}
-          countB={countB}
+          fileA={fileA}
+          fileB={fileB}
           selectedPage={selectedPage}
           onSelectPage={(file, page) => setSelectedPage({ file, page })}
           firstPageIn={firstPageIn}
@@ -122,9 +105,6 @@ export default function MergeMode() {
           onWidthChange={setTotalWidth}
           colWidth={colWidth}
           reverseB={reverseB}
-          skippedA={skippedA}
-          skippedB={skippedB}
-          onToggleSkip={toggleSkip}
         />
         {selectedPath && (
           <DetailPanel
@@ -132,7 +112,7 @@ export default function MergeMode() {
             pageNum={selectedPage.page}
             pageCount={selectedCount}
             onNavigate={(page) => setSelectedPage({ file: selectedPage.file, page })}
-            onToggleSkip={() => toggleSkip(selectedPage.file, selectedPage.page)}
+            onToggleSkip={() => selectedFile.toggleSkip(selectedPage.page)}
           />
         )}
       </Box>
