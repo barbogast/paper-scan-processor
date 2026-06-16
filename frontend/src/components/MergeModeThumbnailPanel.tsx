@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Button, Group, Loader, Text } from '@mantine/core'
-import { usePageLoader } from '../hooks/usePageLoader'
+import { PageLoader, usePageLoader } from '../hooks/usePageLoader'
 import { ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT, DRAG_HANDLE_WIDTH, DEFAULT_WIDTH } from './ThumbnailPanel'
 
 const MIN_TOTAL_WIDTH = 240
@@ -56,8 +56,8 @@ export default function MergeModeThumbnailPanel({
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const { getSrc: getSrcA, isLoading: isLoadingA, load: loadA, invalidate: invalidateA } = usePageLoader(pathA ?? '', thumbWidth)
-  const { getSrc: getSrcB, isLoading: isLoadingB, load: loadB, invalidate: invalidateB } = usePageLoader(pathB ?? '', thumbWidth)
+  const loaderA = usePageLoader(pathA ?? '', thumbWidth)
+  const loaderB = usePageLoader(pathB ?? '', thumbWidth)
 
   const aIsFirst = firstPageIn === 'a'
   const pageLabelA = bothLoaded ? makePageNumberLabel(aIsFirst, aIsFirst ? countB : countA) : undefined
@@ -71,8 +71,8 @@ export default function MergeModeThumbnailPanel({
     const onMove = (ev: MouseEvent) => setTotalWidth(clamp(startWidth + ev.clientX - startX))
     const onUp = (ev: MouseEvent) => {
       setTotalWidth(clamp(startWidth + ev.clientX - startX))
-      invalidateA()
-      invalidateB()
+      loaderA.invalidate()
+      loaderB.invalidate()
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
@@ -102,36 +102,32 @@ export default function MergeModeThumbnailPanel({
           }}
         >
           <div style={{ height: totalHeight, position: 'relative' }}>
-            <ThumbColumn
-              scrollRef={scrollRef}
-              count={countA}
-              itemHeight={itemHeight}
-              paddingStart={offsetA}
-              left={0}
-              colWidth={colWidth}
-              thumbHeight={thumbHeight}
-              getSrc={getSrcA}
-              isLoading={isLoadingA}
-              load={loadA}
-              selectedPage={selectedPageA}
-              onSelectPage={onSelectPageA}
-              pageLabel={pageLabelA}
-            />
-            <ThumbColumn
-              scrollRef={scrollRef}
-              count={countB}
-              itemHeight={itemHeight}
-              paddingStart={offsetB}
-              left={colWidth}
-              colWidth={colWidth}
-              thumbHeight={thumbHeight}
-              getSrc={getSrcB}
-              isLoading={isLoadingB}
-              load={loadB}
-              selectedPage={selectedPageB}
-              onSelectPage={onSelectPageB}
-              pageLabel={pageLabelB}
-            />
+            <div style={{ position: 'absolute', left: 0, top: 0, width: colWidth, height: '100%' }}>
+              <ThumbColumn
+                scrollRef={scrollRef}
+                count={countA}
+                itemHeight={itemHeight}
+                paddingStart={offsetA}
+                thumbHeight={thumbHeight}
+                loader={loaderA}
+                selectedPage={selectedPageA}
+                onSelectPage={onSelectPageA}
+                pageLabel={pageLabelA}
+              />
+            </div>
+            <div style={{ position: 'absolute', left: colWidth, top: 0, width: colWidth, height: '100%' }}>
+              <ThumbColumn
+                scrollRef={scrollRef}
+                count={countB}
+                itemHeight={itemHeight}
+                paddingStart={offsetB}
+                thumbHeight={thumbHeight}
+                loader={loaderB}
+                selectedPage={selectedPageB}
+                onSelectPage={onSelectPageB}
+                pageLabel={pageLabelB}
+              />
+            </div>
           </div>
         </div>
       </Box>
@@ -156,12 +152,8 @@ interface ThumbColumnProps {
   count: number
   itemHeight: number
   paddingStart: number
-  left: number
-  colWidth: number
   thumbHeight: number
-  getSrc: (page: number) => string | undefined
-  isLoading: (page: number) => boolean
-  load: (page: number) => void
+  loader: PageLoader
   selectedPage: number
   onSelectPage: (page: number) => void
   pageLabel?: (index: number) => number
@@ -169,8 +161,7 @@ interface ThumbColumnProps {
 
 function ThumbColumn({
   scrollRef, count, itemHeight, paddingStart,
-  left, colWidth, thumbHeight,
-  getSrc, isLoading, load,
+  thumbHeight, loader,
   selectedPage, onSelectPage, pageLabel,
 }: ThumbColumnProps) {
   const virtualizer = useVirtualizer({
@@ -187,7 +178,7 @@ function ThumbColumn({
   }, [itemHeight])
 
   useEffect(() => {
-    for (const item of virtualizer.getVirtualItems()) load(item.index + 1)
+    for (const item of virtualizer.getVirtualItems()) loader.load(item.index + 1)
   })
 
   useEffect(() => {
@@ -195,51 +186,48 @@ function ThumbColumn({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPage])
 
-  return (
-    <div style={{ position: 'absolute', left, top: 0, width: colWidth, height: '100%' }}>
-      {virtualizer.getVirtualItems().map(item => {
-        const page = item.index + 1
-        const src = getSrc(page)
-        const isSelected = page === selectedPage
-        return (
-          <div
-            key={item.key}
-            onClick={() => onSelectPage(page)}
-            style={{
-              position: 'absolute',
-              top: item.start,
-              left: 0,
-              width: '100%',
-              height: item.size,
-              padding: ITEM_PADDING,
-              paddingBottom: 0,
-              boxSizing: 'border-box',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{
-              border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
-              borderRadius: 4,
-              overflow: 'hidden',
-              background: 'var(--mantine-color-gray-1)',
-            }}>
-              {src ? (
-                <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block' }} draggable={false} />
-              ) : (
-                <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {isLoading(page) && <Loader size="xs" />}
-                </div>
-              )}
+  return virtualizer.getVirtualItems().map(item => {
+    const page = item.index + 1
+    const src = loader.getSrc(page)
+    const isSelected = page === selectedPage
+    return (
+      <div
+        key={item.key}
+        onClick={() => onSelectPage(page)}
+        style={{
+          position: 'absolute',
+          top: item.start,
+          left: 0,
+          width: '100%',
+          height: item.size,
+          padding: ITEM_PADDING,
+          paddingBottom: 0,
+          boxSizing: 'border-box',
+          cursor: 'pointer',
+        }}
+      >
+        <div style={{
+          border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
+          borderRadius: 4,
+          overflow: 'hidden',
+          background: 'var(--mantine-color-gray-1)',
+        }}>
+          {src ? (
+            <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block' }} draggable={false} />
+          ) : (
+            <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {loader.isLoading(page) && <Loader size="xs" />}
             </div>
-            <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--mantine-color-gray-7)', height: LABEL_HEIGHT, lineHeight: `${LABEL_HEIGHT}px` }}>
-              {pageLabel ? pageLabel(item.index) : page}
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
+          )}
+        </div>
+        <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--mantine-color-gray-7)', height: LABEL_HEIGHT, lineHeight: `${LABEL_HEIGHT}px` }}>
+          {pageLabel ? pageLabel(item.index) : page}
+        </div>
+      </div>
+    )
+  })
 }
+    
 
 function ColumnHeader({
   label, path, width, onChoose, borderRight,

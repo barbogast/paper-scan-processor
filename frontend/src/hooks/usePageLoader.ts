@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { RenderPage } from '../../wailsjs/go/main/App'
 
-interface PageLoader {
+export interface PageLoader {
   getSrc: (page: number) => string | undefined
   isLoading: (page: number) => boolean
   isFailed: (page: number) => boolean
