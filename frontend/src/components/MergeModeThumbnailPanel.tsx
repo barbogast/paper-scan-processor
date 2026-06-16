@@ -110,7 +110,6 @@ export default function MergeModeThumbnailPanel({
               left={0}
               colWidth={colWidth}
               thumbHeight={thumbHeight}
-              active={pathA !== null}
               getSrc={getSrcA}
               isLoading={isLoadingA}
               load={loadA}
@@ -126,7 +125,6 @@ export default function MergeModeThumbnailPanel({
               left={colWidth}
               colWidth={colWidth}
               thumbHeight={thumbHeight}
-              active={pathB !== null}
               getSrc={getSrcB}
               isLoading={isLoadingB}
               load={loadB}
@@ -161,7 +159,6 @@ interface ThumbColumnProps {
   left: number
   colWidth: number
   thumbHeight: number
-  active: boolean
   getSrc: (page: number) => string | undefined
   isLoading: (page: number) => boolean
   load: (page: number) => void
@@ -173,7 +170,7 @@ interface ThumbColumnProps {
 function ThumbColumn({
   scrollRef, count, itemHeight, paddingStart,
   left, colWidth, thumbHeight,
-  active, getSrc, isLoading, load,
+  getSrc, isLoading, load,
   selectedPage, onSelectPage, pageLabel,
 }: ThumbColumnProps) {
   const virtualizer = useVirtualizer({
@@ -190,7 +187,6 @@ function ThumbColumn({
   }, [itemHeight])
 
   useEffect(() => {
-    if (!active) return
     for (const item of virtualizer.getVirtualItems()) load(item.index + 1)
   })
 
@@ -231,7 +227,7 @@ function ThumbColumn({
                 <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block' }} draggable={false} />
               ) : (
                 <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {active && isLoading(page) && <Loader size="xs" />}
+                  {isLoading(page) && <Loader size="xs" />}
                 </div>
               )}
             </div>
