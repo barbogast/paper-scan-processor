@@ -41,7 +41,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
-  const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + ITEM_GAP
+  const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
