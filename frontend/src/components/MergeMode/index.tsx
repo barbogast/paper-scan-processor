@@ -20,22 +20,13 @@ export default function MergeMode() {
 
   const colWidth = Math.floor(totalWidth / 2)
 
-  const handleChooseA = async () => {
+  const handleChoose = async (file: FirstPageIn) => {
     const p = await OpenPDF()
     if (!p) return
     const count = await PageCount(p)
-    setPathA(p)
-    setCountA(count)
-    setSelectedPage({ file: 'a', page: 1 })
-  }
-
-  const handleChooseB = async () => {
-    const p = await OpenPDF()
-    if (!p) return
-    const count = await PageCount(p)
-    setPathB(p)
-    setCountB(count)
-    setSelectedPage({ file: 'b', page: 1 })
+    if (file === 'a') { setPathA(p); setCountA(count) }
+    else { setPathB(p); setCountB(count) }
+    setSelectedPage({ file, page: 1 })
   }
 
   const handleMerge = async () => {
@@ -67,8 +58,8 @@ export default function MergeMode() {
           alignItems: 'stretch',
         }}
       >
-        <FilePickerColumn label="File A" path={pathA} width={colWidth} onChoose={handleChooseA} />
-        <FilePickerColumn label="File B" path={pathB} width={colWidth} onChoose={handleChooseB} />
+        <FilePickerColumn label="File A" path={pathA} width={colWidth} onChoose={() => handleChoose('a')} />
+        <FilePickerColumn label="File B" path={pathB} width={colWidth} onChoose={() => handleChoose('b')} />
         <Group gap={8} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
           <Text size="sm" c="dimmed">First page in</Text>
           <SegmentedControl
