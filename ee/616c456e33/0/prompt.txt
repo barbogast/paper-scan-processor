@@ -1,0 +1,5 @@
+ThumbColumn has too many props. Can any props be avoided?
+
+---
+
+Let's do 2
