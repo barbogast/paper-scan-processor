@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { useVirtualizer, Virtualizer } from '@tanstack/react-virtual'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Button, Group, Loader, Text } from '@mantine/core'
 import { usePageLoader } from '../hooks/usePageLoader'
 import { ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT, DRAG_HANDLE_WIDTH, DEFAULT_WIDTH } from './ThumbnailPanel'
@@ -52,52 +52,12 @@ export default function MergeModeThumbnailPanel({
   const offsetA = bothLoaded && firstPageIn === 'b' ? halfThumbHeight : 0
   const offsetB = bothLoaded && firstPageIn === 'a' ? halfThumbHeight : 0
 
+  const totalHeight = Math.max(offsetA + countA * itemHeight, offsetB + countB * itemHeight, 0)
+
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  const virtualizerA = useVirtualizer({
-    count: countA,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => itemHeight,
-    overscan: 3,
-    paddingStart: offsetA,
-  })
-
-  const virtualizerB = useVirtualizer({
-    count: countB,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => itemHeight,
-    overscan: 3,
-    paddingStart: offsetB,
-  })
-
-  useEffect(() => {
-    virtualizerA.measure()
-    virtualizerB.measure()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemHeight])
-
-  const totalHeight = Math.max(virtualizerA.getTotalSize(), virtualizerB.getTotalSize(), 0)
 
   const { getSrc: getSrcA, isLoading: isLoadingA, load: loadA, invalidate: invalidateA } = usePageLoader(pathA ?? '', thumbWidth)
   const { getSrc: getSrcB, isLoading: isLoadingB, load: loadB, invalidate: invalidateB } = usePageLoader(pathB ?? '', thumbWidth)
-
-  useEffect(() => {
-    if (!pathA) return
-    for (const item of virtualizerA.getVirtualItems()) loadA(item.index + 1)
-  })
-  useEffect(() => {
-    if (!pathB) return
-    for (const item of virtualizerB.getVirtualItems()) loadB(item.index + 1)
-  })
-
-  useEffect(() => {
-    if (countA > 0) virtualizerA.scrollToIndex(selectedPageA - 1, { align: 'auto' })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPageA])
-  useEffect(() => {
-    if (countB > 0) virtualizerB.scrollToIndex(selectedPageB - 1, { align: 'auto' })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPageB])
 
   const aIsFirst = firstPageIn === 'a'
   const pageLabelA = bothLoaded ? makePageNumberLabel(aIsFirst, aIsFirst ? countB : countA) : undefined
@@ -143,25 +103,33 @@ export default function MergeModeThumbnailPanel({
         >
           <div style={{ height: totalHeight, position: 'relative' }}>
             <ThumbColumn
-              virtualizer={virtualizerA}
+              scrollRef={scrollRef}
+              count={countA}
+              itemHeight={itemHeight}
+              paddingStart={offsetA}
               left={0}
               colWidth={colWidth}
               thumbHeight={thumbHeight}
               active={pathA !== null}
               getSrc={getSrcA}
               isLoading={isLoadingA}
+              load={loadA}
               selectedPage={selectedPageA}
               onSelectPage={onSelectPageA}
               pageLabel={pageLabelA}
             />
             <ThumbColumn
-              virtualizer={virtualizerB}
+              scrollRef={scrollRef}
+              count={countB}
+              itemHeight={itemHeight}
+              paddingStart={offsetB}
               left={colWidth}
               colWidth={colWidth}
               thumbHeight={thumbHeight}
               active={pathB !== null}
               getSrc={getSrcB}
               isLoading={isLoadingB}
+              load={loadB}
               selectedPage={selectedPageB}
               onSelectPage={onSelectPageB}
               pageLabel={pageLabelB}
@@ -186,19 +154,51 @@ export default function MergeModeThumbnailPanel({
 }
 
 interface ThumbColumnProps {
-  virtualizer: Virtualizer<HTMLDivElement, Element>
+  scrollRef: React.RefObject<HTMLDivElement | null>
+  count: number
+  itemHeight: number
+  paddingStart: number
   left: number
   colWidth: number
   thumbHeight: number
   active: boolean
   getSrc: (page: number) => string | undefined
   isLoading: (page: number) => boolean
+  load: (page: number) => void
   selectedPage: number
   onSelectPage: (page: number) => void
   pageLabel?: (index: number) => number
 }
 
-function ThumbColumn({ virtualizer, left, colWidth, thumbHeight, active, getSrc, isLoading, selectedPage, onSelectPage, pageLabel }: ThumbColumnProps) {
+function ThumbColumn({
+  scrollRef, count, itemHeight, paddingStart,
+  left, colWidth, thumbHeight,
+  active, getSrc, isLoading, load,
+  selectedPage, onSelectPage, pageLabel,
+}: ThumbColumnProps) {
+  const virtualizer = useVirtualizer({
+    count,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => itemHeight,
+    overscan: 3,
+    paddingStart,
+  })
+
+  useEffect(() => {
+    virtualizer.measure()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemHeight])
+
+  useEffect(() => {
+    if (!active) return
+    for (const item of virtualizer.getVirtualItems()) load(item.index + 1)
+  })
+
+  useEffect(() => {
+    if (count > 0) virtualizer.scrollToIndex(selectedPage - 1, { align: 'auto' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPage])
+
   return (
     <div style={{ position: 'absolute', left, top: 0, width: colWidth, height: '100%' }}>
       {virtualizer.getVirtualItems().map(item => {
