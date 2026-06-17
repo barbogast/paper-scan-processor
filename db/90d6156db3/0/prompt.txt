@@ -1,0 +1,5 @@
+Right now, the image cache for DetailPanel gets invalidated when switching between pages from fileA and fileB.
+
+---
+
+Let's make the loader prop of DetailPanel mandatory and adjust SplitMode
