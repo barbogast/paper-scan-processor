@@ -30,7 +30,7 @@ export function usePageLoader(pdfPath: string, widthPx: number): PageLoader {
   const load = (page: number) => {
     if (cacheRef.current.has(page) || loadingRef.current.has(page) || failedRef.current.has(page)) return
     loadingRef.current.add(page)
-    RenderPage(pdfPath, page, widthPx)
+    RenderPage(pdfPath, page, Math.round(widthPx * window.devicePixelRatio))
       .then((b64: string) => {
         cacheRef.current.set(page, `data:image/png;base64,${b64}`)
         loadingRef.current.delete(page)
