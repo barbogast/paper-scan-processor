@@ -4,8 +4,9 @@ import { IconAlertTriangle } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { MergePDFs, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
-import DetailPanel from '../DetailPanel'
+import DetailPanel, { DETAIL_WIDTH } from '../DetailPanel'
 import { usePDFFile } from '../../hooks/usePDFFile'
+import { usePageLoader } from '../../hooks/usePageLoader'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
@@ -14,6 +15,8 @@ function basename(p: string) {
 export default function MergeMode() {
   const fileA = usePDFFile()
   const fileB = usePDFFile()
+  const detailLoaderA = usePageLoader(fileA.path ?? '', DETAIL_WIDTH)
+  const detailLoaderB = usePageLoader(fileB.path ?? '', DETAIL_WIDTH)
   const [selectedPage, setSelectedPage] = useState<SelectedPage>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [reverseB, setReverseB] = useState(true)
@@ -117,6 +120,7 @@ export default function MergeMode() {
             pageNum={selectedPage.page}
             pageCount={selectedCount}
             rotation={selectedFile.rotations.get(selectedPage.page) ?? 0}
+            loader={selectedPage.file === 'a' ? detailLoaderA : detailLoaderB}
             onNavigate={(page) => setSelectedPage({ file: selectedPage.file, page })}
             onToggleSkip={() => selectedFile.toggleSkip(selectedPage.page)}
             onRotate={() => selectedFile.rotate(selectedPage.page)}

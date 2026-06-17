@@ -1,22 +1,23 @@
 import { useRef, useEffect } from 'react'
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
 import { Center, Loader } from '@mantine/core'
-import { usePageLoader } from '../hooks/usePageLoader'
+import { PageLoader } from '../hooks/usePageLoader'
 
-const DETAIL_WIDTH = 1400
+export const DETAIL_WIDTH = 1400
 
 interface Props {
   pdfPath: string
   pageNum: number
   pageCount: number
   rotation?: number
+  loader: PageLoader
   onNavigate: (page: number) => void
   onToggleSkip?: () => void
   onRotate?: () => void
 }
 
-export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0, onNavigate, onToggleSkip, onRotate }: Props) {
-  const { getSrc, isLoading, load } = usePageLoader(pdfPath, DETAIL_WIDTH)
+export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0, loader, onNavigate, onToggleSkip, onRotate }: Props) {
+  const { getSrc, isLoading, load } = loader
   const transformRef = useRef<ReactZoomPanPinchRef>(null)
 
   useEffect(() => {
