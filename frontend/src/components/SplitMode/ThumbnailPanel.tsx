@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
+import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
 import { usePageLoader } from '../../hooks/usePageLoader'
@@ -73,14 +73,19 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
     scrollTo: (top) => { if (scrollRef.current) scrollRef.current.scrollTop = top },
   }))
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowLeft' && selectedPage > 1) {
-      e.preventDefault()
-      onSelectPage(selectedPage - 1)
-    } else if (e.key === 'ArrowRight' && selectedPage < pageCount) {
-      e.preventDefault()
-      onSelectPage(selectedPage + 1)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        if (selectedPage > 1) onSelectPage(selectedPage - 1)
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        if (selectedPage < pageCount) onSelectPage(selectedPage + 1)
+      }
     }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
   }, [selectedPage, pageCount, onSelectPage])
 
   const startDrag = (e: React.MouseEvent) => {
@@ -128,8 +133,6 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
         )}
         <div
           ref={scrollRef}
-          tabIndex={0}
-          onKeyDown={handleKeyDown}
           onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
           className={hideScrollbar ? 'hide-scrollbar' : undefined}
           style={{
@@ -137,7 +140,6 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
             minHeight: 0,
             overflowY: 'auto',
             overflowX: 'hidden',
-            outline: 'none',
             background: 'var(--mantine-color-gray-3)',
           }}
         >

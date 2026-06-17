@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect } from 'react'
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
 import { Center, Loader } from '@mantine/core'
 import { usePageLoader } from '../hooks/usePageLoader'
@@ -27,33 +27,35 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
     transformRef.current?.resetTransform()
   }, [pageNum, rotation])
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowLeft' && pageNum > 1) {
-      e.preventDefault()
-      onNavigate(pageNum - 1)
-    } else if (e.key === 'ArrowRight' && pageNum < pageCount) {
-      e.preventDefault()
-      onNavigate(pageNum + 1)
-    } else if ((e.key === 'Delete' || e.key === 'Backspace') && onToggleSkip) {
-      e.preventDefault()
-      onToggleSkip()
-    } else if (e.key === 'r' && onRotate) {
-      e.preventDefault()
-      onRotate()
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        if (pageNum > 1) onNavigate(pageNum - 1)
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        if (pageNum < pageCount) onNavigate(pageNum + 1)
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault()
+        onToggleSkip?.()
+      } else if (e.key === 'r') {
+        e.preventDefault()
+        onRotate?.()
+      }
     }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
   }, [pageNum, pageCount, onNavigate, onToggleSkip, onRotate])
 
   const src = getSrc(pageNum)
 
   return (
     <div
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
       style={{
         flex: 1,
         height: '100%',
         overflow: 'hidden',
-        outline: 'none',
         position: 'relative',
         background: 'var(--mantine-color-gray-1)',
         padding: 8,
