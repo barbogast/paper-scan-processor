@@ -1,0 +1,5 @@
+How would you go about handling page reordering in MergeMode. I'm concerned it would add too much complexity to implementation and UI
+
+---
+
+Let's skip reordering for now, I don't see the usecase. Update spec.md, ticking of step 6 and moving reordering to "out of scope / maybe"
