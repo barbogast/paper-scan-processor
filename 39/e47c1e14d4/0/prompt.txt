@@ -107,3 +107,7 @@ commit using a commit msg that describes the whole change, not just the latest p
 ---
 
 implement rotate for merge mode
+
+---
+
+yes
