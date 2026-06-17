@@ -1,0 +1,117 @@
+Add a margin around DetailPanle
+
+---
+
+In MergeMode: Add a 8px space between the right ThumbnailPanel and the scrollbar
+
+---
+
+Doesn't work. The space is too small, and now the right thumbnails are smaller than the left ones. they should have the same size
+
+---
+
+Re-read files changed in latest commit
+
+---
+
+Re-read files changed in latest commit. don't comment
+
+---
+
+Let's implement "reverse checkbox", according to spec.md
+
+---
+
+How come you implemented reverseFront? Doesn't make sense, and it's not in the spec
+
+---
+
+When the flag is enabled, it should display the second column of thumbnails reversed, like they will appear in the output file
+
+---
+
+commit
+
+---
+
+Impelement warning icon in toolbar with tooltip when page number differs between PDFs
+
+---
+
+Impelement warning icon in toolbar with tooltip when page number differs between PDFs
+
+---
+
+Impelement warning icon in toolbar with tooltip when page number differs between PDFs
+
+---
+
+commit
+
+---
+
+Implement skipping pages
+
+---
+
+Implement skipping pages
+
+---
+
+Implement skipping pages
+
+---
+
+make the x icon on the thumbnail look differently if the page is to be skipped
+
+---
+
+commit
+
+---
+
+Change the naming for the merged files in the backend to match the frontend: use fileA/fileB instead of front/back. Would you suggest to implicitely assume that fileA has the first page, or would you rather add a variable `firstPageIn` as it is done in the frontend?
+
+---
+
+go ahead
+
+---
+
+How about introducing a hook that encapsulates path, count and skipped and offers functions like init()? would that make the code shorter / better to understand?
+
+---
+
+yes
+
+---
+
+is it reasonable to pass both fileA and fileB objects into ThumbnailPanel and use them there?
+
+---
+
+Let's pass the object as is; I can live with ThumbnailPanel having access to load()
+
+---
+
+Also pass the object to ThumbColumn
+
+---
+
+commit
+
+---
+
+commit using a commit msg that describes the whole change, not just the latest part
+
+---
+
+implement rotate for merge mode
+
+---
+
+yes
+
+---
+
+Keyboard shortcuts don't seem to work at all, none of them. I get a bing sound if I press a key. Anything from with wails?
