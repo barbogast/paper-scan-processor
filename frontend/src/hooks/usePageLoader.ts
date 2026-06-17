@@ -5,11 +5,11 @@ export interface PageLoader {
   getSrc: (page: number) => string | undefined
   isLoading: (page: number) => boolean
   isFailed: (page: number) => boolean
-  load: (page: number) => void
+  load: (page: number, width: number) => void
   invalidate: () => void
 }
 
-export function usePageLoader(pdfPath: string, widthPx: number): PageLoader {
+export function usePageLoader(pdfPath: string): PageLoader {
   const cacheRef = useRef(new Map<number, string>())
   const loadingRef = useRef(new Set<number>())
   const failedRef = useRef(new Set<number>())
@@ -27,10 +27,10 @@ export function usePageLoader(pdfPath: string, widthPx: number): PageLoader {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfPath])
 
-  const load = (page: number) => {
+  const load = (page: number, width: number) => {
     if (cacheRef.current.has(page) || loadingRef.current.has(page) || failedRef.current.has(page)) return
     loadingRef.current.add(page)
-    RenderPage(pdfPath, page, Math.round(widthPx * window.devicePixelRatio))
+    RenderPage(pdfPath, page, Math.round(width * window.devicePixelRatio))
       .then((b64: string) => {
         cacheRef.current.set(page, `data:image/png;base64,${b64}`)
         loadingRef.current.delete(page)

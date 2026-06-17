@@ -57,10 +57,10 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
   }, [itemHeight])
 
   const virtualItems = virtualizer.getVirtualItems()
-  const { getSrc, isLoading, load, invalidate } = usePageLoader(pdfPath, thumbWidth)
+  const { getSrc, isLoading, load, invalidate } = usePageLoader(pdfPath)
 
   useEffect(() => {
-    for (const item of virtualItems) load(item.index + 1)
+    for (const item of virtualItems) load(item.index + 1, thumbWidth)
   })
 
   // Scroll selected page into view (e.g. after keyboard navigation)

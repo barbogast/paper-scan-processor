@@ -3,7 +3,7 @@ import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'reac
 import { Center, Loader } from '@mantine/core'
 import { PageLoader } from '../hooks/usePageLoader'
 
-export const DETAIL_WIDTH = 1400
+const DETAIL_WIDTH = 1400
 
 interface Props {
   pdfPath: string
@@ -21,7 +21,7 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
   const transformRef = useRef<ReactZoomPanPinchRef>(null)
 
   useEffect(() => {
-    load(pageNum)
+    load(pageNum, DETAIL_WIDTH)
   }, [pdfPath, pageNum])
 
   useEffect(() => {

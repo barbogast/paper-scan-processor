@@ -53,8 +53,8 @@ export default function MergeModeThumbnailPanel({
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const loaderA = usePageLoader(fileA.path ?? '', thumbWidth)
-  const loaderB = usePageLoader(fileB.path ?? '', thumbWidth)
+  const loaderA = usePageLoader(fileA.path ?? '')
+  const loaderB = usePageLoader(fileB.path ?? '')
 
   const aIsFirst = firstPageIn === 'a'
   const pageLabelA = bothLoaded ? makePageNumberLabel(aIsFirst, aIsFirst ? fileB.count : fileA.count) : undefined
@@ -99,6 +99,7 @@ export default function MergeModeThumbnailPanel({
                 file={fileA}
                 itemHeight={itemHeight}
                 paddingStart={offsetA}
+                thumbWidth={thumbWidth}
                 thumbHeight={thumbHeight}
                 loader={loaderA}
                 selectedPage={selectedPageA}
@@ -112,6 +113,7 @@ export default function MergeModeThumbnailPanel({
                 file={fileB}
                 itemHeight={itemHeight}
                 paddingStart={offsetB}
+                thumbWidth={thumbWidth}
                 thumbHeight={thumbHeight}
                 loader={loaderB}
                 selectedPage={selectedPageB}
@@ -144,6 +146,7 @@ interface ThumbColumnProps {
   file: PDFFile
   itemHeight: number
   paddingStart: number
+  thumbWidth: number
   thumbHeight: number
   loader: PageLoader
   selectedPage: number | null
@@ -154,7 +157,7 @@ interface ThumbColumnProps {
 
 function ThumbColumn({
   scrollRef, file, itemHeight, paddingStart,
-  thumbHeight, loader,
+  thumbWidth, thumbHeight, loader,
   selectedPage, onSelectPage, pageLabel,
   reverse,
 }: ThumbColumnProps) {
@@ -175,7 +178,7 @@ function ThumbColumn({
   }, [itemHeight])
 
   useEffect(() => {
-    for (const item of virtualizer.getVirtualItems()) loader.load(pageAt(item.index))
+    for (const item of virtualizer.getVirtualItems()) loader.load(pageAt(item.index), thumbWidth)
   })
 
   useEffect(() => {

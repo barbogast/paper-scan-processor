@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Box, Button } from '@mantine/core'
 import ThumbnailPanel from './ThumbnailPanel'
-import DetailPanel, { DETAIL_WIDTH } from '../DetailPanel'
+import DetailPanel from '../DetailPanel'
 import { usePageLoader } from '../../hooks/usePageLoader'
 import { OpenPDF, PageCount } from '../../../wailsjs/go/main/App'
 
@@ -9,7 +9,7 @@ export default function SplitMode() {
   const [pdfPath, setPdfPath] = useState<string | null>(null)
   const [pageCount, setPageCount] = useState(0)
   const [selectedPage, setSelectedPage] = useState(1)
-  const detailLoader = usePageLoader(pdfPath ?? '', DETAIL_WIDTH)
+  const detailLoader = usePageLoader(pdfPath ?? '')
 
   const handleOpen = async () => {
     const path = await OpenPDF()
