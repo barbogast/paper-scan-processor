@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Loader } from '@mantine/core'
-import { IconX } from '@tabler/icons-react'
+import { IconX, IconRotateClockwise } from '@tabler/icons-react'
 import { PageLoader, usePageLoader } from '../../hooks/usePageLoader'
 import { PDFFile } from '../../hooks/usePDFFile'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
@@ -158,7 +158,7 @@ function ThumbColumn({
   selectedPage, onSelectPage, pageLabel,
   reverse,
 }: ThumbColumnProps) {
-  const { count, skipped, rotations, toggleSkip } = file
+  const { count, skipped, rotations, toggleSkip, rotate } = file
   const pageAt = (index: number) => reverse ? count - index : index + 1
   const [hoveredPage, setHoveredPage] = useState<number | null>(null)
   const virtualizer = useVirtualizer({
@@ -193,6 +193,8 @@ function ThumbColumn({
     const isSkipped = skipped.has(page)
     const showSkipBtn = hoveredPage === page || isSkipped
     const rotation = rotations.get(page) ?? 0
+    const isRotated = rotation !== 0
+    const showRotateBtn = hoveredPage === page || isRotated
     const isOddRotation = rotation === 90 || rotation === 270
     const imgTransform = rotation ? `rotate(${rotation}deg)${isOddRotation ? ` scale(${210 / 297})` : ''}` : undefined
     return (
@@ -227,6 +229,20 @@ function ThumbColumn({
               </div>
             )}
           </div>
+          {showRotateBtn && (
+            <div
+              onClick={(e) => { e.stopPropagation(); rotate(page) }}
+              style={{
+                position: 'absolute', top: 3, left: 3,
+                width: 16, height: 16, borderRadius: 3,
+                background: isRotated ? 'var(--mantine-color-blue-6)' : 'rgba(0,0,0,0.45)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: 'white',
+              }}
+            >
+              <IconRotateClockwise size={10} stroke={3} />
+            </div>
+          )}
           {showSkipBtn && (
             <div
               onClick={(e) => { e.stopPropagation(); toggleSkip(page) }}
