@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
 // minimalPDF returns the bytes of a valid minimal PDF where each page has an
@@ -91,6 +93,20 @@ func labelPositions(data []byte, labels []string) []int {
 		pos[i] = bytes.Index(data, []byte(l))
 	}
 	return pos
+}
+
+// pdfPageRotation returns the rotation (in degrees) of the given 1-indexed page.
+func pdfPageRotation(t *testing.T, path string, pageNum int) int {
+	t.Helper()
+	ctx, err := api.ReadContextFile(path)
+	if err != nil {
+		t.Fatalf("reading context of %s: %v", path, err)
+	}
+	_, _, inhAttrs, err := ctx.XRefTable.PageDict(pageNum, false)
+	if err != nil {
+		t.Fatalf("reading page dict %d of %s: %v", pageNum, path, err)
+	}
+	return inhAttrs.Rotate
 }
 
 // assertOrder checks that the given labels appear in data in the given order.
@@ -283,6 +299,46 @@ func TestMergePDFsSkip(t *testing.T) {
 	}
 	if bytes.Contains(data, []byte("B1")) {
 		t.Error("skipped page B1 found in output")
+	}
+}
+
+func TestMergePDFsRotate(t *testing.T) {
+	tmp := t.TempDir()
+	fileA := filepath.Join(tmp, "a.pdf")
+	fileB := filepath.Join(tmp, "b.pdf")
+	out := filepath.Join(tmp, "merged.pdf")
+
+	writePDF(t, fileA, []string{"A1", "A2", "A3"})
+	writePDF(t, fileB, []string{"B1", "B2", "B3"})
+
+	// Rotate A page 2 by 90° and B page 1 by 180°
+	rotA := map[int]int{2: 90}
+	rotB := map[int]int{1: 180}
+
+	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil, rotA, rotB); err != nil {
+		t.Fatal(err)
+	}
+
+	if count, err := pdfPageCount(out); err != nil {
+		t.Fatal(err)
+	} else if count != 6 {
+		t.Errorf("got %d pages, want 6", count)
+	}
+
+	// Page order is still correct: A1,B1,A2,B2,A3,B3
+	data, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
+
+	// Verify rotation per output page via pdfcpu context API.
+	// Interleaved order: page1=A1(0°), page2=B1(180°), page3=A2(90°), page4=B2(0°), page5=A3(0°), page6=B3(0°)
+	wantRotations := []int{0, 180, 90, 0, 0, 0}
+	for i, want := range wantRotations {
+		if got := pdfPageRotation(t, out, i+1); got != want {
+			t.Errorf("output page %d: got rotation %d°, want %d°", i+1, got, want)
+		}
 	}
 }
 
