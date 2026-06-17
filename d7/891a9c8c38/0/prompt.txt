@@ -1,0 +1,9 @@
+Right now the width is passed to usePageLoader(), and therefore needs to be accessed by the parent component of DetailPanel (which is awkward). How about passing the width into the load() function that's returned by usePageLoader()?
+
+---
+
+why did you adjust the cache key and the signatures of getSrc, isLoader and isFailed?
+
+---
+
+yes
