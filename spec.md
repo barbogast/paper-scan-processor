@@ -200,7 +200,7 @@ TBD.
 - [x] **Step 3: A/B selector + visual offset** — "First page in" toggle (File A / File B); second strip offset down by half a thumbnail height
 - [x] **Step 4: Reverse checkbox + page-count warning** — "Reverse File B" checkbox wired into merge call; detect unequal counts and show info in toolbar
 - [x] **Step 5: Detail panel** — existing `DetailPanel` primitive on the right; selection in either strip updates it; `←` / `→` keyboard navigation
-- [ ] **Step 6: Page editing** — rotate, skip, reorder within the merge view, applied before the merge call
+- [x] **Step 6: Page editing** — rotate and skip within the merge view, applied before the merge call
 
 ### Split mode
 
@@ -228,3 +228,4 @@ TBD.
 
 - **Insert pages from another PDF**: allow the user to pull pages from a second PDF into the current document before splitting. Planned for v2.
 - **Scanning integration**: trigger a scan from within the app using OS or device APIs. Not currently planned but under consideration.
+- **Page reordering**: drag thumbnails to reorder pages before export or merge. No clear use case identified for the current workflow; omitted from v1.
