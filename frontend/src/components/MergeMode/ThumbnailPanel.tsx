@@ -158,7 +158,7 @@ function ThumbColumn({
   selectedPage, onSelectPage, pageLabel,
   reverse,
 }: ThumbColumnProps) {
-  const { count, skipped, toggleSkip } = file
+  const { count, skipped, rotations, toggleSkip } = file
   const pageAt = (index: number) => reverse ? count - index : index + 1
   const [hoveredPage, setHoveredPage] = useState<number | null>(null)
   const virtualizer = useVirtualizer({
@@ -192,6 +192,9 @@ function ThumbColumn({
     const isSelected = page === selectedPage
     const isSkipped = skipped.has(page)
     const showSkipBtn = hoveredPage === page || isSkipped
+    const rotation = rotations.get(page) ?? 0
+    const isOddRotation = rotation === 90 || rotation === 270
+    const imgTransform = rotation ? `rotate(${rotation}deg)${isOddRotation ? ` scale(${210 / 297})` : ''}` : undefined
     return (
       <div
         key={item.key}
@@ -217,7 +220,7 @@ function ThumbColumn({
         }}>
           <div style={{ overflow: 'hidden', borderRadius: 2, background: 'var(--mantine-color-gray-1)' }}>
             {src ? (
-              <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block', opacity: isSkipped ? 0.3 : 1 }} draggable={false} />
+              <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block', opacity: isSkipped ? 0.3 : 1, transform: imgTransform }} draggable={false} />
             ) : (
               <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {loader.isLoading(page) && <Loader size="xs" />}

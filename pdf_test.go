@@ -162,7 +162,7 @@ func TestMergePDFs(t *testing.T) {
 	writePDF(t, fileA, []string{"A1", "A2", "A3"})
 	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil); err != nil {
+	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -188,7 +188,7 @@ func TestMergePDFsFirstPageInB(t *testing.T) {
 	writePDF(t, fileA, []string{"A1", "A2", "A3"})
 	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(fileA, fileB, out, false, false, nil, nil); err != nil {
+	if err := mergePDFs(fileA, fileB, out, false, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -208,7 +208,7 @@ func TestMergePDFsReverseB(t *testing.T) {
 	writePDF(t, fileA, []string{"A1", "A2", "A3"})
 	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(fileA, fileB, out, true, true, nil, nil); err != nil {
+	if err := mergePDFs(fileA, fileB, out, true, true, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -235,7 +235,7 @@ func TestMergePDFsUnequalCounts(t *testing.T) {
 	writePDF(t, fileA, []string{"A1", "A2", "A3", "A4"})
 	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil); err != nil {
+	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -263,7 +263,7 @@ func TestMergePDFsSkip(t *testing.T) {
 	writePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	// Skip A page 2 and B page 1 → A=[A1,A3], B=[B2,B3] → interleaved: A1,B2, A3,B3
-	if err := mergePDFs(fileA, fileB, out, true, false, []int{2}, []int{1}); err != nil {
+	if err := mergePDFs(fileA, fileB, out, true, false, []int{2}, []int{1}, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 

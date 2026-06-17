@@ -18,7 +18,7 @@ import (
 // which is the typical case when the paper stack was flipped between scans.
 // If the page counts differ, the extra pages from the longer file are
 // appended in order after the interleaved section.
-func mergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int) error {
+func mergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) error {
 	tmpDir, err := os.MkdirTemp("", "psp-merge-*")
 	if err != nil {
 		return err
@@ -55,6 +55,13 @@ func mergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA,
 		slices.Reverse(pagesB)
 	}
 
+	if err := applyRotations(pagesA, rotationsA); err != nil {
+		return fmt.Errorf("rotating file A pages: %w", err)
+	}
+	if err := applyRotations(pagesB, rotationsB); err != nil {
+		return fmt.Errorf("rotating file B pages: %w", err)
+	}
+
 	if firstPageInA {
 		return api.MergeCreateFile(interleave(pagesA, pagesB), outPath, false, nil)
 	}
@@ -76,6 +83,27 @@ func filterSkipped(pages []string, skip []int) []string {
 		}
 	}
 	return out
+}
+
+// applyRotations rotates individual single-page PDF files in-place according to
+// the rotations map (1-indexed page number → clockwise degrees: 90, 180, 270).
+// The page number is derived from the pdfcpu split filename.
+func applyRotations(pages []string, rotations map[int]int) error {
+	for _, p := range pages {
+		origPage := pdfFromPage(filepath.Base(p))
+		rot, ok := rotations[origPage]
+		if !ok || rot == 0 {
+			continue
+		}
+		tmp := p + ".rot.pdf"
+		if err := api.RotateFile(p, tmp, rot, nil, nil); err != nil {
+			return fmt.Errorf("page %d: %w", origPage, err)
+		}
+		if err := os.Rename(tmp, p); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // splitPDF splits the PDF at inPath at the given page boundaries and writes

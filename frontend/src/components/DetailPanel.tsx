@@ -9,11 +9,13 @@ interface Props {
   pdfPath: string
   pageNum: number
   pageCount: number
+  rotation?: number
   onNavigate: (page: number) => void
   onToggleSkip?: () => void
+  onRotate?: () => void
 }
 
-export default function DetailPanel({ pdfPath, pageNum, pageCount, onNavigate, onToggleSkip }: Props) {
+export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0, onNavigate, onToggleSkip, onRotate }: Props) {
   const { getSrc, isLoading, load } = usePageLoader(pdfPath, DETAIL_WIDTH)
   const transformRef = useRef<ReactZoomPanPinchRef>(null)
 
@@ -23,7 +25,7 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, onNavigate, o
 
   useEffect(() => {
     transformRef.current?.resetTransform()
-  }, [pageNum])
+  }, [pageNum, rotation])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'ArrowLeft' && pageNum > 1) {
@@ -35,8 +37,11 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, onNavigate, o
     } else if ((e.key === 'Delete' || e.key === 'Backspace') && onToggleSkip) {
       e.preventDefault()
       onToggleSkip()
+    } else if (e.key === 'r' && onRotate) {
+      e.preventDefault()
+      onRotate()
     }
-  }, [pageNum, pageCount, onNavigate])
+  }, [pageNum, pageCount, onNavigate, onToggleSkip, onRotate])
 
   const src = getSrc(pageNum)
 
@@ -69,7 +74,7 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, onNavigate, o
               src={src}
               alt={`Page ${pageNum}`}
               draggable={false}
-              style={{ maxWidth: '100%', maxHeight: '100%', display: 'block', userSelect: 'none' }}
+              style={{ maxWidth: '100%', maxHeight: '100%', display: 'block', userSelect: 'none', transform: rotation ? `rotate(${rotation}deg)` : undefined }}
             />
           </TransformComponent>
         </TransformWrapper>

@@ -34,7 +34,12 @@ export default function MergeMode() {
     if (!outPath) return
     setMerging(true)
     try {
-      await MergePDFs(fileA.path, fileB.path, outPath, firstPageIn === 'a', reverseB, [...fileA.skipped], [...fileB.skipped])
+      await MergePDFs(
+        fileA.path, fileB.path, outPath,
+        firstPageIn === 'a', reverseB,
+        [...fileA.skipped], [...fileB.skipped],
+        Object.fromEntries(fileA.rotations), Object.fromEntries(fileB.rotations),
+      )
       notifications.show({ message: `Saved to ${outPath}`, color: 'green' })
     } catch (e) {
       notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })
@@ -111,8 +116,10 @@ export default function MergeMode() {
             pdfPath={selectedPath}
             pageNum={selectedPage.page}
             pageCount={selectedCount}
+            rotation={selectedFile.rotations.get(selectedPage.page) ?? 0}
             onNavigate={(page) => setSelectedPage({ file: selectedPage.file, page })}
             onToggleSkip={() => selectedFile.toggleSkip(selectedPage.page)}
+            onRotate={() => selectedFile.rotate(selectedPage.page)}
           />
         )}
       </Box>
