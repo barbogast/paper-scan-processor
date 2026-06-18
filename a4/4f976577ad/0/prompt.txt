@@ -43,3 +43,7 @@ Within the hook, rename firstPage to afterPage, onFocused to clear()
 ---
 
 Let's pass the whole `focus` object into OutputFileHeader. Also, add a comment to the focus hook explaining the usecase
+
+---
+
+commit
