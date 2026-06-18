@@ -1,0 +1,88 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "1946222ac040",
+  "session_id": "3cf2c068-686b-4b3b-976d-3aaee3c0d988",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-18T10:50:18.408386Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "spec.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-4-6",
+  "turn_id": "a04e6d33e6c6",
+  "token_usage": {
+    "input_tokens": 334,
+    "cache_creation_tokens": 322432,
+    "cache_read_tokens": 17998025,
+    "output_tokens": 129381,
+    "api_call_count": 236
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-claude-code-statusline-2026-06-18T10:32:33.215855Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "statusline"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "a5ef2f9d724b",
+      "timestamp": "2026-06-18T10:32:33.215855Z",
+      "native": {
+        "command": "/statusline"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/statusline",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 45
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-18T10:50:18.373203Z",
+    "agent_lines": 12,
+    "agent_removed": 11,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 12,
+    "total_lines_changed": 23,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 119,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 10
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 119,
+      "user_lines_removed": 0,
+      "agent_lines_added": 12,
+      "agent_lines_removed": 11,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 10
+      }
+    }
+  ]
+}
