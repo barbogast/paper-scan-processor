@@ -1,9 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Box, Button, Group } from '@mantine/core'
+import { Box, Button, Group, TextInput } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go/main/App'
+
+const DEFAULT_TEMPLATE = '{date} {name}'
+
+function applyTemplate(template: string): string {
+  const date = new Date().toISOString().split('T')[0]
+  return template.replace('{date}', date)
+  // {name} is left as-is for the user to fill in per file
+}
 
 interface Props {
   initialPath?: string | null
@@ -15,23 +23,27 @@ export default function SplitMode({ initialPath }: Props) {
   const [selectedPage, setSelectedPage] = useState(1)
   const [splitPoints, setSplitPoints] = useState<Set<number>>(new Set())
   const [fileNames, setFileNames] = useState<Map<number, string>>(new Map([[1, '']]))
+  const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
   const [exporting, setExporting] = useState(false)
 
   const splitPointsRef = useRef(splitPoints)
   splitPointsRef.current = splitPoints
+  // Ref so toggleSplitPoint (stable useCallback) can read the current template.
+  const templateRef = useRef(template)
+  templateRef.current = template
 
-  const resetForFile = (count: number, path: string) => {
+  const resetForFile = (count: number, path: string, tmpl: string) => {
     setPdfPath(path)
     setPageCount(count)
     setSelectedPage(1)
     setSplitPoints(new Set())
-    setFileNames(new Map([[1, '']]))
+    setFileNames(new Map([[1, applyTemplate(tmpl)]]))
   }
 
   useEffect(() => {
     if (!initialPath) return
     PageCount(initialPath)
-      .then(count => resetForFile(count, initialPath))
+      .then(count => resetForFile(count, initialPath, templateRef.current))
       .catch(e => notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' }))
   }, [initialPath])
 
@@ -40,7 +52,7 @@ export default function SplitMode({ initialPath }: Props) {
     if (!path) return
     try {
       const count = await PageCount(path)
-      resetForFile(count, path)
+      resetForFile(count, path, template)
     } catch (e) {
       notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' })
     }
@@ -78,7 +90,11 @@ export default function SplitMode({ initialPath }: Props) {
     })
     setFileNames(prev => {
       const next = new Map(prev)
-      if (isAdding) { next.set(afterPage + 1, '') } else { next.delete(afterPage + 1) }
+      if (isAdding) {
+        next.set(afterPage + 1, applyTemplate(templateRef.current))
+      } else {
+        next.delete(afterPage + 1)
+      }
       return next
     })
   }, [])
@@ -99,10 +115,19 @@ export default function SplitMode({ initialPath }: Props) {
           height: 44,
         }}
       >
-        <Group gap={8} style={{ width: '100%', justifyContent: 'space-between' }}>
+        <Group gap={8} style={{ width: '100%' }}>
           <Button size="xs" variant="default" onClick={handleOpen}>
             Open PDF
           </Button>
+          <TextInput
+            size="xs"
+            placeholder={DEFAULT_TEMPLATE}
+            value={template}
+            onChange={(e) => setTemplate(e.currentTarget.value)}
+            leftSection={<span style={{ fontSize: 11, whiteSpace: 'nowrap', color: 'var(--mantine-color-dimmed)' }}>Template</span>}
+            leftSectionWidth={60}
+            style={{ flex: 1 }}
+          />
           <Button size="xs" disabled={!pdfPath} loading={exporting} onClick={handleExport}>
             Export
           </Button>
