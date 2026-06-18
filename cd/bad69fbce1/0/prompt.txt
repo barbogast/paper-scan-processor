@@ -1,0 +1,26 @@
+Now about the loader: 
+- Right now the thumbnail flicker after the thumbnail panel is resized. That's caused by the delay between invalidating the cache and loading the new image. This could be fixed by keeping the old image in the cache while the new one is loading.
+- There is a noticable delay before the new image is shown in DetailPanel when switching pages. How about we avoid this by temporarily showing the low resolution image from the thumbnail cache and replacing it with a higher resolution one once it is loaded?
+- Similarly, we could avoid fetching a higher resolution image for the thumbnail if it was already fetched for DetailPanel
+
+All these issues would be fixed by using a global cache for images:
+- images would be keyed by `path`/`pageNumber`
+- for each image the current size would be stored
+- if an image is in the cache but with a lower size than requested, the image is immediately used while the proper size is fetched in the background. Once the image is fetched the UI is updated
+
+Questions:
+- Would this architecture fix all the issues I described?
+- Would it add or remove complexity from the code base?
+- Any issues I didn't think of?
+
+---
+
+How about evicting a path from the cache whenever a new path is chosen in its place? That should take care of cache size.
+
+---
+
+I'm more concerned about the 3rd point: UX feeling worse. That would defeat the purpose, and I'm not sure how to decide this without seeing the result.
+
+---
+
+Let's do that
