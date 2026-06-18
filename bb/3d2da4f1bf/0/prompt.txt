@@ -1,0 +1,5 @@
+Regarding lines 82 to 84 in pageCache.ts: is it necessary to spread the result of Map.keys() before looping?
+
+---
+
+according to https://stackoverflow.com/questions/35940216/es6-is-it-dangerous-to-delete-elements-from-set-map-during-set-map-iteration deleting while iterating is safe
