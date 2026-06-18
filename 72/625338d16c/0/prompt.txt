@@ -1,0 +1,21 @@
+How are the filenames determined right now?
+
+---
+
+Go ahead with step 3
+
+---
+
+what's the reason to store `items` in a ref?
+
+---
+
+no, but add a comment explaining this
+
+---
+
+Do step 4
+
+---
+
+Is it necessary to store the template in a ref?
