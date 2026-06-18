@@ -47,17 +47,14 @@ export function load(path: string, page: number, width: number): void {
   if (existing && existing.width >= width) return
   if (loading.has(k)) return
   if (failed.has(k)) return
-  console.log('load!', path, page, width)
   loading.add(k)
   RenderPage(path, page, Math.round(width * window.devicePixelRatio))
     .then((b64) => {
       entries.set(k, { src: `data:image/png;base64,${b64}`, width })
       loading.delete(k)
-      console.log('load success', path, page, width)
       notify()
     })
     .catch((err) => {
-      console.error(`RenderPage failed for page ${page}:`, err)
       loading.delete(k)
       failed.add(k)
       notify()
@@ -65,7 +62,6 @@ export function load(path: string, page: number, width: number): void {
 }
 
 export function evict(path: string): void {
-  console.log('evict', path)
   const prefix = path + '\0'
   for (const k of [...entries.keys()]) if (k.startsWith(prefix)) entries.delete(k)
   for (const k of [...failed]) if (k.startsWith(prefix)) failed.delete(k)
