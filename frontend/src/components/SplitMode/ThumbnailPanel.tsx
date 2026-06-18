@@ -57,7 +57,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
   }, [itemHeight])
 
   const virtualItems = virtualizer.getVirtualItems()
-  const { getSrc, isLoading, load, invalidate } = usePageLoader(pdfPath)
+  const { getSrc, isLoading, load } = usePageLoader(pdfPath)
 
   useEffect(() => {
     for (const item of virtualItems) load(item.index + 1, thumbWidth)
@@ -102,7 +102,6 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
       const w = clamp(startWidth + ev.clientX - startX)
       setInternalWidth(w)
       onWidthChange?.(w)
-      invalidate()
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }

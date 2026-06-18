@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { OpenPDF, PageCount } from '../../wailsjs/go/main/App'
+import { evict } from './pageCache'
 
 export interface PDFFile {
   path: string | null
@@ -21,6 +22,7 @@ export function usePDFFile(): PDFFile {
     const p = await OpenPDF()
     if (!p) return false
     const c = await PageCount(p)
+    if (path) evict(path)
     setPath(p)
     setCount(c)
     setSkipped(new Set())

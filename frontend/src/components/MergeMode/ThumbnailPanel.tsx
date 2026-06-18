@@ -68,8 +68,6 @@ export default function MergeModeThumbnailPanel({
     const onMove = (ev: MouseEvent) => onWidthChange(clamp(startWidth + ev.clientX - startX))
     const onUp = (ev: MouseEvent) => {
       onWidthChange(clamp(startWidth + ev.clientX - startX))
-      loaderA.invalidate()
-      loaderB.invalidate()
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }

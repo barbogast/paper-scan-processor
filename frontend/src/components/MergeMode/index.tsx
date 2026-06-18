@@ -15,13 +15,12 @@ function basename(p: string) {
 export default function MergeMode() {
   const fileA = usePDFFile()
   const fileB = usePDFFile()
-  const detailLoaderA = usePageLoader(fileA.path ?? '')
-  const detailLoaderB = usePageLoader(fileB.path ?? '')
   const [selectedPage, setSelectedPage] = useState<SelectedPage>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [reverseB, setReverseB] = useState(true)
   const [merging, setMerging] = useState(false)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
+  const detailLoader = usePageLoader((selectedPage.file === 'a' ? fileA : fileB).path ?? '')
 
   // Subtract 22px to account for scrollbar + gap
   const colWidth = Math.floor((totalWidth - 22) / 2)
@@ -120,7 +119,7 @@ export default function MergeMode() {
             pageNum={selectedPage.page}
             pageCount={selectedCount}
             rotation={selectedFile.rotations.get(selectedPage.page) ?? 0}
-            loader={selectedPage.file === 'a' ? detailLoaderA : detailLoaderB}
+            loader={detailLoader}
             onNavigate={(page) => setSelectedPage({ file: selectedPage.file, page })}
             onToggleSkip={() => selectedFile.toggleSkip(selectedPage.page)}
             onRotate={() => selectedFile.rotate(selectedPage.page)}
