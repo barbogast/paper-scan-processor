@@ -204,13 +204,18 @@ TBD.
 
 ### Split mode
 
-- [ ] **Go: render + split** — per-page PNG render and PDF split/export backend methods
-- [ ] **Frontend: Split layout** — resizable left panel + detail panel
-- [ ] **Frontend: Split points** — click gaps to toggle, drag to reposition, visual dividers
-- [ ] **Frontend: Output file headers** — filename template, prefill, per-file folder override
-- [ ] **Frontend: Export flow** — conflict check, keep/move/delete prompt after export
-- [ ] **Page editing in Split** — rotate, skip, reorder
-- [ ] **Keyboard shortcuts**
+- [ ] **Step 1: Split points UI** — resizable left panel + detail panel; clickable gaps between thumbnails toggle a visual divider; no drag-and-drop yet
+- [ ] **Step 2: Export pipeline** — Go split/export backend; Export button wired up; no filename control yet
+- [ ] **Step 3: Filename inputs** — per-output-file editable filename field in each section header
+- [ ] **Step 4: Filename prefill** — global filename template with `{date}` / `{name}` tokens; prefills each section header on creation
+- [ ] **Step 5: Output folder** — global output folder picker; per-file folder override in section header
+- [ ] **Step 6: Divider drag-and-drop** — reposition or delete dividers by dragging
+- [ ] **Step 7: Rotate pages**
+- [ ] **Step 8: Skip pages**
+- [ ] **Step 9: Reorder pages**
+- [ ] **Step 10: Export polish** — filename conflict check before export; keep/move/delete prompt for input file after export; enforce empty output folder on open
+- [ ] **Step 11: Keyboard shortcuts** — `Space` to toggle split point, `Tab` to move between filename inputs
+- [ ] **Step 12: Persisted settings** — last-used output folder, filename template
 
 ### Google Drive integration
 
@@ -219,10 +224,6 @@ TBD.
 - [ ] **Recently used folders** — shown at the top of the folder browser, persisted across sessions
 - [ ] **Upload on export** — per-file upload to designated Drive folder, inline error + Retry on failure
 - [ ] **Local subfolder derivation** — subfolder name derived automatically from the innermost Drive path component; disambiguation when multiple files share the same leaf name
-
-### Polish
-
-- [ ] **Persisted settings** — last-used output folder, filename template
 
 ## Future / out of scope for v1
 
