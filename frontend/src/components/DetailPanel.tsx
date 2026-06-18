@@ -21,7 +21,9 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
 
   useEffect(() => {
     pageCache.load(pdfPath, pageNum, DETAIL_WIDTH)
-  }, [pdfPath, pageNum])
+    if (pageNum > 1) pageCache.load(pdfPath, pageNum - 1, DETAIL_WIDTH) // prefetch previous page
+    if (pageNum < pageCount) pageCache.load(pdfPath, pageNum + 1, DETAIL_WIDTH) // prefetch next page
+  }, [pdfPath, pageNum, pageCount])
 
   useEffect(() => {
     transformRef.current?.resetTransform()
