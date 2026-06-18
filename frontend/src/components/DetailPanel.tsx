@@ -48,7 +48,10 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
     return () => window.removeEventListener('keydown', handler)
   }, [pageNum, pageCount, onNavigate, onToggleSkip, onRotate])
 
-  const src = pageCache.getSrc(pdfPath, pageNum)
+  const cachedWidth = pageCache.getCachedWidth(pdfPath, pageNum)
+  const src = cachedWidth !== undefined && cachedWidth >= DETAIL_WIDTH
+    ? pageCache.getSrc(pdfPath, pageNum)
+    : undefined
 
   return (
     <div

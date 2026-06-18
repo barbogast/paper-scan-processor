@@ -28,6 +28,10 @@ export function getSrc(path: string, page: number): string | undefined {
   return entries.get(pk(path, page))?.src
 }
 
+export function getCachedWidth(path: string, page: number): number | undefined {
+  return entries.get(pk(path, page))?.width
+}
+
 export function isLoading(path: string, page: number): boolean {
   return loading.has(pk(path, page))
 }
