@@ -22,3 +22,7 @@ Also, "Open in Preview" is wrong on other platforms. Is there is simple way to k
 ---
 
 Catch errors when SplitMode loads the PageCount
+
+---
+
+commit
