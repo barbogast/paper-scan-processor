@@ -79,8 +79,8 @@ export function load(path: string, page: number, width: number): void {
 
 export function evict(path: string): void {
   const prefix = path + '\0'
-  for (const k of [...entries.keys()]) if (k.startsWith(prefix)) entries.delete(k)
-  for (const k of [...loading.keys()]) if (k.startsWith(prefix)) loading.delete(k)
-  for (const k of [...failed.keys()]) if (k.startsWith(prefix)) failed.delete(k)
+  for (const k of entries.keys()) if (k.startsWith(prefix)) entries.delete(k)
+  for (const k of loading.keys()) if (k.startsWith(prefix)) loading.delete(k)
+  for (const k of failed.keys()) if (k.startsWith(prefix)) failed.delete(k)
   notify()
 }
