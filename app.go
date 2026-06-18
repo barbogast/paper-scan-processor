@@ -108,3 +108,19 @@ func (a *App) OpenFile(path string) error {
 func (a *App) MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) error {
 	return mergePDFs(pathA, pathB, outPath, firstPageInA, reverseB, skipA, skipB, rotationsA, rotationsB)
 }
+
+// PickFolder shows a folder-select dialog and returns the chosen path.
+// Returns an empty string if the user cancels.
+func (a *App) PickFolder() (string, error) {
+	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Choose Output Folder",
+	})
+}
+
+// ExportSplit splits the PDF at inPath at the given page boundaries and writes
+// each segment to outDir. splitAfter contains 1-indexed page numbers after
+// which a new file begins.
+func (a *App) ExportSplit(inPath string, splitAfter []int, outDir string) error {
+	_, err := splitPDF(inPath, splitAfter, outDir)
+	return err
+}
