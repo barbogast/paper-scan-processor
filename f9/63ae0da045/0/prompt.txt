@@ -1,0 +1,21 @@
+Now, the image in DetailPanel is no longer loaded automatically once a file has been selected. This broke with the introduction of the global pageCache
+
+---
+
+what does pk and lk stand for?
+
+---
+
+yes
+
+---
+
+That means that there are 2 load operations in parallel: one for the thumbnail and one for the detail panel. And whichever load happens last will end up in the page cache, right? Even if it's for the smaller image.
+
+---
+
+I don't like it yet. Having different keys for `entries` and `loading` is weird. Also, load should return early if there is already a load in-flight for a higher resolution. Let's change the data structure for `loading` to `Map<string, number>` where string is `pageKey` and number is the width. Then is loading and isFailed wouldn't need to loop anymore.
+
+---
+
+Add those key points as comments to the code, this is non-trivial
