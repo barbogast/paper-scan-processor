@@ -1,0 +1,24 @@
+whenever the user selects a page automatically prefetch the following and the previous page (for the Detail panel). Whenever a PDF file is opened, prefetch the second page.
+
+---
+
+commit
+
+---
+
+After the merge operation finishes, offer the user to either:
+- open the file in MacOS preview
+- open the file in SplitMode
+
+---
+
+/statusline show model name and context percentage with a progress bar
+
+---
+
+Keep the modal open when the user chooses "Open in Preview".
+Also, "Open in Preview" is wrong on other platforms. Is there is simple way to know the name of the default app? Otherwise choose a platform-independent label for the button
+
+---
+
+Catch errors when SplitMode loads the PageCount
