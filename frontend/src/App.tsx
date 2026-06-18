@@ -7,6 +7,12 @@ type AppMode = 'split' | 'merge'
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>('split')
+  const [splitInitialPath, setSplitInitialPath] = useState<string | null>(null)
+
+  const handleOpenInSplitMode = (path: string) => {
+    setSplitInitialPath(path)
+    setMode('split')
+  }
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
@@ -32,7 +38,9 @@ export default function App() {
         </Group>
       </Box>
       <Box style={{ flex: 1, overflow: 'hidden' }}>
-        {mode === 'split' ? <SplitMode /> : <MergeMode />}
+        {mode === 'split'
+          ? <SplitMode initialPath={splitInitialPath} />
+          : <MergeMode onOpenInSplitMode={handleOpenInSplitMode} />}
       </Box>
     </Box>
   )

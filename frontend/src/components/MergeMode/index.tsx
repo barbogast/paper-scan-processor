@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Checkbox, Group, SegmentedControl, Text, Tooltip } from '@mantine/core'
+import { Box, Button, Checkbox, Group, Modal, SegmentedControl, Text, Tooltip } from '@mantine/core'
 import { IconAlertTriangle } from '@tabler/icons-react'
-import { notifications } from '@mantine/notifications'
-import { MergePDFs, SavePDF } from '../../../wailsjs/go/main/App'
+import { MergePDFs, OpenFile, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { usePDFFile } from '../../hooks/usePDFFile'
@@ -12,13 +11,18 @@ function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
 }
 
-export default function MergeMode() {
+interface Props {
+  onOpenInSplitMode: (path: string) => void
+}
+
+export default function MergeMode({ onOpenInSplitMode }: Props) {
   const fileA = usePDFFile()
   const fileB = usePDFFile()
   const [selectedPage, setSelectedPage] = useState<SelectedPage>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [reverseB, setReverseB] = useState(true)
   const [merging, setMerging] = useState(false)
+  const [mergedPath, setMergedPath] = useState<string | null>(null)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
 
   useEffect(() => {
@@ -48,7 +52,7 @@ export default function MergeMode() {
         [...fileA.skipped], [...fileB.skipped],
         Object.fromEntries(fileA.rotations), Object.fromEntries(fileB.rotations),
       )
-      notifications.show({ message: `Saved to ${outPath}`, color: 'green' })
+      setMergedPath(outPath)
     } catch (e) {
       notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })
     } finally {
@@ -64,6 +68,17 @@ export default function MergeMode() {
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Modal opened={mergedPath !== null} onClose={() => setMergedPath(null)} title="Merge complete" centered>
+        <Text size="sm" c="dimmed" mb="md">{mergedPath}</Text>
+        <Group>
+          <Button variant="default" onClick={() => OpenFile(mergedPath!)}>
+            Open in Default App
+          </Button>
+          <Button onClick={() => { onOpenInSplitMode(mergedPath!); setMergedPath(null) }}>
+            Open in Split Mode
+          </Button>
+        </Group>
+      </Modal>
       <Box
         style={{
           flexShrink: 0,

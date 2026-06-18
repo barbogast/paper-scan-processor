@@ -99,6 +99,11 @@ func (a *App) SavePDF() (string, error) {
 	return path, nil
 }
 
+// OpenFile opens the file at path with the system default application.
+func (a *App) OpenFile(path string) error {
+	return exec.Command("open", path).Run()
+}
+
 // MergePDFs interleaves pages from pathA and pathB and writes the result to outPath.
 func (a *App) MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) error {
 	return mergePDFs(pathA, pathB, outPath, firstPageInA, reverseB, skipA, skipB, rotationsA, rotationsB)

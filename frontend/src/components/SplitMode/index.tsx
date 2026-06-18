@@ -1,21 +1,41 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Button } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { OpenPDF, PageCount } from '../../../wailsjs/go/main/App'
 
-export default function SplitMode() {
+interface Props {
+  initialPath?: string | null
+}
+
+export default function SplitMode({ initialPath }: Props) {
   const [pdfPath, setPdfPath] = useState<string | null>(null)
   const [pageCount, setPageCount] = useState(0)
   const [selectedPage, setSelectedPage] = useState(1)
 
+  useEffect(() => {
+    if (!initialPath) return
+    PageCount(initialPath)
+      .then(count => {
+        setPdfPath(initialPath)
+        setPageCount(count)
+        setSelectedPage(1)
+      })
+      .catch(e => notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' }))
+  }, [initialPath])
+
   const handleOpen = async () => {
     const path = await OpenPDF()
     if (!path) return
-    const count = await PageCount(path)
-    setPdfPath(path)
-    setPageCount(count)
-    setSelectedPage(1)
+    try {
+      const count = await PageCount(path)
+      setPdfPath(path)
+      setPageCount(count)
+      setSelectedPage(1)
+    } catch (e) {
+      notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' })
+    }
   }
 
   return (

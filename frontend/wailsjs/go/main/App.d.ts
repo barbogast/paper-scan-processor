@@ -3,6 +3,8 @@
 
 export function MergePDFs(arg1:string,arg2:string,arg3:string,arg4:boolean,arg5:boolean,arg6:Array<number>,arg7:Array<number>,arg8:Record<number, number>,arg9:Record<number, number>):Promise<void>;
 
+export function OpenFile(arg1:string):Promise<void>;
+
 export function OpenPDF():Promise<string>;
 
 export function PageCount(arg1:string):Promise<number>;
