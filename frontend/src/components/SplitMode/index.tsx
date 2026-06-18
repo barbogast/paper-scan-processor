@@ -28,9 +28,6 @@ export default function SplitMode({ initialPath }: Props) {
 
   const splitPointsRef = useRef(splitPoints)
   splitPointsRef.current = splitPoints
-  // Ref so toggleSplitPoint (stable useCallback) can read the current template.
-  const templateRef = useRef(template)
-  templateRef.current = template
 
   const resetForFile = (count: number, path: string, tmpl: string) => {
     setPdfPath(path)
@@ -43,7 +40,7 @@ export default function SplitMode({ initialPath }: Props) {
   useEffect(() => {
     if (!initialPath) return
     PageCount(initialPath)
-      .then(count => resetForFile(count, initialPath, templateRef.current))
+      .then(count => resetForFile(count, initialPath, template))
       .catch(e => notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' }))
   }, [initialPath])
 
@@ -91,13 +88,13 @@ export default function SplitMode({ initialPath }: Props) {
     setFileNames(prev => {
       const next = new Map(prev)
       if (isAdding) {
-        next.set(afterPage + 1, applyTemplate(templateRef.current))
+        next.set(afterPage + 1, applyTemplate(template))
       } else {
         next.delete(afterPage + 1)
       }
       return next
     })
-  }, [])
+  }, [template])
 
   const handleFileNameChange = useCallback((firstPage: number, name: string) => {
     setFileNames(prev => new Map(prev).set(firstPage, name))
