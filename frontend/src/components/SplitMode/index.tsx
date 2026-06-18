@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Box, Button } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
@@ -13,6 +13,7 @@ export default function SplitMode({ initialPath }: Props) {
   const [pdfPath, setPdfPath] = useState<string | null>(null)
   const [pageCount, setPageCount] = useState(0)
   const [selectedPage, setSelectedPage] = useState(1)
+  const [splitPoints, setSplitPoints] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (!initialPath) return
@@ -21,6 +22,7 @@ export default function SplitMode({ initialPath }: Props) {
         setPdfPath(initialPath)
         setPageCount(count)
         setSelectedPage(1)
+        setSplitPoints(new Set())
       })
       .catch(e => notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' }))
   }, [initialPath])
@@ -33,10 +35,23 @@ export default function SplitMode({ initialPath }: Props) {
       setPdfPath(path)
       setPageCount(count)
       setSelectedPage(1)
+      setSplitPoints(new Set())
     } catch (e) {
       notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' })
     }
   }
+
+  const toggleSplitPoint = useCallback((afterPage: number) => {
+    setSplitPoints(prev => {
+      const next = new Set(prev)
+      if (next.has(afterPage)) {
+        next.delete(afterPage)
+      } else {
+        next.add(afterPage)
+      }
+      return next
+    })
+  }, [])
 
   return (
     <Box style={{ display: 'flex', height: '100%' }}>
@@ -47,6 +62,8 @@ export default function SplitMode({ initialPath }: Props) {
             pageCount={pageCount}
             selectedPage={selectedPage}
             onSelectPage={setSelectedPage}
+            splitPoints={splitPoints}
+            onToggleSplitPoint={toggleSplitPoint}
           />
           <DetailPanel
             pdfPath={pdfPath}

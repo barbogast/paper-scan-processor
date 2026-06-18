@@ -6,20 +6,26 @@ import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIG
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
+const GAP_HEIGHT = 16
 
 interface Props {
   pdfPath: string
   pageCount: number
   selectedPage: number
   onSelectPage: (page: number) => void
+  splitPoints: Set<number>
+  onToggleSplitPoint: (afterPage: number) => void
 }
 
-export default function SplitThumbnailPanel({ pdfPath, pageCount, selectedPage, onSelectPage }: Props) {
+export default function SplitThumbnailPanel({
+  pdfPath, pageCount, selectedPage, onSelectPage, splitPoints, onToggleSplitPoint,
+}: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
+  const [hoveredGap, setHoveredGap] = useState<number | null>(null)
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
-  const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING
+  const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + GAP_HEIGHT
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -95,6 +101,8 @@ export default function SplitThumbnailPanel({ pdfPath, pageCount, selectedPage, 
               const page = item.index + 1
               const src = pageCache.getSrc(pdfPath, page)
               const isSelected = page === selectedPage
+              const isSplit = splitPoints.has(page)
+              const isLastPage = page === pageCount
 
               return (
                 <div
@@ -105,53 +113,66 @@ export default function SplitThumbnailPanel({ pdfPath, pageCount, selectedPage, 
                     left: 0,
                     width: '100%',
                     height: item.size,
-                    padding: ITEM_PADDING,
-                    paddingBottom: 0,
                     boxSizing: 'border-box',
-                    cursor: 'pointer',
                   }}
-                  onClick={() => onSelectPage(page)}
                 >
+                  {/* Thumbnail */}
                   <div
-                    style={{
-                      border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      background: 'var(--mantine-color-gray-1)',
-                    }}
+                    style={{ padding: ITEM_PADDING, paddingBottom: 0, cursor: 'pointer' }}
+                    onClick={() => onSelectPage(page)}
                   >
-                    {src ? (
-                      <img
-                        src={src}
-                        alt={`Page ${page}`}
-                        style={{ width: '100%', display: 'block' }}
-                        draggable={false}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: '100%',
-                          height: thumbHeight,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
-                      </div>
-                    )}
+                    <div
+                      style={{
+                        border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        background: 'var(--mantine-color-gray-1)',
+                      }}
+                    >
+                      {src ? (
+                        <img
+                          src={src}
+                          alt={`Page ${page}`}
+                          style={{ width: '100%', display: 'block' }}
+                          draggable={false}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: '100%',
+                            height: thumbHeight,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        fontSize: 11,
+                        color: 'var(--mantine-color-gray-7)',
+                        height: LABEL_HEIGHT,
+                        lineHeight: `${LABEL_HEIGHT}px`,
+                      }}
+                    >
+                      {page}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      textAlign: 'center',
-                      fontSize: 11,
-                      color: 'var(--mantine-color-gray-7)',
-                      height: LABEL_HEIGHT,
-                      lineHeight: `${LABEL_HEIGHT}px`,
-                    }}
-                  >
-                    {page}
-                  </div>
+
+                  {/* Gap zone between thumbnails */}
+                  {!isLastPage && (
+                    <GapZone
+                      isSplit={isSplit}
+                      isHovered={hoveredGap === page}
+                      onClick={(e) => { e.stopPropagation(); onToggleSplitPoint(page) }}
+                      onMouseEnter={() => setHoveredGap(page)}
+                      onMouseLeave={() => setHoveredGap(null)}
+                    />
+                  )}
                 </div>
               )
             })}
@@ -169,6 +190,46 @@ export default function SplitThumbnailPanel({ pdfPath, pageCount, selectedPage, 
           background: 'var(--mantine-color-gray-3)',
         }}
       />
+    </div>
+  )
+}
+
+interface GapZoneProps {
+  isSplit: boolean
+  isHovered: boolean
+  onClick: (e: React.MouseEvent) => void
+  onMouseEnter: () => void
+  onMouseLeave: () => void
+}
+
+function GapZone({ isSplit, isHovered, onClick, onMouseEnter, onMouseLeave }: GapZoneProps) {
+  const bg = isSplit
+    ? 'var(--mantine-color-blue-0)'
+    : isHovered
+    ? 'var(--mantine-color-gray-2)'
+    : undefined
+
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      style={{
+        height: GAP_HEIGHT,
+        background: bg,
+        display: 'flex',
+        alignItems: 'center',
+        paddingLeft: ITEM_PADDING,
+        paddingRight: ITEM_PADDING,
+        cursor: 'pointer',
+      }}
+    >
+      {isSplit && (
+        <div style={{ flex: 1, height: 2, background: 'var(--mantine-color-blue-5)', borderRadius: 1 }} />
+      )}
+      {!isSplit && isHovered && (
+        <div style={{ flex: 1, height: 0, borderTop: '1px dashed var(--mantine-color-gray-5)' }} />
+      )}
     </div>
   )
 }
