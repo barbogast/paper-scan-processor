@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { RenderPage } from '../../wailsjs/go/main/App'
 
 interface Entry { src: string; width: number }
@@ -16,6 +17,11 @@ function notify() {
 export function subscribe(fn: () => void): () => void {
   listeners.add(fn)
   return () => listeners.delete(fn)
+}
+
+export function usePageCacheRender() {
+  const [, setTick] = useState(0)
+  useEffect(() => subscribe(() => setTick(t => t + 1)), [])
 }
 
 export function getSrc(path: string, page: number): string | undefined {

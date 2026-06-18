@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
 import { Center, Loader } from '@mantine/core'
-import { PageLoader } from '../hooks/usePageLoader'
+import * as pageCache from '../hooks/pageCache'
 
 const DETAIL_WIDTH = 1400
 
@@ -10,18 +10,17 @@ interface Props {
   pageNum: number
   pageCount: number
   rotation?: number
-  loader: PageLoader
   onNavigate: (page: number) => void
   onToggleSkip?: () => void
   onRotate?: () => void
 }
 
-export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0, loader, onNavigate, onToggleSkip, onRotate }: Props) {
-  const { getSrc, isLoading, load } = loader
+export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0, onNavigate, onToggleSkip, onRotate }: Props) {
+  pageCache.usePageCacheRender()
   const transformRef = useRef<ReactZoomPanPinchRef>(null)
 
   useEffect(() => {
-    load(pageNum, DETAIL_WIDTH)
+    pageCache.load(pdfPath, pageNum, DETAIL_WIDTH)
   }, [pdfPath, pageNum])
 
   useEffect(() => {
@@ -49,7 +48,7 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
     return () => window.removeEventListener('keydown', handler)
   }, [pageNum, pageCount, onNavigate, onToggleSkip, onRotate])
 
-  const src = getSrc(pageNum)
+  const src = pageCache.getSrc(pdfPath, pageNum)
 
   return (
     <div
@@ -62,7 +61,7 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
         padding: 8,
       }}
     >
-      {isLoading(pageNum) && (
+      {pageCache.isLoading(pdfPath, pageNum) && (
         <Center style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
           <Loader />
         </Center>

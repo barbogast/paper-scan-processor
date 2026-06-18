@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Loader } from '@mantine/core'
 import { IconX, IconRotateClockwise } from '@tabler/icons-react'
-import { PageLoader, usePageLoader } from '../../hooks/usePageLoader'
+import * as pageCache from '../../hooks/pageCache'
 import { PDFFile } from '../../hooks/usePDFFile'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 
@@ -53,8 +53,7 @@ export default function MergeModeThumbnailPanel({
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const loaderA = usePageLoader(fileA.path ?? '')
-  const loaderB = usePageLoader(fileB.path ?? '')
+  pageCache.usePageCacheRender()
 
   const aIsFirst = firstPageIn === 'a'
   const pageLabelA = bothLoaded ? makePageNumberLabel(aIsFirst, aIsFirst ? fileB.count : fileA.count) : undefined
@@ -95,11 +94,11 @@ export default function MergeModeThumbnailPanel({
               <ThumbColumn
                 scrollRef={scrollRef}
                 file={fileA}
+                pdfPath={fileA.path ?? ''}
                 itemHeight={itemHeight}
                 paddingStart={offsetA}
                 thumbWidth={thumbWidth}
                 thumbHeight={thumbHeight}
-                loader={loaderA}
                 selectedPage={selectedPageA}
                 onSelectPage={(page) => onSelectPage('a', page)}
                 pageLabel={pageLabelA}
@@ -109,11 +108,11 @@ export default function MergeModeThumbnailPanel({
               <ThumbColumn
                 scrollRef={scrollRef}
                 file={fileB}
+                pdfPath={fileB.path ?? ''}
                 itemHeight={itemHeight}
                 paddingStart={offsetB}
                 thumbWidth={thumbWidth}
                 thumbHeight={thumbHeight}
-                loader={loaderB}
                 selectedPage={selectedPageB}
                 onSelectPage={(page) => onSelectPage('b', page)}
                 pageLabel={pageLabelB}
@@ -142,11 +141,11 @@ export default function MergeModeThumbnailPanel({
 interface ThumbColumnProps {
   scrollRef: React.RefObject<HTMLDivElement | null>
   file: PDFFile
+  pdfPath: string
   itemHeight: number
   paddingStart: number
   thumbWidth: number
   thumbHeight: number
-  loader: PageLoader
   selectedPage: number | null
   onSelectPage: (page: number) => void
   pageLabel?: (index: number) => number
@@ -154,8 +153,8 @@ interface ThumbColumnProps {
 }
 
 function ThumbColumn({
-  scrollRef, file, itemHeight, paddingStart,
-  thumbWidth, thumbHeight, loader,
+  scrollRef, file, pdfPath, itemHeight, paddingStart,
+  thumbWidth, thumbHeight,
   selectedPage, onSelectPage, pageLabel,
   reverse,
 }: ThumbColumnProps) {
@@ -176,7 +175,7 @@ function ThumbColumn({
   }, [itemHeight])
 
   useEffect(() => {
-    for (const item of virtualizer.getVirtualItems()) loader.load(pageAt(item.index), thumbWidth)
+    for (const item of virtualizer.getVirtualItems()) pageCache.load(pdfPath, pageAt(item.index), thumbWidth)
   })
 
   useEffect(() => {
@@ -189,7 +188,7 @@ function ThumbColumn({
 
   return virtualizer.getVirtualItems().map(item => {
     const page = pageAt(item.index)
-    const src = loader.getSrc(page)
+    const src = pageCache.getSrc(pdfPath, page)
     const isSelected = page === selectedPage
     const isSkipped = skipped.has(page)
     const showSkipBtn = hoveredPage === page || isSkipped
@@ -226,7 +225,7 @@ function ThumbColumn({
               <img src={src} alt={`page ${page}`} style={{ width: '100%', display: 'block', opacity: isSkipped ? 0.3 : 1, transform: imgTransform }} draggable={false} />
             ) : (
               <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {loader.isLoading(page) && <Loader size="xs" />}
+                {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
               </div>
             )}
           </div>

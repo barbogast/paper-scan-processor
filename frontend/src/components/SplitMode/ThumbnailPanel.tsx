@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
-import { usePageLoader } from '../../hooks/usePageLoader'
+import * as pageCache from '../../hooks/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT } from '../../constants'
 
 const MIN_WIDTH = 120
@@ -57,10 +57,10 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
   }, [itemHeight])
 
   const virtualItems = virtualizer.getVirtualItems()
-  const { getSrc, isLoading, load } = usePageLoader(pdfPath)
+  pageCache.usePageCacheRender()
 
   useEffect(() => {
-    for (const item of virtualItems) load(item.index + 1, thumbWidth)
+    for (const item of virtualItems) pageCache.load(pdfPath, item.index + 1, thumbWidth)
   })
 
   // Scroll selected page into view (e.g. after keyboard navigation)
@@ -145,7 +145,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
           <div style={{ height: virtualizer.getTotalSize() + bottomPadding, position: 'relative' }}>
             {virtualizer.getVirtualItems().map(item => {
               const page = item.index + 1
-              const src = getSrc(page)
+              const src = pageCache.getSrc(pdfPath, page)
               const isSelected = page === selectedPage
 
               return (
@@ -189,7 +189,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
                           justifyContent: 'center',
                         }}
                       >
-                        {isLoading(page) && <Loader size="xs" />}
+                        {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
                       </div>
                     )}
                   </div>
