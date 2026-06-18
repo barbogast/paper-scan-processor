@@ -49,6 +49,8 @@ export default function SplitThumbnailPanel({
   const pageItemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + GAP_HEIGHT
 
   const items = useMemo(() => buildItems(pageCount, splitPoints), [pageCount, splitPoints])
+  // Ref so the scroll effect can read the current list without depending on it
+  // (we don't want to re-scroll every time a split point is toggled).
   const itemsRef = useRef(items)
   itemsRef.current = items
 
