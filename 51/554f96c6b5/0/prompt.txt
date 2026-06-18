@@ -1,0 +1,5 @@
+usePageLoader() is mostly empty. can we do without?
+
+---
+
+yes
