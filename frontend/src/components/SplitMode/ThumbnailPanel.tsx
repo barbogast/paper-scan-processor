@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
 import * as pageCache from '../../hooks/pageCache'
@@ -7,34 +7,15 @@ import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIG
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
 
-const STRIP_LABEL_HEIGHT = 28
-
-export interface ThumbnailPanelHandle {
-  scrollTo: (top: number) => void
-}
-
 interface Props {
   pdfPath: string
   pageCount: number
-  selectedPage: number   // 1-indexed
+  selectedPage: number
   onSelectPage: (page: number) => void
-  label?: string
-  width?: number
-  hideDragHandle?: boolean
-  onWidthChange?: (width: number) => void
-  onScroll?: (scrollTop: number) => void
-  hideScrollbar?: boolean
-  topPadding?: number
-  bottomPadding?: number
-  pageNumberLabel?: (index: number) => number
 }
 
-const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function ThumbnailPanel(
-  { pdfPath, pageCount, selectedPage, onSelectPage, label, width: controlledWidth, hideDragHandle, onWidthChange, onScroll, hideScrollbar, topPadding = 0, bottomPadding = 0, pageNumberLabel },
-  ref,
-) {
-  const [internalWidth, setInternalWidth] = useState(DEFAULT_WIDTH)
-  const panelWidth = controlledWidth ?? internalWidth
+export default function SplitThumbnailPanel({ pdfPath, pageCount, selectedPage, onSelectPage }: Props) {
+  const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
@@ -47,10 +28,8 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
     getScrollElement: () => scrollRef.current,
     estimateSize: () => itemHeight,
     overscan: 3,
-    paddingStart: topPadding,
   })
 
-  // Re-estimate row heights when panel is resized
   useEffect(() => {
     virtualizer.measure()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,15 +42,10 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
     for (const item of virtualItems) pageCache.load(pdfPath, item.index + 1, thumbWidth)
   })
 
-  // Scroll selected page into view (e.g. after keyboard navigation)
   useEffect(() => {
     virtualizer.scrollToIndex(selectedPage - 1, { align: 'auto' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPage])
-
-  useImperativeHandle(ref, () => ({
-    scrollTo: (top) => { if (scrollRef.current) scrollRef.current.scrollTop = top },
-  }))
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -92,16 +66,9 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
     const startX = e.clientX
     const startWidth = panelWidth
     const clamp = (w: number) => Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, w))
-
-    const onMove = (ev: MouseEvent) => {
-      const w = clamp(startWidth + ev.clientX - startX)
-      setInternalWidth(w)
-      onWidthChange?.(w)
-    }
+    const onMove = (ev: MouseEvent) => setPanelWidth(clamp(startWidth + ev.clientX - startX))
     const onUp = (ev: MouseEvent) => {
-      const w = clamp(startWidth + ev.clientX - startX)
-      setInternalWidth(w)
-      onWidthChange?.(w)
+      setPanelWidth(clamp(startWidth + ev.clientX - startX))
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
@@ -113,27 +80,8 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
   return (
     <div style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
       <div style={{ display: 'flex', flexDirection: 'column', width: panelWidth, height: '100%' }}>
-        {label && (
-          <div
-            style={{
-              height: STRIP_LABEL_HEIGHT,
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 11,
-              fontWeight: 600,
-              color: 'var(--mantine-color-dimmed)',
-              borderBottom: '1px solid var(--mantine-color-gray-2)',
-            }}
-          >
-            {label}
-          </div>
-        )}
         <div
           ref={scrollRef}
-          onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
-          className={hideScrollbar ? 'hide-scrollbar' : undefined}
           style={{
             flex: 1,
             minHeight: 0,
@@ -142,8 +90,8 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
             background: 'var(--mantine-color-gray-3)',
           }}
         >
-          <div style={{ height: virtualizer.getTotalSize() + bottomPadding, position: 'relative' }}>
-            {virtualizer.getVirtualItems().map(item => {
+          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+            {virtualItems.map(item => {
               const page = item.index + 1
               const src = pageCache.getSrc(pdfPath, page)
               const isSelected = page === selectedPage
@@ -202,7 +150,7 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
                       lineHeight: `${LABEL_HEIGHT}px`,
                     }}
                   >
-                    {pageNumberLabel ? pageNumberLabel(item.index) : page}
+                    {page}
                   </div>
                 </div>
               )
@@ -211,21 +159,16 @@ const ThumbnailPanel = forwardRef<ThumbnailPanelHandle, Props>(function Thumbnai
         </div>
       </div>
 
-      {/* Resize drag handle */}
-      {!hideDragHandle && (
-        <div
-          onMouseDown={startDrag}
-          style={{
-            width: DRAG_HANDLE_WIDTH,
-            height: '100%',
-            cursor: 'col-resize',
-            flexShrink: 0,
-            background: 'var(--mantine-color-gray-3)',
-          }}
-        />
-      )}
+      <div
+        onMouseDown={startDrag}
+        style={{
+          width: DRAG_HANDLE_WIDTH,
+          height: '100%',
+          cursor: 'col-resize',
+          flexShrink: 0,
+          background: 'var(--mantine-color-gray-3)',
+        }}
+      />
     </div>
   )
-})
-
-export default ThumbnailPanel
+}
