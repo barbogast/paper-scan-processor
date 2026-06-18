@@ -25,6 +25,11 @@ function buildItems(pageCount: number, splitPoints: Set<number>): ListItem[] {
   return result
 }
 
+export interface PendingFocusHandle {
+  pendingFocus: { afterPage: number; cursorPos: number } | null
+  clear: () => void
+}
+
 interface Props {
   pdfPath: string
   pageCount: number
@@ -34,12 +39,14 @@ interface Props {
   onToggleSplitPoint: (afterPage: number) => void
   fileNames: Map<number, string>
   onFileNameChange: (firstPage: number, name: string) => void
+  focus: PendingFocusHandle
 }
 
 export default function SplitThumbnailPanel({
   pdfPath, pageCount, selectedPage, onSelectPage,
   splitPoints, onToggleSplitPoint,
   fileNames, onFileNameChange,
+  focus,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
   const [hoveredGap, setHoveredGap] = useState<number | null>(null)
@@ -140,6 +147,8 @@ export default function SplitThumbnailPanel({
                     <OutputFileHeader
                       filename={fileNames.get(item.firstPage) ?? ''}
                       onChange={(name) => onFileNameChange(item.firstPage, name)}
+                      firstPage={item.firstPage}
+                      focus={focus}
                     />
                   </div>
                 )
@@ -233,7 +242,16 @@ export default function SplitThumbnailPanel({
   )
 }
 
-function OutputFileHeader({ filename, onChange }: { filename: string; onChange: (name: string) => void }) {
+function OutputFileHeader({
+  filename, onChange, firstPage, focus,
+}: {
+  filename: string
+  onChange: (name: string) => void
+  firstPage: number
+  focus: PendingFocusHandle
+}) {
+  const shouldFocus = focus.pendingFocus?.afterPage === firstPage - 1
+  const cursorPos = focus.pendingFocus?.cursorPos ?? 0
   return (
     <div
       style={{
@@ -249,6 +267,13 @@ function OutputFileHeader({ filename, onChange }: { filename: string; onChange: 
       }}
     >
       <input
+        ref={(el) => {
+          if (el && shouldFocus) {
+            el.focus()
+            el.setSelectionRange(cursorPos, cursorPos)
+            focus.clear()
+          }
+        }}
         type="text"
         value={filename}
         onChange={(e) => onChange(e.target.value)}

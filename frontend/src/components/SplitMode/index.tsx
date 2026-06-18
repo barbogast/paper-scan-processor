@@ -7,10 +7,22 @@ import { OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go
 
 const DEFAULT_TEMPLATE = '{date} {name}'
 
-function applyTemplate(template: string): string {
+function applyTemplate(template: string): { value: string; cursorPos: number } {
   const date = new Date().toISOString().split('T')[0]
-  return template.replace('{date}', date)
-  // {name} is left as-is for the user to fill in per file
+  const withDate = template.replace('{date}', date)
+  const nameIdx = withDate.indexOf('{name}')
+  if (nameIdx === -1) return { value: withDate, cursorPos: withDate.length }
+  return { value: withDate.replace('{name}', ''), cursorPos: nameIdx }
+}
+
+// Tracks which filename input should steal focus after a split point is added,
+// and where the cursor should land within it. Cleared by the input itself once
+// it has focused, so only the first render after the split point is added fires.
+function usePendingFocus() {
+  const [pendingFocus, setPendingFocus] = useState<{ afterPage: number; cursorPos: number } | null>(null)
+  const request = useCallback((afterPage: number, cursorPos: number) => setPendingFocus({ afterPage, cursorPos }), [])
+  const clear = useCallback(() => setPendingFocus(null), [])
+  return { pendingFocus, request, clear }
 }
 
 interface Props {
@@ -23,6 +35,7 @@ export default function SplitMode({ initialPath }: Props) {
   const [selectedPage, setSelectedPage] = useState(1)
   const [splitPoints, setSplitPoints] = useState<Set<number>>(new Set())
   const [fileNames, setFileNames] = useState<Map<number, string>>(new Map([[1, '']]))
+  const focus = usePendingFocus()
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
   const [exporting, setExporting] = useState(false)
 
@@ -34,7 +47,8 @@ export default function SplitMode({ initialPath }: Props) {
     setPageCount(count)
     setSelectedPage(1)
     setSplitPoints(new Set())
-    setFileNames(new Map([[1, applyTemplate(tmpl)]]))
+    setFileNames(new Map([[1, applyTemplate(tmpl).value]]))
+    focus.clear()
   }
 
   useEffect(() => {
@@ -80,6 +94,7 @@ export default function SplitMode({ initialPath }: Props) {
 
   const toggleSplitPoint = useCallback((afterPage: number) => {
     const isAdding = !splitPointsRef.current.has(afterPage)
+    const prefill = isAdding ? applyTemplate(template) : null
     setSplitPoints(prev => {
       const next = new Set(prev)
       if (next.has(afterPage)) { next.delete(afterPage) } else { next.add(afterPage) }
@@ -87,13 +102,11 @@ export default function SplitMode({ initialPath }: Props) {
     })
     setFileNames(prev => {
       const next = new Map(prev)
-      if (isAdding) {
-        next.set(afterPage + 1, applyTemplate(template))
-      } else {
-        next.delete(afterPage + 1)
-      }
+      if (prefill) { next.set(afterPage + 1, prefill.value) } else { next.delete(afterPage + 1) }
       return next
     })
+    if (prefill) focus.request(afterPage, prefill.cursorPos)
+    else focus.clear()
   }, [template])
 
   const handleFileNameChange = useCallback((firstPage: number, name: string) => {
@@ -143,6 +156,7 @@ export default function SplitMode({ initialPath }: Props) {
               onToggleSplitPoint={toggleSplitPoint}
               fileNames={fileNames}
               onFileNameChange={handleFileNameChange}
+              focus={focus}
             />
             <DetailPanel
               pdfPath={pdfPath}
