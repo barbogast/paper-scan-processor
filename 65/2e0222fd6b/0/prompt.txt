@@ -1,0 +1,5 @@
+when a page in the detail panel is displayed for the first time, the image flickers when the full-res version is loaded. The flickering is caused by the size and/or zoom level changing.
+
+---
+
+This didn't fix the issue, the image position/zoom level is still altered once the full-res image is loaded
