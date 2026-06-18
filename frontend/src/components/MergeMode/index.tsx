@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Button, Checkbox, Group, SegmentedControl, Text, Tooltip } from '@mantine/core'
 import { IconAlertTriangle } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
@@ -6,6 +6,7 @@ import { MergePDFs, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { usePDFFile } from '../../hooks/usePDFFile'
+import * as pageCache from '../../hooks/pageCache'
 
 function basename(p: string) {
   return p.split(/[\\/]/).pop() ?? p
@@ -19,6 +20,13 @@ export default function MergeMode() {
   const [reverseB, setReverseB] = useState(true)
   const [merging, setMerging] = useState(false)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
+
+  useEffect(() => {
+    return () => {
+      if (fileA.path) pageCache.evict(fileA.path)
+      if (fileB.path) pageCache.evict(fileB.path)
+    }
+  }, [fileA.path, fileB.path])
 
   // Subtract 22px to account for scrollbar + gap
   const colWidth = Math.floor((totalWidth - 22) / 2)
