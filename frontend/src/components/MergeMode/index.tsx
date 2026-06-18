@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Box, Button, Checkbox, Group, Modal, SegmentedControl, Text, Tooltip } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
 import { IconAlertTriangle } from '@tabler/icons-react'
 import { MergePDFs, OpenFile, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
