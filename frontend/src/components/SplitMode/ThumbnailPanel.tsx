@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
 import * as pageCache from '../../hooks/pageCache'
@@ -7,6 +7,23 @@ import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIG
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
 const GAP_HEIGHT = 16
+const HEADER_HEIGHT = 44
+
+type ListItem =
+  | { type: 'header'; fileIndex: number; firstPage: number }
+  | { type: 'page'; page: number }
+
+function buildItems(pageCount: number, splitPoints: Set<number>): ListItem[] {
+  const result: ListItem[] = []
+  let fileIndex = 0
+  for (let page = 1; page <= pageCount; page++) {
+    if (page === 1 || splitPoints.has(page - 1)) {
+      result.push({ type: 'header', fileIndex: fileIndex++, firstPage: page })
+    }
+    result.push({ type: 'page', page })
+  }
+  return result
+}
 
 interface Props {
   pdfPath: string
@@ -15,41 +32,53 @@ interface Props {
   onSelectPage: (page: number) => void
   splitPoints: Set<number>
   onToggleSplitPoint: (afterPage: number) => void
+  fileNames: Map<number, string>
+  onFileNameChange: (firstPage: number, name: string) => void
 }
 
 export default function SplitThumbnailPanel({
-  pdfPath, pageCount, selectedPage, onSelectPage, splitPoints, onToggleSplitPoint,
+  pdfPath, pageCount, selectedPage, onSelectPage,
+  splitPoints, onToggleSplitPoint,
+  fileNames, onFileNameChange,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
   const [hoveredGap, setHoveredGap] = useState<number | null>(null)
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
-  const itemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + GAP_HEIGHT
+  const pageItemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + GAP_HEIGHT
+
+  const items = useMemo(() => buildItems(pageCount, splitPoints), [pageCount, splitPoints])
+  const itemsRef = useRef(items)
+  itemsRef.current = items
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
-    count: pageCount,
+    count: items.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => itemHeight,
+    estimateSize: (index) => items[index]?.type === 'header' ? HEADER_HEIGHT : pageItemHeight,
     overscan: 3,
   })
 
   useEffect(() => {
     virtualizer.measure()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemHeight])
+  }, [items.length, pageItemHeight])
 
   const virtualItems = virtualizer.getVirtualItems()
   pageCache.usePageCacheRender()
 
   useEffect(() => {
-    for (const item of virtualItems) pageCache.load(pdfPath, item.index + 1, thumbWidth)
+    for (const vItem of virtualItems) {
+      const item = items[vItem.index]
+      if (item.type === 'page') pageCache.load(pdfPath, item.page, thumbWidth)
+    }
   })
 
   useEffect(() => {
-    virtualizer.scrollToIndex(selectedPage - 1, { align: 'auto' })
+    const index = itemsRef.current.findIndex(item => item.type === 'page' && item.page === selectedPage)
+    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'auto' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPage])
 
@@ -97,8 +126,24 @@ export default function SplitThumbnailPanel({
           }}
         >
           <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-            {virtualItems.map(item => {
-              const page = item.index + 1
+            {virtualItems.map(vItem => {
+              const item = items[vItem.index]
+
+              if (item.type === 'header') {
+                return (
+                  <div
+                    key={vItem.key}
+                    style={{ position: 'absolute', top: vItem.start, left: 0, width: '100%', height: vItem.size }}
+                  >
+                    <OutputFileHeader
+                      filename={fileNames.get(item.firstPage) ?? ''}
+                      onChange={(name) => onFileNameChange(item.firstPage, name)}
+                    />
+                  </div>
+                )
+              }
+
+              const page = item.page
               const src = pageCache.getSrc(pdfPath, page)
               const isSelected = page === selectedPage
               const isSplit = splitPoints.has(page)
@@ -106,13 +151,13 @@ export default function SplitThumbnailPanel({
 
               return (
                 <div
-                  key={item.key}
+                  key={vItem.key}
                   style={{
                     position: 'absolute',
-                    top: item.start,
+                    top: vItem.start,
                     left: 0,
                     width: '100%',
-                    height: item.size,
+                    height: vItem.size,
                     boxSizing: 'border-box',
                   }}
                 >
@@ -137,15 +182,7 @@ export default function SplitThumbnailPanel({
                           draggable={false}
                         />
                       ) : (
-                        <div
-                          style={{
-                            width: '100%',
-                            height: thumbHeight,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
+                        <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
                         </div>
                       )}
@@ -190,6 +227,42 @@ export default function SplitThumbnailPanel({
           background: 'var(--mantine-color-gray-3)',
         }}
       />
+    </div>
+  )
+}
+
+function OutputFileHeader({ filename, onChange }: { filename: string; onChange: (name: string) => void }) {
+  return (
+    <div
+      style={{
+        margin: `4px ${ITEM_PADDING}px`,
+        height: HEADER_HEIGHT - 8,
+        padding: '0 6px',
+        background: 'var(--mantine-color-white)',
+        border: '1px solid var(--mantine-color-gray-3)',
+        borderRadius: 4,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+      }}
+    >
+      <input
+        type="text"
+        value={filename}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="filename"
+        style={{
+          flex: 1,
+          border: 'none',
+          outline: 'none',
+          background: 'transparent',
+          fontSize: 12,
+          fontWeight: 500,
+          color: 'inherit',
+          minWidth: 0,
+        }}
+      />
+      <span style={{ fontSize: 12, color: 'var(--mantine-color-dimmed)', flexShrink: 0 }}>.pdf</span>
     </div>
   )
 }

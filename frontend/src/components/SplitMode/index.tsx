@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Box, Button, Group } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
@@ -14,17 +14,24 @@ export default function SplitMode({ initialPath }: Props) {
   const [pageCount, setPageCount] = useState(0)
   const [selectedPage, setSelectedPage] = useState(1)
   const [splitPoints, setSplitPoints] = useState<Set<number>>(new Set())
+  const [fileNames, setFileNames] = useState<Map<number, string>>(new Map([[1, '']]))
   const [exporting, setExporting] = useState(false)
+
+  const splitPointsRef = useRef(splitPoints)
+  splitPointsRef.current = splitPoints
+
+  const resetForFile = (count: number, path: string) => {
+    setPdfPath(path)
+    setPageCount(count)
+    setSelectedPage(1)
+    setSplitPoints(new Set())
+    setFileNames(new Map([[1, '']]))
+  }
 
   useEffect(() => {
     if (!initialPath) return
     PageCount(initialPath)
-      .then(count => {
-        setPdfPath(initialPath)
-        setPageCount(count)
-        setSelectedPage(1)
-        setSplitPoints(new Set())
-      })
+      .then(count => resetForFile(count, initialPath))
       .catch(e => notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' }))
   }, [initialPath])
 
@@ -33,10 +40,7 @@ export default function SplitMode({ initialPath }: Props) {
     if (!path) return
     try {
       const count = await PageCount(path)
-      setPdfPath(path)
-      setPageCount(count)
-      setSelectedPage(1)
-      setSplitPoints(new Set())
+      resetForFile(count, path)
     } catch (e) {
       notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' })
     }
@@ -49,7 +53,9 @@ export default function SplitMode({ initialPath }: Props) {
     setExporting(true)
     try {
       const sorted = [...splitPoints].sort((a, b) => a - b)
-      await ExportSplit(pdfPath, sorted, outDir)
+      const firstPages = [1, ...sorted.map(p => p + 1)]
+      const outNames = firstPages.map(fp => fileNames.get(fp) ?? '')
+      await ExportSplit(pdfPath, sorted, outDir, outNames)
       const fileCount = splitPoints.size + 1
       notifications.show({
         title: 'Export complete',
@@ -64,15 +70,21 @@ export default function SplitMode({ initialPath }: Props) {
   }
 
   const toggleSplitPoint = useCallback((afterPage: number) => {
+    const isAdding = !splitPointsRef.current.has(afterPage)
     setSplitPoints(prev => {
       const next = new Set(prev)
-      if (next.has(afterPage)) {
-        next.delete(afterPage)
-      } else {
-        next.add(afterPage)
-      }
+      if (next.has(afterPage)) { next.delete(afterPage) } else { next.add(afterPage) }
       return next
     })
+    setFileNames(prev => {
+      const next = new Map(prev)
+      if (isAdding) { next.set(afterPage + 1, '') } else { next.delete(afterPage + 1) }
+      return next
+    })
+  }, [])
+
+  const handleFileNameChange = useCallback((firstPage: number, name: string) => {
+    setFileNames(prev => new Map(prev).set(firstPage, name))
   }, [])
 
   return (
@@ -91,12 +103,7 @@ export default function SplitMode({ initialPath }: Props) {
           <Button size="xs" variant="default" onClick={handleOpen}>
             Open PDF
           </Button>
-          <Button
-            size="xs"
-            disabled={!pdfPath}
-            loading={exporting}
-            onClick={handleExport}
-          >
+          <Button size="xs" disabled={!pdfPath} loading={exporting} onClick={handleExport}>
             Export
           </Button>
         </Group>
@@ -112,6 +119,8 @@ export default function SplitMode({ initialPath }: Props) {
               onSelectPage={setSelectedPage}
               splitPoints={splitPoints}
               onToggleSplitPoint={toggleSplitPoint}
+              fileNames={fileNames}
+              onFileNameChange={handleFileNameChange}
             />
             <DetailPanel
               pdfPath={pdfPath}
