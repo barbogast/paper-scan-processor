@@ -2,13 +2,14 @@ import { useRef, useState, useEffect, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
 import * as pageCache from '../../hooks/pageCache'
-import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT } from '../../constants'
+import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
 import type { OutputFilesHandle } from './useOutputFiles'
+import OutputFileHeader from './OutputFileHeader'
+import type { PendingFocusHandle } from './OutputFileHeader'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
 const GAP_HEIGHT = 16
-const HEADER_HEIGHT = 64
 
 type ListItem =
   | { type: 'header'; fileIndex: number; firstPage: number }
@@ -24,11 +25,6 @@ function buildItems(pageCount: number, splitPoints: Set<number>): ListItem[] {
     result.push({ type: 'page', page })
   }
   return result
-}
-
-export interface PendingFocusHandle {
-  pendingFocus: { afterPage: number; cursorPos: number } | null
-  clear: () => void
 }
 
 interface Props {
@@ -243,76 +239,6 @@ export default function SplitThumbnailPanel({
           background: 'var(--mantine-color-gray-3)',
         }}
       />
-    </div>
-  )
-}
-
-function OutputFileHeader({
-  filename, onChange, firstPage, focus, folder, onPickFolder, isDuplicate,
-}: {
-  filename: string
-  onChange: (name: string) => void
-  firstPage: number
-  focus: PendingFocusHandle
-  folder: string | null
-  onPickFolder: () => void
-  isDuplicate: boolean
-}) {
-  const shouldFocus = focus.pendingFocus?.afterPage === firstPage - 1
-  const cursorPos = focus.pendingFocus?.cursorPos ?? 0
-  return (
-    <div
-      style={{
-        margin: `4px ${ITEM_PADDING}px`,
-        height: HEADER_HEIGHT - 8,
-        padding: '4px 6px',
-        background: 'var(--mantine-color-white)',
-        border: `1px solid ${isDuplicate ? 'var(--mantine-color-red-5)' : 'var(--mantine-color-gray-3)'}`,
-        borderRadius: 4,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <input
-          ref={(el) => {
-            if (el && shouldFocus) {
-              el.focus()
-              el.setSelectionRange(cursorPos, cursorPos)
-              focus.clear()
-            }
-          }}
-          type="text"
-          value={filename}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="filename"
-          style={{
-            flex: 1,
-            border: 'none',
-            outline: 'none',
-            background: 'transparent',
-            fontSize: 12,
-            fontWeight: 500,
-            color: isDuplicate ? 'var(--mantine-color-red-7)' : 'inherit',
-            minWidth: 0,
-          }}
-        />
-        <span style={{ fontSize: 12, color: 'var(--mantine-color-dimmed)', flexShrink: 0 }}>.pdf</span>
-      </div>
-      <div
-        onClick={onPickFolder}
-        style={{
-          fontSize: 11,
-          color: folder ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-dimmed)',
-          cursor: 'pointer',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {folder ?? 'Choose folder…'}
-      </div>
     </div>
   )
 }
