@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Box, Button, Group, TextInput } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go/main/App'
 import { basename } from '../../utils'
+import { useOutputFiles } from './useOutputFiles'
 
 const DEFAULT_TEMPLATE = '{date} {name}'
 
@@ -34,24 +35,17 @@ export default function SplitMode({ initialPath }: Props) {
   const [pdfPath, setPdfPath] = useState<string | null>(null)
   const [pageCount, setPageCount] = useState(0)
   const [selectedPage, setSelectedPage] = useState(1)
-  const [splitPoints, setSplitPoints] = useState<Set<number>>(new Set())
-  const [fileNames, setFileNames] = useState<Map<number, string>>(new Map([[1, '']]))
   const [outputFolder, setOutputFolder] = useState<string | null>(null)
-  const [folderOverrides, setFolderOverrides] = useState<Map<number, string>>(new Map())
+  const outputFiles = useOutputFiles()
   const focus = usePendingFocus()
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
   const [exporting, setExporting] = useState(false)
-
-  const splitPointsRef = useRef(splitPoints)
-  splitPointsRef.current = splitPoints
 
   const resetForFile = (count: number, path: string, tmpl: string) => {
     setPdfPath(path)
     setPageCount(count)
     setSelectedPage(1)
-    setSplitPoints(new Set())
-    setFileNames(new Map([[1, applyTemplate(tmpl).value]]))
-    setFolderOverrides(new Map())
+    outputFiles.reset(applyTemplate(tmpl).value)
     focus.clear()
   }
 
@@ -80,17 +74,18 @@ export default function SplitMode({ initialPath }: Props) {
 
   const handlePickFolderOverride = useCallback(async (firstPage: number) => {
     const folder = await PickFolder()
-    if (folder) setFolderOverrides(prev => new Map(prev).set(firstPage, folder))
-  }, [])
+    if (folder) outputFiles.setFolderOverride(firstPage, folder)
+  }, [outputFiles.setFolderOverride])
 
   const handleExport = async () => {
     if (!pdfPath || !outputFolder) return
     setExporting(true)
     try {
+      const splitPoints = outputFiles.getSplitPoints()
       const sorted = [...splitPoints].sort((a, b) => a - b)
       const firstPages = [1, ...sorted.map(p => p + 1)]
-      const outNames = firstPages.map(fp => fileNames.get(fp) ?? '')
-      const outDirs = firstPages.map(fp => folderOverrides.get(fp) ?? outputFolder)
+      const outNames = firstPages.map(fp => outputFiles.all.get(fp)?.name ?? '')
+      const outDirs = firstPages.map(fp => outputFiles.all.get(fp)?.folderOverride ?? outputFolder)
       await ExportSplit(pdfPath, sorted, outDirs, outNames)
       const fileCount = splitPoints.size + 1
       notifications.show({
@@ -105,33 +100,12 @@ export default function SplitMode({ initialPath }: Props) {
     }
   }
 
-  const toggleSplitPoint = useCallback((afterPage: number) => {
-    const isAdding = !splitPointsRef.current.has(afterPage)
-    const prefill = isAdding ? applyTemplate(template) : null
-    setSplitPoints(prev => {
-      const next = new Set(prev)
-      if (next.has(afterPage)) { next.delete(afterPage) } else { next.add(afterPage) }
-      return next
-    })
-    setFileNames(prev => {
-      const next = new Map(prev)
-      if (prefill) { next.set(afterPage + 1, prefill.value) } else { next.delete(afterPage + 1) }
-      return next
-    })
-    if (!isAdding) {
-      setFolderOverrides(prev => {
-        const next = new Map(prev)
-        next.delete(afterPage + 1)
-        return next
-      })
-    }
-    if (prefill) focus.request(afterPage, prefill.cursorPos)
+  const handleToggleSplitPoint = useCallback((afterPage: number) => {
+    const prefill = applyTemplate(template)
+    const added = outputFiles.toggle(afterPage, prefill.value)
+    if (added) focus.request(afterPage, prefill.cursorPos)
     else focus.clear()
-  }, [template])
-
-  const handleFileNameChange = useCallback((firstPage: number, name: string) => {
-    setFileNames(prev => new Map(prev).set(firstPage, name))
-  }, [])
+  }, [template, outputFiles.toggle])
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -175,12 +149,11 @@ export default function SplitMode({ initialPath }: Props) {
               pageCount={pageCount}
               selectedPage={selectedPage}
               onSelectPage={setSelectedPage}
-              splitPoints={splitPoints}
-              onToggleSplitPoint={toggleSplitPoint}
-              fileNames={fileNames}
-              onFileNameChange={handleFileNameChange}
+              splitPoints={outputFiles.getSplitPoints()}
+              onToggleSplitPoint={handleToggleSplitPoint}
+              outputFiles={outputFiles.all}
+              onFileNameChange={outputFiles.setName}
               outputFolder={outputFolder}
-              folderOverrides={folderOverrides}
               onPickFolderOverride={handlePickFolderOverride}
               focus={focus}
             />

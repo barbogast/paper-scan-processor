@@ -3,6 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
 import * as pageCache from '../../hooks/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT } from '../../constants'
+import type { OutputFile } from './useOutputFiles'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
@@ -37,10 +38,9 @@ interface Props {
   onSelectPage: (page: number) => void
   splitPoints: Set<number>
   onToggleSplitPoint: (afterPage: number) => void
-  fileNames: Map<number, string>
+  outputFiles: Map<number, OutputFile>
   onFileNameChange: (firstPage: number, name: string) => void
   outputFolder: string | null
-  folderOverrides: Map<number, string>
   onPickFolderOverride: (firstPage: number) => void
   focus: PendingFocusHandle
 }
@@ -48,8 +48,8 @@ interface Props {
 export default function SplitThumbnailPanel({
   pdfPath, pageCount, selectedPage, onSelectPage,
   splitPoints, onToggleSplitPoint,
-  fileNames, onFileNameChange,
-  outputFolder, folderOverrides, onPickFolderOverride,
+  outputFiles, onFileNameChange,
+  outputFolder, onPickFolderOverride,
   focus,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
@@ -149,11 +149,11 @@ export default function SplitThumbnailPanel({
                     style={{ position: 'absolute', top: vItem.start, left: 0, width: '100%', height: vItem.size }}
                   >
                     <OutputFileHeader
-                      filename={fileNames.get(item.firstPage) ?? ''}
+                      filename={outputFiles.get(item.firstPage)?.name ?? ''}
                       onChange={(name) => onFileNameChange(item.firstPage, name)}
                       firstPage={item.firstPage}
                       focus={focus}
-                      folder={folderOverrides.get(item.firstPage) ?? outputFolder}
+                      folder={outputFiles.get(item.firstPage)?.folderOverride ?? outputFolder}
                       onPickFolder={() => onPickFolderOverride(item.firstPage)}
                     />
                   </div>
