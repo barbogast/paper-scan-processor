@@ -123,3 +123,11 @@ Removing split points also works without using the ref, by just using `files`
 ---
 
 Would moving handlePickFolderOverride() into OutputFileHeader work?
+
+---
+
+Move the `await PickFolder` call into the hook and call `outputFiles.setFolderOverride directly in OutputFileHeader
+
+---
+
+commit
