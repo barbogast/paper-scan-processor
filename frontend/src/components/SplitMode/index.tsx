@@ -37,7 +37,7 @@ export default function SplitMode({ initialPath }: Props) {
   const [selectedPage, setSelectedPage] = useState(1)
   const [outputFolder, setOutputFolder] = useState<string | null>(null)
   const [successModal, setSuccessModal] = useState<{show: boolean, path: string}>({show: false, path: ''})
-  const outputFiles = useOutputFiles()
+  const outputFiles = useOutputFiles(outputFolder)
   const focus = usePendingFocus()
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
   const [exporting, setExporting] = useState(false)
@@ -134,7 +134,7 @@ export default function SplitMode({ initialPath }: Props) {
           <Button size="xs" variant="default" onClick={handlePickOutputFolder}>
             {outputFolder ? basename(outputFolder) : 'Output folder…'}
           </Button>
-          <Button size="xs" disabled={!pdfPath || !outputFolder} loading={exporting} onClick={handleExport}>
+          <Button size="xs" disabled={!pdfPath || !outputFolder || outputFiles.duplicateFirstPages.size > 0} loading={exporting} onClick={handleExport}>
             Export
           </Button>
         </Group>

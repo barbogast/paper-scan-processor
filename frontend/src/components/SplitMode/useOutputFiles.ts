@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { PickFolder } from '../../../wailsjs/go/main/App'
 
 export interface OutputFile {
@@ -11,6 +11,7 @@ type OutputFilesMap = Map<number, OutputFile>
 
 export interface OutputFilesHandle {
   all: OutputFilesMap
+  duplicateFirstPages: Set<number>
   getSplitPoints: () => Set<number>
   toggle: (afterPage: number, prefillName: string) => boolean
   setName: (firstPage: number, name: string) => void
@@ -18,7 +19,7 @@ export interface OutputFilesHandle {
   reset: (firstPageName: string) => void
 }
 
-export function useOutputFiles(): OutputFilesHandle {
+export function useOutputFiles(outputFolder: string | null): OutputFilesHandle {
   const [files, setFiles] = useState<OutputFilesMap>(new Map([[1, { name: '' }]]))
 
   const toggle = (afterPage: number, prefillName: string): boolean => {
@@ -58,6 +59,22 @@ export function useOutputFiles(): OutputFilesHandle {
     setFiles(new Map([[1, { name: firstPageName }]]))
   }, [])
 
+  const duplicateFirstPages = useMemo(() => {
+    const seen = new Map<string, number>()
+    const dupes = new Set<number>()
+    for (const [firstPage, file] of files.entries()) {
+      const folder = file.folderOverride ?? outputFolder ?? ''
+      const key = `${folder}::${file.name}`
+      if (seen.has(key)) {
+        dupes.add(firstPage)
+        dupes.add(seen.get(key)!)
+      } else {
+        seen.set(key, firstPage)
+      }
+    }
+    return dupes
+  }, [files, outputFolder])
+
   const getSplitPoints = () => {
     const result = new Set<number>()
     for (const firstPage of files.keys()) {
@@ -68,6 +85,7 @@ export function useOutputFiles(): OutputFilesHandle {
 
   return {
     all: files,
+    duplicateFirstPages,
     getSplitPoints,
     toggle,
     setName,

@@ -153,6 +153,7 @@ export default function SplitThumbnailPanel({
                       focus={focus}
                       folder={outputFiles.all.get(item.firstPage)?.folderOverride ?? outputFolder}
                       onPickFolder={() => outputFiles.pickFolderOverride(item.firstPage)}
+                      isDuplicate={outputFiles.duplicateFirstPages.has(item.firstPage)}
                     />
                   </div>
                 )
@@ -247,7 +248,7 @@ export default function SplitThumbnailPanel({
 }
 
 function OutputFileHeader({
-  filename, onChange, firstPage, focus, folder, onPickFolder,
+  filename, onChange, firstPage, focus, folder, onPickFolder, isDuplicate,
 }: {
   filename: string
   onChange: (name: string) => void
@@ -255,6 +256,7 @@ function OutputFileHeader({
   focus: PendingFocusHandle
   folder: string | null
   onPickFolder: () => void
+  isDuplicate: boolean
 }) {
   const shouldFocus = focus.pendingFocus?.afterPage === firstPage - 1
   const cursorPos = focus.pendingFocus?.cursorPos ?? 0
@@ -265,7 +267,7 @@ function OutputFileHeader({
         height: HEADER_HEIGHT - 8,
         padding: '4px 6px',
         background: 'var(--mantine-color-white)',
-        border: '1px solid var(--mantine-color-gray-3)',
+        border: `1px solid ${isDuplicate ? 'var(--mantine-color-red-5)' : 'var(--mantine-color-gray-3)'}`,
         borderRadius: 4,
         display: 'flex',
         flexDirection: 'column',
@@ -292,7 +294,7 @@ function OutputFileHeader({
             background: 'transparent',
             fontSize: 12,
             fontWeight: 500,
-            color: 'inherit',
+            color: isDuplicate ? 'var(--mantine-color-red-7)' : 'inherit',
             minWidth: 0,
           }}
         />
