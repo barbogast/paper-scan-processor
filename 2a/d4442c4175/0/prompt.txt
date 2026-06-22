@@ -1,0 +1,185 @@
+How are the filenames determined right now?
+
+---
+
+Go ahead with step 3
+
+---
+
+what's the reason to store `items` in a ref?
+
+---
+
+no, but add a comment explaining this
+
+---
+
+Do step 4
+
+---
+
+Is it necessary to store the template in a ref?
+
+---
+
+yes
+
+---
+
+The `{name}` template variable not be written into the generated filename. Instead the cursor should be placed at the posittion where `{name}` was.
+
+---
+
+Why not autofocus the input element after the divider was added? Then the cursor can immediately be positioned and the position doesn't need to be persisted.
+
+---
+
+How about a small hook wrapping pendingFocus, setPendingFocus and onFocused and returning an object that can be passed around?
+
+---
+
+Within the hook, rename firstPage to afterPage, onFocused to clear()
+
+---
+
+Let's pass the whole `focus` object into OutputFileHeader. Also, add a comment to the focus hook explaining the usecase
+
+---
+
+commit
+
+---
+
+do step 5
+
+---
+
+fix the TS error in MergeMOde
+
+---
+
+commit
+
+---
+
+do step 5
+
+---
+
+commit
+
+---
+
+commit
+
+---
+
+deduplicate basename()
+
+---
+
+commit
+
+---
+
+commit
+
+---
+
+move splitPoints, fileNames and folderOverrides into hook with a per outputfile data structure? sensible?
+
+---
+
+yes
+
+---
+
+Change `splitPoints` within the result of the hook to `getSplitPoints()`
+
+---
+
+Inline deriveSplitPoints() into the hook
+
+---
+
+read useOutputFiles.ts, don't reply
+
+---
+
+Would it make sense to move handling of `prefill` in handleToggleSplitPoint() into the hook?
+
+---
+
+Do that.
+
+---
+
+Explain the commit `  // Ref so toggle can read current state without becoming stale across template changes`. How would the state become stale?
+
+---
+
+Removing split points also works without using the ref, by just using `files`
+
+---
+
+Would moving handlePickFolderOverride() into OutputFileHeader work?
+
+---
+
+Move the `await PickFolder` call into the hook and call `outputFiles.setFolderOverride directly in OutputFileHeader
+
+---
+
+commit
+
+---
+
+Move the `await PickFolder` call into the hook and call `outputFiles.setFolderOverride directly in OutputFileHeader
+
+---
+
+Now fold setFolderOverride into pickFolderOverwrite
+
+---
+
+commit
+
+---
+
+pass the whole outFiles object into ThumbnailPanel?
+
+---
+
+Yes, but don't pass splitPoints
+
+---
+
+Why not call getSplitPoints() once and resuse the result?
+
+---
+
+commit
+
+---
+
+Using the ExportSplit API is awkward: splitAfter, outDirs and outNames need to be in sync but are separate arrays. Also, The length of splitAfter doesn't match outDirs and outNames. Would it make sense to pass a data structure similar outFileMap_
+
+---
+
+Using the ExportSplit API is awkward: splitAfter, outDirs and outNames need to be in sync but are separate arrays. Also, The length of splitAfter doesn't match outDirs and outNames. Would it make sense to pass a data structure similar outFileMap?
+
+---
+
+yes
+
+---
+
+Is it convention to name the fields in OutputFileSpec starting with an uppercase letter?
+
+---
+
+yes. boy, the uppercase naming of exports in Go is super awkward. Blurgh
+
+---
+
+I've changed index.ts
