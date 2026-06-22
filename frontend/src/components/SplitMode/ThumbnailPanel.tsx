@@ -7,7 +7,7 @@ import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIG
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
 const GAP_HEIGHT = 16
-const HEADER_HEIGHT = 44
+const HEADER_HEIGHT = 64
 
 type ListItem =
   | { type: 'header'; fileIndex: number; firstPage: number }
@@ -39,6 +39,9 @@ interface Props {
   onToggleSplitPoint: (afterPage: number) => void
   fileNames: Map<number, string>
   onFileNameChange: (firstPage: number, name: string) => void
+  outputFolder: string | null
+  folderOverrides: Map<number, string>
+  onPickFolderOverride: (firstPage: number) => void
   focus: PendingFocusHandle
 }
 
@@ -46,6 +49,7 @@ export default function SplitThumbnailPanel({
   pdfPath, pageCount, selectedPage, onSelectPage,
   splitPoints, onToggleSplitPoint,
   fileNames, onFileNameChange,
+  outputFolder, folderOverrides, onPickFolderOverride,
   focus,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
@@ -149,6 +153,8 @@ export default function SplitThumbnailPanel({
                       onChange={(name) => onFileNameChange(item.firstPage, name)}
                       firstPage={item.firstPage}
                       focus={focus}
+                      folder={folderOverrides.get(item.firstPage) ?? outputFolder}
+                      onPickFolder={() => onPickFolderOverride(item.firstPage)}
                     />
                   </div>
                 )
@@ -243,12 +249,14 @@ export default function SplitThumbnailPanel({
 }
 
 function OutputFileHeader({
-  filename, onChange, firstPage, focus,
+  filename, onChange, firstPage, focus, folder, onPickFolder,
 }: {
   filename: string
   onChange: (name: string) => void
   firstPage: number
   focus: PendingFocusHandle
+  folder: string | null
+  onPickFolder: () => void
 }) {
   const shouldFocus = focus.pendingFocus?.afterPage === firstPage - 1
   const cursorPos = focus.pendingFocus?.cursorPos ?? 0
@@ -257,39 +265,54 @@ function OutputFileHeader({
       style={{
         margin: `4px ${ITEM_PADDING}px`,
         height: HEADER_HEIGHT - 8,
-        padding: '0 6px',
+        padding: '4px 6px',
         background: 'var(--mantine-color-white)',
         border: '1px solid var(--mantine-color-gray-3)',
         borderRadius: 4,
         display: 'flex',
-        alignItems: 'center',
-        gap: 2,
+        flexDirection: 'column',
+        justifyContent: 'space-between',
       }}
     >
-      <input
-        ref={(el) => {
-          if (el && shouldFocus) {
-            el.focus()
-            el.setSelectionRange(cursorPos, cursorPos)
-            focus.clear()
-          }
-        }}
-        type="text"
-        value={filename}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="filename"
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <input
+          ref={(el) => {
+            if (el && shouldFocus) {
+              el.focus()
+              el.setSelectionRange(cursorPos, cursorPos)
+              focus.clear()
+            }
+          }}
+          type="text"
+          value={filename}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="filename"
+          style={{
+            flex: 1,
+            border: 'none',
+            outline: 'none',
+            background: 'transparent',
+            fontSize: 12,
+            fontWeight: 500,
+            color: 'inherit',
+            minWidth: 0,
+          }}
+        />
+        <span style={{ fontSize: 12, color: 'var(--mantine-color-dimmed)', flexShrink: 0 }}>.pdf</span>
+      </div>
+      <div
+        onClick={onPickFolder}
         style={{
-          flex: 1,
-          border: 'none',
-          outline: 'none',
-          background: 'transparent',
-          fontSize: 12,
-          fontWeight: 500,
-          color: 'inherit',
-          minWidth: 0,
+          fontSize: 11,
+          color: folder ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-dimmed)',
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
-      />
-      <span style={{ fontSize: 12, color: 'var(--mantine-color-dimmed)', flexShrink: 0 }}>.pdf</span>
+      >
+        {folder ?? 'Choose folder…'}
+      </div>
     </div>
   )
 }

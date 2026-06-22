@@ -7,6 +7,10 @@ import { OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go
 
 const DEFAULT_TEMPLATE = '{date} {name}'
 
+function basename(p: string) {
+  return p.split(/[\\/]/).pop() ?? p
+}
+
 function applyTemplate(template: string): { value: string; cursorPos: number } {
   const date = new Date().toISOString().split('T')[0]
   const withDate = template.replace('{date}', date)
@@ -35,6 +39,8 @@ export default function SplitMode({ initialPath }: Props) {
   const [selectedPage, setSelectedPage] = useState(1)
   const [splitPoints, setSplitPoints] = useState<Set<number>>(new Set())
   const [fileNames, setFileNames] = useState<Map<number, string>>(new Map([[1, '']]))
+  const [outputFolder, setOutputFolder] = useState<string | null>(null)
+  const [folderOverrides, setFolderOverrides] = useState<Map<number, string>>(new Map())
   const focus = usePendingFocus()
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
   const [exporting, setExporting] = useState(false)
@@ -48,6 +54,7 @@ export default function SplitMode({ initialPath }: Props) {
     setSelectedPage(1)
     setSplitPoints(new Set())
     setFileNames(new Map([[1, applyTemplate(tmpl).value]]))
+    setFolderOverrides(new Map())
     focus.clear()
   }
 
@@ -69,20 +76,29 @@ export default function SplitMode({ initialPath }: Props) {
     }
   }
 
+  const handlePickOutputFolder = async () => {
+    const folder = await PickFolder()
+    if (folder) setOutputFolder(folder)
+  }
+
+  const handlePickFolderOverride = useCallback(async (firstPage: number) => {
+    const folder = await PickFolder()
+    if (folder) setFolderOverrides(prev => new Map(prev).set(firstPage, folder))
+  }, [])
+
   const handleExport = async () => {
-    if (!pdfPath) return
-    const outDir = await PickFolder()
-    if (!outDir) return
+    if (!pdfPath || !outputFolder) return
     setExporting(true)
     try {
       const sorted = [...splitPoints].sort((a, b) => a - b)
       const firstPages = [1, ...sorted.map(p => p + 1)]
       const outNames = firstPages.map(fp => fileNames.get(fp) ?? '')
-      await ExportSplit(pdfPath, sorted, outDir, outNames)
+      const outDirs = firstPages.map(fp => folderOverrides.get(fp) ?? outputFolder)
+      await ExportSplit(pdfPath, sorted, outDirs, outNames)
       const fileCount = splitPoints.size + 1
       notifications.show({
         title: 'Export complete',
-        message: `${fileCount} file${fileCount !== 1 ? 's' : ''} saved to ${outDir}`,
+        message: `${fileCount} file${fileCount !== 1 ? 's' : ''} saved`,
         color: 'green',
       })
     } catch (e) {
@@ -105,6 +121,13 @@ export default function SplitMode({ initialPath }: Props) {
       if (prefill) { next.set(afterPage + 1, prefill.value) } else { next.delete(afterPage + 1) }
       return next
     })
+    if (!isAdding) {
+      setFolderOverrides(prev => {
+        const next = new Map(prev)
+        next.delete(afterPage + 1)
+        return next
+      })
+    }
     if (prefill) focus.request(afterPage, prefill.cursorPos)
     else focus.clear()
   }, [template])
@@ -138,7 +161,10 @@ export default function SplitMode({ initialPath }: Props) {
             leftSectionWidth={60}
             style={{ flex: 1 }}
           />
-          <Button size="xs" disabled={!pdfPath} loading={exporting} onClick={handleExport}>
+          <Button size="xs" variant="default" onClick={handlePickOutputFolder}>
+            {outputFolder ? basename(outputFolder) : 'Output folder…'}
+          </Button>
+          <Button size="xs" disabled={!pdfPath || !outputFolder} loading={exporting} onClick={handleExport}>
             Export
           </Button>
         </Group>
@@ -156,6 +182,9 @@ export default function SplitMode({ initialPath }: Props) {
               onToggleSplitPoint={toggleSplitPoint}
               fileNames={fileNames}
               onFileNameChange={handleFileNameChange}
+              outputFolder={outputFolder}
+              folderOverrides={folderOverrides}
+              onPickFolderOverride={handlePickFolderOverride}
               focus={focus}
             />
             <DetailPanel

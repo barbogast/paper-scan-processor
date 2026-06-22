@@ -118,10 +118,10 @@ func (a *App) PickFolder() (string, error) {
 }
 
 // ExportSplit splits the PDF at inPath at the given page boundaries and writes
-// each segment to outDir using the corresponding name from outNames (without
-// extension). An empty name falls back to "output-N". splitAfter contains
-// 1-indexed page numbers after which a new file begins.
-func (a *App) ExportSplit(inPath string, splitAfter []int, outDir string, outNames []string) error {
+// each segment to the corresponding directory in outDirs using the corresponding
+// name from outNames (without extension). An empty name falls back to "output-N".
+// splitAfter contains 1-indexed page numbers after which a new file begins.
+func (a *App) ExportSplit(inPath string, splitAfter []int, outDirs []string, outNames []string) error {
 	tmpDir, err := os.MkdirTemp("", "psp-split-*")
 	if err != nil {
 		return err
@@ -134,6 +134,10 @@ func (a *App) ExportSplit(inPath string, splitAfter []int, outDir string, outNam
 	}
 
 	for i, src := range paths {
+		outDir := ""
+		if i < len(outDirs) {
+			outDir = outDirs[i]
+		}
 		name := ""
 		if i < len(outNames) {
 			name = strings.TrimSpace(outNames[i])
