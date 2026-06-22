@@ -1,0 +1,5 @@
+In SplitMode there needs to be a way to specify at which indeces a file should be split. In parts of the code base this index start with 0, in others with 1. Provide an overview where it's 1 and where it's 0 over both frontend and backend. Same for the naming differerence between afterPage and firstPage
+
+---
+
+Does it make sense to have the index start with 1? It's unusual
