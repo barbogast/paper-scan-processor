@@ -208,7 +208,7 @@ TBD.
 - [x] **Step 2: Export pipeline** — Go split/export backend; Export button wired up; no filename control yet
 - [x] **Step 3: Filename inputs** — per-output-file editable filename field in each section header
 - [x] **Step 4: Filename prefill** — global filename template with `{date}` / `{name}` tokens; prefills each section header on creation
-- [ ] **Step 5: Output folder** — global output folder picker; per-file folder override in section header
+- [x] **Step 5: Output folder** — global output folder picker; per-file folder override in section header
 - [ ] **Step 6: Divider drag-and-drop** — reposition or delete dividers by dragging
 - [ ] **Step 7: Rotate pages**
 - [ ] **Step 8: Skip pages**
