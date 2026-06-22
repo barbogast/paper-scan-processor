@@ -72,11 +72,6 @@ export default function SplitMode({ initialPath }: Props) {
     if (folder) setOutputFolder(folder)
   }
 
-  const handlePickFolderOverride = useCallback(async (firstPage: number) => {
-    const folder = await PickFolder()
-    if (folder) outputFiles.setFolderOverride(firstPage, folder)
-  }, [outputFiles.setFolderOverride])
-
   const handleExport = async () => {
     if (!pdfPath || !outputFolder) return
     setExporting(true)
@@ -154,7 +149,7 @@ export default function SplitMode({ initialPath }: Props) {
               outputFiles={outputFiles.all}
               onFileNameChange={outputFiles.setName}
               outputFolder={outputFolder}
-              onPickFolderOverride={handlePickFolderOverride}
+              onPickFolderOverride={outputFiles.pickFolderOverride}
               focus={focus}
             />
             <DetailPanel

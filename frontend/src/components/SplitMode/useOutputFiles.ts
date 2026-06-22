@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { PickFolder } from '../../../wailsjs/go/main/App'
 
 export interface OutputFile {
   name: string
@@ -13,7 +14,7 @@ export interface OutputFilesHandle {
   getSplitPoints: () => Set<number>
   toggle: (afterPage: number, prefillName: string) => boolean
   setName: (firstPage: number, name: string) => void
-  setFolderOverride: (firstPage: number, folder: string) => void
+  pickFolderOverride: (firstPage: number) => Promise<void>
   reset: (firstPageName: string) => void
 }
 
@@ -43,7 +44,9 @@ export function useOutputFiles(): OutputFilesHandle {
     })
   }, [])
 
-  const setFolderOverride = useCallback((firstPage: number, folder: string) => {
+  const pickFolderOverride = useCallback(async (firstPage: number) => {
+    const folder = await PickFolder()
+    if (!folder) return
     setFiles(prev => {
       const entry = prev.get(firstPage)
       if (!entry) return prev
@@ -68,7 +71,7 @@ export function useOutputFiles(): OutputFilesHandle {
     getSplitPoints,
     toggle,
     setName,
-    setFolderOverride,
+    pickFolderOverride,
     reset,
   }
 }
