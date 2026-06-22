@@ -3,7 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
 import * as pageCache from '../../hooks/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT } from '../../constants'
-import type { OutputFile } from './useOutputFiles'
+import type { OutputFilesHandle } from './useOutputFiles'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
@@ -36,20 +36,17 @@ interface Props {
   pageCount: number
   selectedPage: number
   onSelectPage: (page: number) => void
-  splitPoints: Set<number>
   onToggleSplitPoint: (afterPage: number) => void
-  outputFiles: Map<number, OutputFile>
-  onFileNameChange: (firstPage: number, name: string) => void
+  outputFiles: OutputFilesHandle
   outputFolder: string | null
-  onPickFolderOverride: (firstPage: number) => void
   focus: PendingFocusHandle
 }
 
 export default function SplitThumbnailPanel({
   pdfPath, pageCount, selectedPage, onSelectPage,
-  splitPoints, onToggleSplitPoint,
-  outputFiles, onFileNameChange,
-  outputFolder, onPickFolderOverride,
+  onToggleSplitPoint,
+  outputFiles,
+  outputFolder,
   focus,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
@@ -59,6 +56,7 @@ export default function SplitThumbnailPanel({
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
   const pageItemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + GAP_HEIGHT
 
+  const splitPoints = useMemo(() => outputFiles.getSplitPoints(), [outputFiles.all])
   const items = useMemo(() => buildItems(pageCount, splitPoints), [pageCount, splitPoints])
   // Ref so the scroll effect can read the current list without depending on it
   // (we don't want to re-scroll every time a split point is toggled).
@@ -149,12 +147,12 @@ export default function SplitThumbnailPanel({
                     style={{ position: 'absolute', top: vItem.start, left: 0, width: '100%', height: vItem.size }}
                   >
                     <OutputFileHeader
-                      filename={outputFiles.get(item.firstPage)?.name ?? ''}
-                      onChange={(name) => onFileNameChange(item.firstPage, name)}
+                      filename={outputFiles.all.get(item.firstPage)?.name ?? ''}
+                      onChange={(name) => outputFiles.setName(item.firstPage, name)}
                       firstPage={item.firstPage}
                       focus={focus}
-                      folder={outputFiles.get(item.firstPage)?.folderOverride ?? outputFolder}
-                      onPickFolder={() => onPickFolderOverride(item.firstPage)}
+                      folder={outputFiles.all.get(item.firstPage)?.folderOverride ?? outputFolder}
+                      onPickFolder={() => outputFiles.pickFolderOverride(item.firstPage)}
                     />
                   </div>
                 )

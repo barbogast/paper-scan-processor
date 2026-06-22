@@ -144,12 +144,9 @@ export default function SplitMode({ initialPath }: Props) {
               pageCount={pageCount}
               selectedPage={selectedPage}
               onSelectPage={setSelectedPage}
-              splitPoints={outputFiles.getSplitPoints()}
               onToggleSplitPoint={handleToggleSplitPoint}
-              outputFiles={outputFiles.all}
-              onFileNameChange={outputFiles.setName}
+              outputFiles={outputFiles}
               outputFolder={outputFolder}
-              onPickFolderOverride={outputFiles.pickFolderOverride}
               focus={focus}
             />
             <DetailPanel
