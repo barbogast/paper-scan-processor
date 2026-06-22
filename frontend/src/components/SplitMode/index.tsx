@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Box, Button, Group, TextInput } from '@mantine/core'
+import { Box, Button, Group, Modal, Text, TextInput } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
-import { OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go/main/App'
+import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go/main/App'
 import { basename } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
 
@@ -36,6 +36,7 @@ export default function SplitMode({ initialPath }: Props) {
   const [pageCount, setPageCount] = useState(0)
   const [selectedPage, setSelectedPage] = useState(1)
   const [outputFolder, setOutputFolder] = useState<string | null>(null)
+  const [successModal, setSuccessModal] = useState<{show: boolean, path: string}>({show: false, path: ''})
   const outputFiles = useOutputFiles()
   const focus = usePendingFocus()
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
@@ -84,12 +85,7 @@ export default function SplitMode({ initialPath }: Props) {
           outDir: file.folderOverride ?? outputFolder,
         }))
       await ExportSplit(pdfPath, files)
-      const fileCount = files.length
-      notifications.show({
-        title: 'Export complete',
-        message: `${fileCount} file${fileCount !== 1 ? 's' : ''} saved`,
-        color: 'green',
-      })
+      setSuccessModal({show: true, path: outputFolder})
     } catch (e) {
       notifications.show({ title: 'Export failed', message: String(e), color: 'red' })
     } finally {
@@ -106,6 +102,12 @@ export default function SplitMode({ initialPath }: Props) {
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Modal opened={successModal.show} onClose={() => setSuccessModal({show: false, path: ''})} title="Export complete" centered>
+        <Text size="sm" c="dimmed" mb="md">{successModal.path}</Text>
+        <Button variant="default" onClick={() => OpenFile(successModal.path!)}>
+          Open in Finder
+        </Button>
+      </Modal>
       <Box
         style={{
           flexShrink: 0,
