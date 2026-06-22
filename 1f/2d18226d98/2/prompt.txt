@@ -1,0 +1,1 @@
+Remember to do typechecking for frontend by running `npm run tsc` in directory ./frontend
