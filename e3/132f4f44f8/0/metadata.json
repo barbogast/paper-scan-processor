@@ -1,0 +1,211 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e3132f4f44f8",
+  "session_id": "00890b75-3b73-40ea-a572-24824f035a7f",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-22T08:15:19.768963Z",
+  "branch": "main",
+  "checkpoints_count": 10,
+  "files_touched": [
+    "frontend/src/components/SplitMode/ThumbnailPanel.tsx",
+    "frontend/src/components/SplitMode/index.tsx",
+    "frontend/src/components/SplitMode/useOutputFiles.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-4-6",
+  "turn_id": "9e6d04ae7148",
+  "token_usage": {
+    "input_tokens": 297,
+    "cache_creation_tokens": 346676,
+    "cache_read_tokens": 18144531,
+    "output_tokens": 134675,
+    "api_call_count": 219
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_0126FLJxED91yssGmUJEH9ey",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "run"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "9e6d04ae7148",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 67,
+        "end": 68,
+        "entry_ids": [
+          "a30d9bda-96b9-49da-95f0-20f2e66bbad7"
+        ],
+        "tool_use_id": "toolu_0126FLJxED91yssGmUJEH9ey"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_0126FLJxED91yssGmUJEH9ey"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: run",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 27
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-22T08:15:19.734545Z",
+    "agent_lines": 48,
+    "agent_removed": 29,
+    "human_added": 6,
+    "human_modified": 22,
+    "human_removed": 0,
+    "total_committed": 76,
+    "total_lines_changed": 105,
+    "agent_percentage": 73.33333333333333,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 121,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 121,
+      "user_lines_removed": 0,
+      "agent_lines_added": 100,
+      "agent_lines_removed": 51,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 121,
+      "user_lines_removed": 0,
+      "agent_lines_added": 99,
+      "agent_lines_removed": 49,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 130,
+      "user_lines_removed": 7,
+      "agent_lines_added": 97,
+      "agent_lines_removed": 49,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12,
+        "frontend/src/components/SplitMode/useOutputFiles.ts": 9
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/SplitMode/useOutputFiles.ts": 7
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 130,
+      "user_lines_removed": 7,
+      "agent_lines_added": 97,
+      "agent_lines_removed": 49,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12,
+        "frontend/src/components/SplitMode/useOutputFiles.ts": 9
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/SplitMode/useOutputFiles.ts": 7
+      }
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 130,
+      "user_lines_removed": 7,
+      "agent_lines_added": 97,
+      "agent_lines_removed": 49,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12,
+        "frontend/src/components/SplitMode/useOutputFiles.ts": 9
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/SplitMode/useOutputFiles.ts": 7
+      }
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 121,
+      "user_lines_removed": 0,
+      "agent_lines_added": 102,
+      "agent_lines_removed": 51,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12
+      }
+    },
+    {
+      "checkpoint_number": 9,
+      "user_lines_added": 122,
+      "user_lines_removed": 1,
+      "agent_lines_added": 102,
+      "agent_lines_removed": 51,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12,
+        "frontend/src/components/SplitMode/useOutputFiles.ts": 1
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/SplitMode/useOutputFiles.ts": 1
+      }
+    },
+    {
+      "checkpoint_number": 10,
+      "user_lines_added": 121,
+      "user_lines_removed": 0,
+      "agent_lines_added": 98,
+      "agent_lines_removed": 51,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12
+      }
+    },
+    {
+      "checkpoint_number": 11,
+      "user_lines_added": 121,
+      "user_lines_removed": 0,
+      "agent_lines_added": 98,
+      "agent_lines_removed": 51,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 12
+      }
+    }
+  ]
+}
