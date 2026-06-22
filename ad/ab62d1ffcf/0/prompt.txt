@@ -1,0 +1,5 @@
+add Validation to make sure all filenames in SplitMode are unique
+
+---
+
+Could duplicateFirstPages be a part of UseOutputFiles?
