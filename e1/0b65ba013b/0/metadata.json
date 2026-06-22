@@ -1,0 +1,100 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e10b65ba013b",
+  "session_id": "00890b75-3b73-40ea-a572-24824f035a7f",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-22T07:17:27.385469Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "app.go",
+    "frontend/src/components/SplitMode/ThumbnailPanel.tsx",
+    "frontend/src/components/SplitMode/index.tsx",
+    "frontend/wailsjs/go/main/App.d.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-4-6",
+  "turn_id": "c1f24a7317bb",
+  "token_usage": {
+    "input_tokens": 217,
+    "cache_creation_tokens": 320035,
+    "cache_read_tokens": 14496207,
+    "output_tokens": 115097,
+    "api_call_count": 167
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_0126FLJxED91yssGmUJEH9ey",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "run"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "c1f24a7317bb",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 67,
+        "end": 68,
+        "entry_ids": [
+          "a30d9bda-96b9-49da-95f0-20f2e66bbad7"
+        ],
+        "tool_use_id": "toolu_0126FLJxED91yssGmUJEH9ey"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_0126FLJxED91yssGmUJEH9ey"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: run",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-22T07:17:27.354718Z",
+    "agent_lines": 94,
+    "agent_removed": 38,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 94,
+    "total_lines_changed": 132,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 120,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 11
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 120,
+      "user_lines_removed": 0,
+      "agent_lines_added": 94,
+      "agent_lines_removed": 38,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 11
+      }
+    }
+  ]
+}
