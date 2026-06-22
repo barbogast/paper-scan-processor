@@ -1,0 +1,69 @@
+Once a default output folder is chosen, the button label doesn't make it obvious that it is about a filesystem folder. Does it make sense to show an eclipsed (...) version of the full path here?[Image #1]
+
+---
+
+just SplitMode for now
+
+---
+
+Do the same adjustments for the folder overwrites
+
+---
+
+Now there is quite some whitespace after the folder name. Is it possible to show as much of the path as possible, starting from the right?
+
+---
+
+Is it possible to align the path to the left? Also, it should start with a `/`
+
+---
+
+Too much complexity let's go back to the previous solution
+
+---
+
+Make the full path start with a `/`
+
+---
+
+Ah, no, you misunderstood: I wanted the previous layout. Just on a textual level the file system root `/` should be displayed before the first folder (if it is visible)
+
+---
+
+the `direction: rtl` property makes the leading `/` of the path disappear
+
+---
+
+No, revert
+
+---
+
+The `/` also disappears if there is enough space to display it. Ask before changing code
+
+---
+
+Let's try 3.
+
+---
+
+Is it possible to add the `...` if the ellipsis solution? Only if not complex
+
+---
+
+Move this functionality to a separate component
+
+---
+
+if clipped, Add a toolip displaying the full path
+
+---
+
+Noice
+
+---
+
+Rename ScrollablePath to ClippedPath
+
+---
+
+Add some comments to clipped path, explaining what it does
