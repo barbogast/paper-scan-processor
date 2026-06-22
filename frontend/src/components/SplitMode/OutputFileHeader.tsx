@@ -1,5 +1,6 @@
 import { ITEM_PADDING, HEADER_HEIGHT } from '../../constants'
 import { PendingFocusHandle } from './usePendingFocus'
+import ClippedPath from './ClippedPath'
 
 interface Props {
   filename: string
@@ -56,19 +57,7 @@ export default function OutputFileHeader({
         />
         <span style={{ fontSize: 12, color: 'var(--mantine-color-dimmed)', flexShrink: 0 }}>.pdf</span>
       </div>
-      <div
-        onClick={onPickFolder}
-        style={{
-          fontSize: 11,
-          color: folder ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-dimmed)',
-          cursor: 'pointer',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {folder ?? 'Choose folder…'}
-      </div>
+      <ClippedPath path={folder} onClick={onPickFolder} />
     </div>
   )
 }

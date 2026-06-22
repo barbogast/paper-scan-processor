@@ -4,7 +4,7 @@ import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go/main/App'
-import { basename } from '../../utils'
+import { basename, ellipsisPath } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
 import { usePendingFocus } from './usePendingFocus'
 
@@ -123,7 +123,7 @@ export default function SplitMode({ initialPath }: Props) {
             style={{ flex: 1 }}
           />
           <Button size="xs" variant="default" onClick={handlePickOutputFolder}>
-            {outputFolder ? basename(outputFolder) : 'Output folder…'}
+            {outputFolder ? ellipsisPath(outputFolder) : 'Output folder…'}
           </Button>
           <Button size="xs" disabled={!pdfPath || !outputFolder || outputFiles.duplicateFirstPages.size > 0} loading={exporting} onClick={handleExport}>
             Export
