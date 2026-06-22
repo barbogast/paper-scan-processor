@@ -76,13 +76,15 @@ export default function SplitMode({ initialPath }: Props) {
     if (!pdfPath || !outputFolder) return
     setExporting(true)
     try {
-      const splitPoints = outputFiles.getSplitPoints()
-      const sorted = [...splitPoints].sort((a, b) => a - b)
-      const firstPages = [1, ...sorted.map(p => p + 1)]
-      const outNames = firstPages.map(fp => outputFiles.all.get(fp)?.name ?? '')
-      const outDirs = firstPages.map(fp => outputFiles.all.get(fp)?.folderOverride ?? outputFolder)
-      await ExportSplit(pdfPath, sorted, outDirs, outNames)
-      const fileCount = splitPoints.size + 1
+      const files = [...outputFiles.all.entries()]
+        .sort(([a], [b]) => a - b)
+        .map(([firstPage, file]) => ({
+          firstPage,
+          name: file.name,
+          outDir: file.folderOverride ?? outputFolder,
+        }))
+      await ExportSplit(pdfPath, files)
+      const fileCount = files.length
       notifications.show({
         title: 'Export complete',
         message: `${fileCount} file${fileCount !== 1 ? 's' : ''} saved`,

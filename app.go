@@ -117,16 +117,28 @@ func (a *App) PickFolder() (string, error) {
 	})
 }
 
-// ExportSplit splits the PDF at inPath at the given page boundaries and writes
-// each segment to the corresponding directory in outDirs using the corresponding
-// name from outNames (without extension). An empty name falls back to "output-N".
-// splitAfter contains 1-indexed page numbers after which a new file begins.
-func (a *App) ExportSplit(inPath string, splitAfter []int, outDirs []string, outNames []string) error {
+// OutputFileSpec describes one output file for ExportSplit.
+type OutputFileSpec struct {
+	FirstPage int    `json:"firstPage"` // 1-indexed; first entry must be 1
+	Name      string `json:"name"`      // filename without extension; falls back to "output-N" if empty
+	OutDir    string `json:"outDir"`    // destination directory
+}
+
+// ExportSplit splits the PDF at inPath according to files (sorted by FirstPage)
+// and writes each segment to its OutDir using its Name.
+func (a *App) ExportSplit(inPath string, files []OutputFileSpec) error {
 	tmpDir, err := os.MkdirTemp("", "psp-split-*")
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(tmpDir)
+
+	splitAfter := make([]int, 0, len(files)-1)
+	for _, f := range files {
+		if f.FirstPage > 1 {
+			splitAfter = append(splitAfter, f.FirstPage-1)
+		}
+	}
 
 	paths, err := splitPDF(inPath, splitAfter, tmpDir)
 	if err != nil {
@@ -134,21 +146,14 @@ func (a *App) ExportSplit(inPath string, splitAfter []int, outDirs []string, out
 	}
 
 	for i, src := range paths {
-		outDir := ""
-		if i < len(outDirs) {
-			outDir = outDirs[i]
-		}
-		name := ""
-		if i < len(outNames) {
-			name = strings.TrimSpace(outNames[i])
-		}
+		name := strings.TrimSpace(files[i].Name)
 		if name == "" {
 			name = fmt.Sprintf("output-%d", i+1)
 		}
 		if !strings.HasSuffix(strings.ToLower(name), ".pdf") {
 			name += ".pdf"
 		}
-		if err := copyFile(src, filepath.Join(outDir, name)); err != nil {
+		if err := copyFile(src, filepath.Join(files[i].OutDir, name)); err != nil {
 			return err
 		}
 	}
