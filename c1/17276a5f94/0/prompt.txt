@@ -1,0 +1,77 @@
+How are the filenames determined right now?
+
+---
+
+Go ahead with step 3
+
+---
+
+what's the reason to store `items` in a ref?
+
+---
+
+no, but add a comment explaining this
+
+---
+
+Do step 4
+
+---
+
+Is it necessary to store the template in a ref?
+
+---
+
+yes
+
+---
+
+The `{name}` template variable not be written into the generated filename. Instead the cursor should be placed at the posittion where `{name}` was.
+
+---
+
+Why not autofocus the input element after the divider was added? Then the cursor can immediately be positioned and the position doesn't need to be persisted.
+
+---
+
+How about a small hook wrapping pendingFocus, setPendingFocus and onFocused and returning an object that can be passed around?
+
+---
+
+Within the hook, rename firstPage to afterPage, onFocused to clear()
+
+---
+
+Let's pass the whole `focus` object into OutputFileHeader. Also, add a comment to the focus hook explaining the usecase
+
+---
+
+commit
+
+---
+
+do step 5
+
+---
+
+fix the TS error in MergeMOde
+
+---
+
+commit
+
+---
+
+do step 5
+
+---
+
+commit
+
+---
+
+commit
+
+---
+
+deduplicate basename()
