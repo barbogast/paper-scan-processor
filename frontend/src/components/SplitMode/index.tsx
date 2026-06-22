@@ -4,12 +4,9 @@ import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go/main/App'
+import { basename } from '../../utils'
 
 const DEFAULT_TEMPLATE = '{date} {name}'
-
-function basename(p: string) {
-  return p.split(/[\\/]/).pop() ?? p
-}
 
 function applyTemplate(template: string): { value: string; cursorPos: number } {
   const date = new Date().toISOString().split('T')[0]

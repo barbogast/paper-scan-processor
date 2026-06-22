@@ -7,10 +7,7 @@ import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage
 import DetailPanel from '../DetailPanel'
 import { usePDFFile } from '../../hooks/usePDFFile'
 import * as pageCache from '../../hooks/pageCache'
-
-function basename(p: string) {
-  return p.split(/[\\/]/).pop() ?? p
-}
+import { basename } from '../../utils'
 
 interface Props {
   onOpenInSplitMode: (path: string) => void
