@@ -1,9 +1,5 @@
 import { ITEM_PADDING, HEADER_HEIGHT } from '../../constants'
-
-export interface PendingFocusHandle {
-  pendingFocus: { afterPage: number; cursorPos: number } | null
-  clear: () => void
-}
+import { PendingFocusHandle } from './usePendingFocus'
 
 interface Props {
   filename: string

@@ -5,7 +5,7 @@ import * as pageCache from '../../hooks/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
 import type { OutputFilesHandle } from './useOutputFiles'
 import OutputFileHeader from './OutputFileHeader'
-import type { PendingFocusHandle } from './OutputFileHeader'
+import type { PendingFocusHandle } from './usePendingFocus'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480

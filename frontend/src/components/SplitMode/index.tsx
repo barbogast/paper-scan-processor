@@ -6,6 +6,7 @@ import DetailPanel from '../DetailPanel'
 import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go/main/App'
 import { basename } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
+import { usePendingFocus } from './usePendingFocus'
 
 const DEFAULT_TEMPLATE = '{date} {name}'
 
@@ -15,16 +16,6 @@ function applyTemplate(template: string): { value: string; cursorPos: number } {
   const nameIdx = withDate.indexOf('{name}')
   if (nameIdx === -1) return { value: withDate, cursorPos: withDate.length }
   return { value: withDate.replace('{name}', ''), cursorPos: nameIdx }
-}
-
-// Tracks which filename input should steal focus after a split point is added,
-// and where the cursor should land within it. Cleared by the input itself once
-// it has focused, so only the first render after the split point is added fires.
-function usePendingFocus() {
-  const [pendingFocus, setPendingFocus] = useState<{ afterPage: number; cursorPos: number } | null>(null)
-  const request = useCallback((afterPage: number, cursorPos: number) => setPendingFocus({ afterPage, cursorPos }), [])
-  const clear = useCallback(() => setPendingFocus(null), [])
-  return { pendingFocus, request, clear }
 }
 
 interface Props {
