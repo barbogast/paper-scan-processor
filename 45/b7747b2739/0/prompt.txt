@@ -155,3 +155,7 @@ Yes, but don't pass splitPoints
 ---
 
 Why not call getSplitPoints() once and resuse the result?
+
+---
+
+commit
