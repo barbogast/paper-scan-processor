@@ -112,74 +112,65 @@ func applyRotations(pages []string, rotations map[int]int) error {
 // E.g. splitAfter=[2,4] on a 6-page PDF produces three files: pages 1-2, 3-4, 5-6.
 // rotations maps 1-indexed original page numbers to clockwise degrees (90, 180, 270).
 func splitPDF(inPath string, splitAfter []int, rotations map[int]int, outDir string) ([]string, error) {
-	if len(rotations) == 0 {
-		if len(splitAfter) == 0 {
-			outPath := filepath.Join(outDir, filepath.Base(inPath))
-			if err := copyFile(inPath, outPath); err != nil {
-				return nil, err
-			}
-			return []string{outPath}, nil
+	src := inPath
+	if len(rotations) > 0 {
+		// Rotate before splitting so SplitByPageNrFile operates on the final pages.
+		// Use a subdirectory so sortedPDFsInDir(outDir) doesn't pick up this file.
+		preDir := filepath.Join(outDir, "pre")
+		if err := os.MkdirAll(preDir, 0o755); err != nil {
+			return nil, err
 		}
-
-		// SplitByPageNrFile expects the first page of each new segment.
-		pageNrs := make([]int, len(splitAfter))
-		for i, p := range splitAfter {
-			pageNrs[i] = p + 1
+		rotated := filepath.Join(preDir, "rotated.pdf")
+		if err := applyRotationsToFile(inPath, rotated, rotations); err != nil {
+			return nil, err
 		}
-		if err := api.SplitByPageNrFile(inPath, outDir, pageNrs, nil); err != nil {
-			return nil, fmt.Errorf("splitting PDF: %w", err)
-		}
-		return sortedPDFsInDir(outDir)
+		src = rotated
 	}
 
-	// rotation path: explode to single pages, rotate, re-assemble into segments
-	pageDir := filepath.Join(outDir, "pages")
-	if err := os.MkdirAll(pageDir, 0o755); err != nil {
-		return nil, err
-	}
-	if err := api.SplitFile(inPath, pageDir, 1, nil); err != nil {
-		return nil, fmt.Errorf("splitting into single pages: %w", err)
-	}
-	allPages, err := sortedPDFsInDir(pageDir)
-	if err != nil {
-		return nil, err
-	}
-	if err := applyRotations(allPages, rotations); err != nil {
-		return nil, fmt.Errorf("rotating pages: %w", err)
+	if len(splitAfter) == 0 {
+		outPath := filepath.Join(outDir, "output.pdf")
+		if err := copyFile(src, outPath); err != nil {
+			return nil, err
+		}
+		return []string{outPath}, nil
 	}
 
-	splitSet := make(map[int]bool, len(splitAfter))
-	for _, p := range splitAfter {
-		splitSet[p] = true
+	// SplitByPageNrFile expects the first page of each new segment.
+	pageNrs := make([]int, len(splitAfter))
+	for i, p := range splitAfter {
+		pageNrs[i] = p + 1
 	}
-	var segments [][]string
-	var current []string
-	for i, p := range allPages {
-		current = append(current, p)
-		if splitSet[i+1] {
-			segments = append(segments, current)
-			current = nil
-		}
+	if err := api.SplitByPageNrFile(src, outDir, pageNrs, nil); err != nil {
+		return nil, fmt.Errorf("splitting PDF: %w", err)
 	}
-	if len(current) > 0 {
-		segments = append(segments, current)
+	return sortedPDFsInDir(outDir)
+}
+
+// applyRotationsToFile writes a copy of inPath to outPath with the specified
+// page rotations applied. It chains one api.RotateFile call per distinct degree.
+func applyRotationsToFile(inPath, outPath string, rotations map[int]int) error {
+	byDeg := make(map[int][]string)
+	for page, deg := range rotations {
+		byDeg[deg] = append(byDeg[deg], fmt.Sprintf("%d", page))
 	}
 
-	outPaths := make([]string, len(segments))
-	for i, seg := range segments {
-		outPath := filepath.Join(outDir, fmt.Sprintf("segment_%03d.pdf", i+1))
-		if len(seg) == 1 {
-			if err := copyFile(seg[0], outPath); err != nil {
-				return nil, err
-			}
-		} else {
-			if err := api.MergeCreateFile(seg, outPath, false, nil); err != nil {
-				return nil, fmt.Errorf("merging segment %d: %w", i+1, err)
-			}
+	src := inPath
+	i := 0
+	for deg, pages := range byDeg {
+		dst := outPath
+		if i < len(byDeg)-1 {
+			dst = fmt.Sprintf("%s.%d.tmp", outPath, i)
 		}
-		outPaths[i] = outPath
+		if err := api.RotateFile(src, dst, deg, pages, nil); err != nil {
+			return fmt.Errorf("rotate %d°: %w", deg, err)
+		}
+		if src != inPath {
+			os.Remove(src)
+		}
+		src = dst
+		i++
 	}
-	return outPaths, nil
+	return nil
 }
 
 // pdfPageCount returns the number of pages in the PDF at path.
