@@ -1,0 +1,25 @@
+in backend, splitPDF there is a special case for when there are no rotations. Is that special case necessary?
+
+---
+
+Okay, add a comment explaining why the special case is worth it
+
+---
+
+But: api.RotateFile is able to rotate multiple pages within a PDF file. Couldn't this be used instead of splitting the PDF into single-page files before rotation?
+
+---
+
+How about rotating before splitting?
+
+---
+
+yes
+
+---
+
+what's the reason to sort `degs` in applyRotationsToFile()?
+
+---
+
+Remove it
