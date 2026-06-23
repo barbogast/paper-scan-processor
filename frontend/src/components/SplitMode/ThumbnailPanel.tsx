@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
-import { IconRotateClockwise } from '@tabler/icons-react'
+import { IconRotateClockwise, IconX } from '@tabler/icons-react'
 import * as pageCache from '../../hooks/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
 import type { OutputFilesHandle } from './useOutputFiles'
@@ -39,6 +39,8 @@ interface Props {
   focus: PendingFocusHandle
   rotations: Map<number, number>
   onRotate: (page: number) => void
+  skipped: Set<number>
+  onToggleSkip: (page: number) => void
 }
 
 export default function SplitThumbnailPanel({
@@ -49,6 +51,8 @@ export default function SplitThumbnailPanel({
   focus,
   rotations,
   onRotate,
+  skipped,
+  onToggleSkip,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
   const [hoveredGap, setHoveredGap] = useState<number | null>(null)
@@ -104,11 +108,14 @@ export default function SplitThumbnailPanel({
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
         if (selectedPage < pageCount) onSelectPage(selectedPage + 1)
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault()
+        onToggleSkip(selectedPage)
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [selectedPage, pageCount, onSelectPage])
+  }, [selectedPage, pageCount, onSelectPage, onToggleSkip])
 
   const startDrag = (e: React.MouseEvent) => {
     const startX = e.clientX
@@ -171,6 +178,8 @@ export default function SplitThumbnailPanel({
               const showRotateBtn = hoveredPage === page || isRotated
               const isOddRotation = rotation === 90 || rotation === 270
               const imgTransform = rotation ? `rotate(${rotation}deg)${isOddRotation ? ` scale(${210 / 297})` : ''}` : undefined
+              const isSkipped = skipped.has(page)
+              const showSkipBtn = hoveredPage === page || isSkipped
 
               return (
                 <div
@@ -203,7 +212,7 @@ export default function SplitThumbnailPanel({
                           <img
                             src={src}
                             alt={`Page ${page}`}
-                            style={{ width: '100%', display: 'block', transform: imgTransform }}
+                            style={{ width: '100%', display: 'block', opacity: isSkipped ? 0.3 : 1, transform: imgTransform }}
                             draggable={false}
                           />
                         ) : (
@@ -226,12 +235,26 @@ export default function SplitThumbnailPanel({
                           <IconRotateClockwise size={10} stroke={3} />
                         </div>
                       )}
+                      {showSkipBtn && (
+                        <div
+                          onClick={(e) => { e.stopPropagation(); onToggleSkip(page) }}
+                          style={{
+                            position: 'absolute', top: 3, right: 3,
+                            width: 16, height: 16, borderRadius: 3,
+                            background: isSkipped ? 'var(--mantine-color-orange-6)' : 'rgba(0,0,0,0.45)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', color: 'white',
+                          }}
+                        >
+                          <IconX size={10} stroke={3} />
+                        </div>
+                      )}
                     </div>
                     <div
                       style={{
                         textAlign: 'center',
                         fontSize: 11,
-                        color: 'var(--mantine-color-gray-7)',
+                        color: isSkipped ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-7)',
                         height: LABEL_HEIGHT,
                         lineHeight: `${LABEL_HEIGHT}px`,
                       }}

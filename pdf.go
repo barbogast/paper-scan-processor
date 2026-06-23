@@ -110,40 +110,99 @@ func applyRotations(pages []string, rotations map[int]int) error {
 // each segment to outDir, returning the output file paths in order.
 // splitAfter contains 1-indexed page numbers after which a new file begins.
 // E.g. splitAfter=[2,4] on a 6-page PDF produces three files: pages 1-2, 3-4, 5-6.
+// skip contains 1-indexed page numbers to exclude from all output files.
 // rotations maps 1-indexed original page numbers to clockwise degrees (90, 180, 270).
-func splitPDF(inPath string, splitAfter []int, rotations map[int]int, outDir string) ([]string, error) {
-	src := inPath
-	if len(rotations) > 0 {
-		// Rotate before splitting so SplitByPageNrFile operates on the final pages.
-		// Use a subdirectory so sortedPDFsInDir(outDir) doesn't pick up this file.
-		preDir := filepath.Join(outDir, "pre")
-		if err := os.MkdirAll(preDir, 0o755); err != nil {
-			return nil, err
+func splitPDF(inPath string, splitAfter []int, skip []int, rotations map[int]int, outDir string) ([]string, error) {
+	if len(skip) == 0 {
+		// Fast path: rotate the whole file once then use pdfcpu's native split.
+		src := inPath
+		if len(rotations) > 0 {
+			// Rotate before splitting so SplitByPageNrFile operates on the final pages.
+			// Use a subdirectory so sortedPDFsInDir(outDir) doesn't pick up this file.
+			preDir := filepath.Join(outDir, "pre")
+			if err := os.MkdirAll(preDir, 0o755); err != nil {
+				return nil, err
+			}
+			rotated := filepath.Join(preDir, "rotated.pdf")
+			if err := applyRotationsToFile(inPath, rotated, rotations); err != nil {
+				return nil, err
+			}
+			src = rotated
 		}
-		rotated := filepath.Join(preDir, "rotated.pdf")
-		if err := applyRotationsToFile(inPath, rotated, rotations); err != nil {
-			return nil, err
+
+		if len(splitAfter) == 0 {
+			outPath := filepath.Join(outDir, "output.pdf")
+			if err := copyFile(src, outPath); err != nil {
+				return nil, err
+			}
+			return []string{outPath}, nil
 		}
-		src = rotated
+
+		// SplitByPageNrFile expects the first page of each new segment.
+		pageNrs := make([]int, len(splitAfter))
+		for i, p := range splitAfter {
+			pageNrs[i] = p + 1
+		}
+		if err := api.SplitByPageNrFile(src, outDir, pageNrs, nil); err != nil {
+			return nil, fmt.Errorf("splitting PDF: %w", err)
+		}
+		return sortedPDFsInDir(outDir)
 	}
 
-	if len(splitAfter) == 0 {
-		outPath := filepath.Join(outDir, "output.pdf")
-		if err := copyFile(src, outPath); err != nil {
-			return nil, err
-		}
-		return []string{outPath}, nil
+	// Skip path: explode to single pages, filter, rotate, then reassemble each segment.
+	tmpDir, err := os.MkdirTemp("", "psp-split-pages-*")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(tmpDir)
+
+	if err := api.SplitFile(inPath, tmpDir, 1, nil); err != nil {
+		return nil, fmt.Errorf("splitting to single pages: %w", err)
+	}
+	allPages, err := sortedPDFsInDir(tmpDir)
+	if err != nil {
+		return nil, fmt.Errorf("listing single pages: %w", err)
+	}
+	pageCount := len(allPages)
+
+	if err := applyRotations(allPages, rotations); err != nil {
+		return nil, fmt.Errorf("rotating pages: %w", err)
 	}
 
-	// SplitByPageNrFile expects the first page of each new segment.
-	pageNrs := make([]int, len(splitAfter))
-	for i, p := range splitAfter {
-		pageNrs[i] = p + 1
+	skipSet := make(map[int]bool, len(skip))
+	for _, p := range skip {
+		skipSet[p] = true
 	}
-	if err := api.SplitByPageNrFile(src, outDir, pageNrs, nil); err != nil {
-		return nil, fmt.Errorf("splitting PDF: %w", err)
+
+	// Build segment start-page list (1-indexed).
+	starts := make([]int, 0, len(splitAfter)+1)
+	starts = append(starts, 1)
+	for _, p := range splitAfter {
+		starts = append(starts, p+1)
 	}
-	return sortedPDFsInDir(outDir)
+
+	var outPaths []string
+	for i, start := range starts {
+		end := pageCount
+		if i+1 < len(starts) {
+			end = starts[i+1] - 1
+		}
+		var segPages []string
+		for page := start; page <= end; page++ {
+			if !skipSet[page] {
+				segPages = append(segPages, allPages[page-1])
+			}
+		}
+		if len(segPages) == 0 {
+			return nil, fmt.Errorf("output file %d has no pages after applying skip", i+1)
+		}
+		outPath := filepath.Join(outDir, fmt.Sprintf("segment-%d.pdf", i+1))
+		if err := api.MergeCreateFile(segPages, outPath, false, nil); err != nil {
+			return nil, fmt.Errorf("building segment %d: %w", i+1, err)
+		}
+		outPaths = append(outPaths, outPath)
+	}
+	return outPaths, nil
 }
 
 // applyRotationsToFile writes a copy of inPath to outPath with the specified

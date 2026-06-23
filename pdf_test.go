@@ -355,7 +355,7 @@ func TestSplitPDF(t *testing.T) {
 	writePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
 
 	// Split after pages 2 and 4 → three files: 1-2, 3-4, 5-6
-	parts, err := splitPDF(in, []int{2, 4}, nil, outDir)
+	parts, err := splitPDF(in, []int{2, 4}, nil, nil, outDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -391,7 +391,7 @@ func TestSplitPDFSingleOutput(t *testing.T) {
 
 	writePDF(t, in, []string{"P1", "P2", "P3", "P4"})
 
-	parts, err := splitPDF(in, nil, nil, outDir)
+	parts, err := splitPDF(in, nil, nil, nil, outDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -405,4 +405,46 @@ func TestSplitPDFSingleOutput(t *testing.T) {
 	} else if got != 4 {
 		t.Errorf("got %d pages, want 4", got)
 	}
+}
+
+func TestSplitPDFSkip(t *testing.T) {
+	tmp := t.TempDir()
+	in := filepath.Join(tmp, "input.pdf")
+	outDir := filepath.Join(tmp, "out")
+	if err := os.MkdirAll(outDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	writePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
+
+	// Split after 2 and 4, skip page 3.
+	// Segment 1: pages 1-2 → [P1, P2]
+	// Segment 2: pages 3-4 → [P4] (P3 skipped)
+	// Segment 3: pages 5-6 → [P5, P6]
+	parts, err := splitPDF(in, []int{2, 4}, []int{3}, nil, outDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(parts) != 3 {
+		t.Fatalf("got %d parts, want 3", len(parts))
+	}
+
+	wantCounts := []int{2, 1, 2}
+	for i, want := range wantCounts {
+		if got, err := pdfPageCount(parts[i]); err != nil {
+			t.Fatalf("part %d: %v", i, err)
+		} else if got != want {
+			t.Errorf("part %d: got %d pages, want %d", i, got, want)
+		}
+	}
+
+	data1, err := os.ReadFile(parts[1])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(data1, []byte("% P3")) {
+		t.Error("skipped page P3 found in segment 2")
+	}
+	assertOrder(t, data1, []string{"P4"})
 }
