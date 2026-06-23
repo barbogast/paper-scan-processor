@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "96db6d563a1c",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app.go",
+    "app_test.go",
+    "frontend/src/components/SplitMode/ThumbnailPanel.tsx",
+    "frontend/src/components/SplitMode/index.tsx",
+    "frontend/wailsjs/go/main/App.d.ts",
+    "frontend/wailsjs/go/main/App.js",
+    "pdf.go",
+    "pdf_test.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/96/db6d563a1c/0/metadata.json",
+      "transcript": "/96/db6d563a1c/0/full.jsonl",
+      "content_hash": "/96/db6d563a1c/0/content_hash.txt",
+      "prompt": "/96/db6d563a1c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 41,
+    "cache_creation_tokens": 110083,
+    "cache_read_tokens": 1844767,
+    "output_tokens": 23513,
+    "api_call_count": 35
+  }
+}

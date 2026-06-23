@@ -1,0 +1,5 @@
+read spec.md, don't reply
+
+---
+
+Let's skip step 6 and go to step 7: I suggest to implement a solution similar to how its done in MergeMode. consider code sharing where appropriate.
