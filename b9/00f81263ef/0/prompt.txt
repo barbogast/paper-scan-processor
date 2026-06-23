@@ -1,0 +1,13 @@
+read spec.md, don't reply
+
+---
+
+Both splitMode and mergeMode display a thumbnail for each page in a thumbnailPanel. This thumbnail looks quite similar. Does it make sense to move the code to a shared component? I'm thinking about the skip and rotate buttons and the code to rotate the thumbnail image. Maybe more?
+
+---
+
+From what I can see it should be possible to pass a pageLabel as a string into PageThumbnail, even for mergeMode. Calling pageLabel() can be done by ThumbColumn, right?
+
+---
+
+yesa
