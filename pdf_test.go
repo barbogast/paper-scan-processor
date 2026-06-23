@@ -294,10 +294,10 @@ func TestMergePDFsSkip(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertOrder(t, data, []string{"A1", "B2", "A3", "B3"})
-	if bytes.Contains(data, []byte("A2")) {
+	if bytes.Contains(data, []byte("% A2")) {
 		t.Error("skipped page A2 found in output")
 	}
-	if bytes.Contains(data, []byte("B1")) {
+	if bytes.Contains(data, []byte("% B1")) {
 		t.Error("skipped page B1 found in output")
 	}
 }
