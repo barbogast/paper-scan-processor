@@ -355,7 +355,7 @@ func TestSplitPDF(t *testing.T) {
 	writePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
 
 	// Split after pages 2 and 4 → three files: 1-2, 3-4, 5-6
-	parts, err := splitPDF(in, []int{2, 4}, outDir)
+	parts, err := splitPDF(in, []int{2, 4}, nil, outDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -391,7 +391,7 @@ func TestSplitPDFSingleOutput(t *testing.T) {
 
 	writePDF(t, in, []string{"P1", "P2", "P3", "P4"})
 
-	parts, err := splitPDF(in, nil, outDir)
+	parts, err := splitPDF(in, nil, nil, outDir)
 	if err != nil {
 		t.Fatal(err)
 	}

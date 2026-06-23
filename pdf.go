@@ -110,26 +110,76 @@ func applyRotations(pages []string, rotations map[int]int) error {
 // each segment to outDir, returning the output file paths in order.
 // splitAfter contains 1-indexed page numbers after which a new file begins.
 // E.g. splitAfter=[2,4] on a 6-page PDF produces three files: pages 1-2, 3-4, 5-6.
-func splitPDF(inPath string, splitAfter []int, outDir string) ([]string, error) {
-	if len(splitAfter) == 0 {
-		outPath := filepath.Join(outDir, filepath.Base(inPath))
-		if err := copyFile(inPath, outPath); err != nil {
-			return nil, err
+// rotations maps 1-indexed original page numbers to clockwise degrees (90, 180, 270).
+func splitPDF(inPath string, splitAfter []int, rotations map[int]int, outDir string) ([]string, error) {
+	if len(rotations) == 0 {
+		if len(splitAfter) == 0 {
+			outPath := filepath.Join(outDir, filepath.Base(inPath))
+			if err := copyFile(inPath, outPath); err != nil {
+				return nil, err
+			}
+			return []string{outPath}, nil
 		}
-		return []string{outPath}, nil
+
+		// SplitByPageNrFile expects the first page of each new segment.
+		pageNrs := make([]int, len(splitAfter))
+		for i, p := range splitAfter {
+			pageNrs[i] = p + 1
+		}
+		if err := api.SplitByPageNrFile(inPath, outDir, pageNrs, nil); err != nil {
+			return nil, fmt.Errorf("splitting PDF: %w", err)
+		}
+		return sortedPDFsInDir(outDir)
 	}
 
-	// SplitByPageNrFile expects the first page of each new segment.
-	pageNrs := make([]int, len(splitAfter))
-	for i, p := range splitAfter {
-		pageNrs[i] = p + 1
+	// rotation path: explode to single pages, rotate, re-assemble into segments
+	pageDir := filepath.Join(outDir, "pages")
+	if err := os.MkdirAll(pageDir, 0o755); err != nil {
+		return nil, err
+	}
+	if err := api.SplitFile(inPath, pageDir, 1, nil); err != nil {
+		return nil, fmt.Errorf("splitting into single pages: %w", err)
+	}
+	allPages, err := sortedPDFsInDir(pageDir)
+	if err != nil {
+		return nil, err
+	}
+	if err := applyRotations(allPages, rotations); err != nil {
+		return nil, fmt.Errorf("rotating pages: %w", err)
 	}
 
-	if err := api.SplitByPageNrFile(inPath, outDir, pageNrs, nil); err != nil {
-		return nil, fmt.Errorf("splitting PDF: %w", err)
+	splitSet := make(map[int]bool, len(splitAfter))
+	for _, p := range splitAfter {
+		splitSet[p] = true
+	}
+	var segments [][]string
+	var current []string
+	for i, p := range allPages {
+		current = append(current, p)
+		if splitSet[i+1] {
+			segments = append(segments, current)
+			current = nil
+		}
+	}
+	if len(current) > 0 {
+		segments = append(segments, current)
 	}
 
-	return sortedPDFsInDir(outDir)
+	outPaths := make([]string, len(segments))
+	for i, seg := range segments {
+		outPath := filepath.Join(outDir, fmt.Sprintf("segment_%03d.pdf", i+1))
+		if len(seg) == 1 {
+			if err := copyFile(seg[0], outPath); err != nil {
+				return nil, err
+			}
+		} else {
+			if err := api.MergeCreateFile(seg, outPath, false, nil); err != nil {
+				return nil, fmt.Errorf("merging segment %d: %w", i+1, err)
+			}
+		}
+		outPaths[i] = outPath
+	}
+	return outPaths, nil
 }
 
 // pdfPageCount returns the number of pages in the PDF at path.

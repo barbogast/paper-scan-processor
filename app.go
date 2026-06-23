@@ -126,7 +126,8 @@ type OutputFileSpec struct {
 
 // ExportSplit splits the PDF at inPath according to files (sorted by FirstPage)
 // and writes each segment to its OutDir using its Name.
-func (a *App) ExportSplit(inPath string, files []OutputFileSpec) error {
+// rotations maps 1-indexed page numbers to clockwise degrees (90, 180, 270).
+func (a *App) ExportSplit(inPath string, files []OutputFileSpec, rotations map[int]int) error {
 	tmpDir, err := os.MkdirTemp("", "psp-split-*")
 	if err != nil {
 		return err
@@ -140,7 +141,7 @@ func (a *App) ExportSplit(inPath string, files []OutputFileSpec) error {
 		}
 	}
 
-	paths, err := splitPDF(inPath, splitAfter, tmpDir)
+	paths, err := splitPDF(inPath, splitAfter, rotations, tmpDir)
 	if err != nil {
 		return err
 	}

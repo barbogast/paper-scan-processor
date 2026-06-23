@@ -32,11 +32,22 @@ export default function SplitMode({ initialPath }: Props) {
   const focus = usePendingFocus()
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
   const [exporting, setExporting] = useState(false)
+  const [rotations, setRotations] = useState<Map<number, number>>(() => new Map())
+
+  const rotate = (page: number) => {
+    setRotations(prev => {
+      const next = new Map(prev)
+      const deg = ((next.get(page) ?? 0) + 90) % 360
+      if (deg === 0) next.delete(page); else next.set(page, deg)
+      return next
+    })
+  }
 
   const resetForFile = (count: number, path: string, tmpl: string) => {
     setPdfPath(path)
     setPageCount(count)
     setSelectedPage(1)
+    setRotations(new Map())
     outputFiles.reset(applyTemplate(tmpl).value)
     focus.clear()
   }
@@ -75,7 +86,7 @@ export default function SplitMode({ initialPath }: Props) {
           name: file.name,
           outDir: file.folderOverride ?? outputFolder,
         }))
-      await ExportSplit(pdfPath, files)
+      await ExportSplit(pdfPath, files, Object.fromEntries(rotations))
       setSuccessModal({show: true, path: outputFolder})
     } catch (e) {
       notifications.show({ title: 'Export failed', message: String(e), color: 'red' })
@@ -143,11 +154,15 @@ export default function SplitMode({ initialPath }: Props) {
               outputFiles={outputFiles}
               outputFolder={outputFolder}
               focus={focus}
+              rotations={rotations}
+              onRotate={rotate}
             />
             <DetailPanel
               pdfPath={pdfPath}
               pageNum={selectedPage}
               pageCount={pageCount}
+              rotation={rotations.get(selectedPage) ?? 0}
+              onRotate={() => rotate(selectedPage)}
               onNavigate={setSelectedPage}
             />
           </>

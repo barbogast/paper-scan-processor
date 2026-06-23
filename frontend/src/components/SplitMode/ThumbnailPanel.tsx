@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Loader } from '@mantine/core'
+import { IconRotateClockwise } from '@tabler/icons-react'
 import * as pageCache from '../../hooks/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
 import type { OutputFilesHandle } from './useOutputFiles'
@@ -36,6 +37,8 @@ interface Props {
   outputFiles: OutputFilesHandle
   outputFolder: string | null
   focus: PendingFocusHandle
+  rotations: Map<number, number>
+  onRotate: (page: number) => void
 }
 
 export default function SplitThumbnailPanel({
@@ -44,9 +47,12 @@ export default function SplitThumbnailPanel({
   outputFiles,
   outputFolder,
   focus,
+  rotations,
+  onRotate,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
   const [hoveredGap, setHoveredGap] = useState<number | null>(null)
+  const [hoveredPage, setHoveredPage] = useState<number | null>(null)
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
@@ -160,6 +166,11 @@ export default function SplitThumbnailPanel({
               const isSelected = page === selectedPage
               const isSplit = splitPoints.has(page)
               const isLastPage = page === pageCount
+              const rotation = rotations.get(page) ?? 0
+              const isRotated = rotation !== 0
+              const showRotateBtn = hoveredPage === page || isRotated
+              const isOddRotation = rotation === 90 || rotation === 270
+              const imgTransform = rotation ? `rotate(${rotation}deg)${isOddRotation ? ` scale(${210 / 297})` : ''}` : undefined
 
               return (
                 <div
@@ -172,30 +183,47 @@ export default function SplitThumbnailPanel({
                     height: vItem.size,
                     boxSizing: 'border-box',
                   }}
+                  onMouseEnter={() => setHoveredPage(page)}
+                  onMouseLeave={() => setHoveredPage(null)}
                 >
                   {/* Thumbnail */}
                   <div
                     style={{ padding: ITEM_PADDING, paddingBottom: 0, cursor: 'pointer' }}
                     onClick={() => onSelectPage(page)}
                   >
-                    <div
-                      style={{
-                        border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
-                        borderRadius: 4,
-                        overflow: 'hidden',
-                        background: 'var(--mantine-color-gray-1)',
-                      }}
-                    >
-                      {src ? (
-                        <img
-                          src={src}
-                          alt={`Page ${page}`}
-                          style={{ width: '100%', display: 'block' }}
-                          draggable={false}
-                        />
-                      ) : (
-                        <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
+                    <div style={{ position: 'relative', border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`, borderRadius: 4 }}>
+                      <div
+                        style={{
+                          overflow: 'hidden',
+                          borderRadius: 2,
+                          background: 'var(--mantine-color-gray-1)',
+                        }}
+                      >
+                        {src ? (
+                          <img
+                            src={src}
+                            alt={`Page ${page}`}
+                            style={{ width: '100%', display: 'block', transform: imgTransform }}
+                            draggable={false}
+                          />
+                        ) : (
+                          <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
+                          </div>
+                        )}
+                      </div>
+                      {showRotateBtn && (
+                        <div
+                          onClick={(e) => { e.stopPropagation(); onRotate(page) }}
+                          style={{
+                            position: 'absolute', top: 3, left: 3,
+                            width: 16, height: 16, borderRadius: 3,
+                            background: isRotated ? 'var(--mantine-color-blue-6)' : 'rgba(0,0,0,0.45)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', color: 'white',
+                          }}
+                        >
+                          <IconRotateClockwise size={10} stroke={3} />
                         </div>
                       )}
                     </div>
