@@ -216,6 +216,7 @@ TBD.
 - [ ] **Step 10: Export polish** — filename conflict check before export; keep/move/delete prompt for input file after export; enforce empty output folder on open
 - [ ] **Step 11: Keyboard shortcuts** — `Space` to toggle split point, `Tab` to move between filename inputs
 - [ ] **Step 12: Persisted settings** — last-used output folder, filename template
+- [ ] **Step 13: Make sure the output directory is empty before starting the split.
 
 ### Google Drive integration
 
