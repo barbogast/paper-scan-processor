@@ -1,9 +1,8 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Loader } from '@mantine/core'
-import { IconRotateClockwise, IconX } from '@tabler/icons-react'
 import * as pageCache from '../../hooks/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
+import PageThumbnail from '../PageThumbnail'
 import type { OutputFilesHandle } from './useOutputFiles'
 import OutputFileHeader from './OutputFileHeader'
 import type { PendingFocusHandle } from './usePendingFocus'
@@ -169,17 +168,8 @@ export default function SplitThumbnailPanel({
               }
 
               const page = item.page
-              const src = pageCache.getSrc(pdfPath, page)
-              const isSelected = page === selectedPage
               const isSplit = splitPoints.has(page)
               const isLastPage = page === pageCount
-              const rotation = rotations.get(page) ?? 0
-              const isRotated = rotation !== 0
-              const showRotateBtn = hoveredPage === page || isRotated
-              const isOddRotation = rotation === 90 || rotation === 270
-              const imgTransform = rotation ? `rotate(${rotation}deg)${isOddRotation ? ` scale(${210 / 297})` : ''}` : undefined
-              const isSkipped = skipped.has(page)
-              const showSkipBtn = hoveredPage === page || isSkipped
 
               return (
                 <div
@@ -195,75 +185,20 @@ export default function SplitThumbnailPanel({
                   onMouseEnter={() => setHoveredPage(page)}
                   onMouseLeave={() => setHoveredPage(null)}
                 >
-                  {/* Thumbnail */}
-                  <div
-                    style={{ padding: ITEM_PADDING, paddingBottom: 0, cursor: 'pointer' }}
+                  <PageThumbnail
+                    src={pageCache.getSrc(pdfPath, page)}
+                    pdfPath={pdfPath}
+                    page={page}
+                    thumbHeight={thumbHeight}
+                    isSelected={page === selectedPage}
+                    isSkipped={skipped.has(page)}
+                    rotation={rotations.get(page) ?? 0}
+                    isHovered={hoveredPage === page}
+                    label={String(page)}
                     onClick={() => onSelectPage(page)}
-                  >
-                    <div style={{ position: 'relative', border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`, borderRadius: 4 }}>
-                      <div
-                        style={{
-                          overflow: 'hidden',
-                          borderRadius: 2,
-                          background: 'var(--mantine-color-gray-1)',
-                        }}
-                      >
-                        {src ? (
-                          <img
-                            src={src}
-                            alt={`Page ${page}`}
-                            style={{ width: '100%', display: 'block', opacity: isSkipped ? 0.3 : 1, transform: imgTransform }}
-                            draggable={false}
-                          />
-                        ) : (
-                          <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
-                          </div>
-                        )}
-                      </div>
-                      {showRotateBtn && (
-                        <div
-                          onClick={(e) => { e.stopPropagation(); onRotate(page) }}
-                          style={{
-                            position: 'absolute', top: 3, left: 3,
-                            width: 16, height: 16, borderRadius: 3,
-                            background: isRotated ? 'var(--mantine-color-blue-6)' : 'rgba(0,0,0,0.45)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer', color: 'white',
-                          }}
-                        >
-                          <IconRotateClockwise size={10} stroke={3} />
-                        </div>
-                      )}
-                      {showSkipBtn && (
-                        <div
-                          onClick={(e) => { e.stopPropagation(); onToggleSkip(page) }}
-                          style={{
-                            position: 'absolute', top: 3, right: 3,
-                            width: 16, height: 16, borderRadius: 3,
-                            background: isSkipped ? 'var(--mantine-color-orange-6)' : 'rgba(0,0,0,0.45)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer', color: 'white',
-                          }}
-                        >
-                          <IconX size={10} stroke={3} />
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      style={{
-                        textAlign: 'center',
-                        fontSize: 11,
-                        color: isSkipped ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-7)',
-                        height: LABEL_HEIGHT,
-                        lineHeight: `${LABEL_HEIGHT}px`,
-                      }}
-                    >
-                      {page}
-                    </div>
-                  </div>
-
-                  {/* Gap zone between thumbnails */}
+                    onRotate={() => onRotate(page)}
+                    onToggleSkip={() => onToggleSkip(page)}
+                  />
                   {!isLastPage && (
                     <GapZone
                       isSplit={isSplit}
