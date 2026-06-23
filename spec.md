@@ -210,7 +210,7 @@ TBD.
 - [x] **Step 4: Filename prefill** — global filename template with `{date}` / `{name}` tokens; prefills each section header on creation
 - [x] **Step 5: Output folder** — global output folder picker; per-file folder override in section header
 - [ ] **Step 6: Divider drag-and-drop** — reposition or delete dividers by dragging
-- [ ] **Step 7: Rotate pages**
+- [x] **Step 7: Rotate pages**
 - [ ] **Step 8: Skip pages**
 - [ ] **Step 9: Reorder pages**
 - [ ] **Step 10: Export polish** — filename conflict check before export; keep/move/delete prompt for input file after export; enforce empty output folder on open
