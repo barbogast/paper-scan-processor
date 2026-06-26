@@ -25,6 +25,7 @@ interface Props {
 export default function SplitMode({ initialPath }: Props) {
   const [pdfPath, setPdfPath] = useState<string | null>(null)
   const [pageCount, setPageCount] = useState(0)
+  const [pageOrder, setPageOrder] = useState<number[]>([])
   const [selectedPage, setSelectedPage] = useState(1)
   const [outputFolder, setOutputFolder] = useState<string | null>(null)
   const [successModal, setSuccessModal] = useState<{show: boolean, path: string}>({show: false, path: ''})
@@ -55,6 +56,7 @@ export default function SplitMode({ initialPath }: Props) {
   const resetForFile = (count: number, path: string, tmpl: string) => {
     setPdfPath(path)
     setPageCount(count)
+    setPageOrder(Array.from({ length: count }, (_, i) => i + 1))
     setSelectedPage(1)
     setRotations(new Map())
     setSkipped(new Set())
@@ -89,14 +91,25 @@ export default function SplitMode({ initialPath }: Props) {
     if (!pdfPath || !outputFolder) return
     setExporting(true)
     try {
-      const files = [...outputFiles.all.entries()]
-        .sort(([a], [b]) => a - b)
-        .map(([firstPage, file]) => ({
-          firstPage,
-          name: file.name,
-          outDir: file.folderOverride ?? outputFolder,
-        }))
-      await ExportSplit(pdfPath, files, Object.fromEntries(rotations), [...skipped])
+      // Build ordered page list per segment from pageOrder and splitPoints.
+      const segments: number[][] = []
+      let current: number[] = []
+      for (let i = 0; i < pageOrder.length; i++) {
+        if (i > 0 && outputFiles.splitPoints.has(i - 1)) {
+          segments.push(current)
+          current = []
+        }
+        const page = pageOrder[i]
+        if (!skipped.has(page)) current.push(page)
+      }
+      segments.push(current)
+
+      const files = outputFiles.files.map((file, i) => ({
+        pages: segments[i] ?? [],
+        name: file.name,
+        outDir: file.folderOverride ?? outputFolder,
+      }))
+      await ExportSplit(pdfPath, files, Object.fromEntries(rotations))
       setSuccessModal({show: true, path: outputFolder})
     } catch (e) {
       notifications.show({ title: 'Export failed', message: String(e), color: 'red' })
@@ -105,10 +118,10 @@ export default function SplitMode({ initialPath }: Props) {
     }
   }
 
-  const handleToggleSplitPoint = useCallback((afterPage: number) => {
+  const handleToggleSplitPoint = useCallback((afterDisplayIndex: number) => {
     const prefill = applyTemplate(template)
-    const added = outputFiles.toggle(afterPage, prefill.value)
-    if (added) focus.request(afterPage, prefill.cursorPos)
+    const { added, segmentIndex } = outputFiles.toggle(afterDisplayIndex, prefill.value)
+    if (added) focus.request(segmentIndex, prefill.cursorPos)
     else focus.clear()
   }, [template, outputFiles.toggle])
 
@@ -146,7 +159,7 @@ export default function SplitMode({ initialPath }: Props) {
           <Button size="xs" variant="default" onClick={handlePickOutputFolder}>
             {outputFolder ? ellipsisPath(outputFolder) : 'Output folder…'}
           </Button>
-          <Button size="xs" disabled={!pdfPath || !outputFolder || outputFiles.duplicateFirstPages.size > 0} loading={exporting} onClick={handleExport}>
+          <Button size="xs" disabled={!pdfPath || !outputFolder || outputFiles.duplicates.size > 0} loading={exporting} onClick={handleExport}>
             Export
           </Button>
         </Group>
@@ -158,6 +171,8 @@ export default function SplitMode({ initialPath }: Props) {
             <ThumbnailPanel
               pdfPath={pdfPath}
               pageCount={pageCount}
+              pageOrder={pageOrder}
+              onReorder={setPageOrder}
               selectedPage={selectedPage}
               onSelectPage={setSelectedPage}
               onToggleSplitPoint={handleToggleSplitPoint}

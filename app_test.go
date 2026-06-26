@@ -18,8 +18,8 @@ func TestExportSplitSingleFile(t *testing.T) {
 
 	app := &App{}
 	if err := app.ExportSplit(in, []OutputFileSpec{
-		{FirstPage: 1, Name: "invoice", OutDir: outDir},
-	}, nil, nil); err != nil {
+		{Pages: []int{1, 2, 3}, Name: "invoice", OutDir: outDir},
+	}, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -54,9 +54,9 @@ func TestExportSplitMultipleFiles(t *testing.T) {
 
 	app := &App{}
 	if err := app.ExportSplit(in, []OutputFileSpec{
-		{FirstPage: 1, Name: "first", OutDir: dirA},
-		{FirstPage: 3, Name: "second", OutDir: dirB},
-	}, nil, nil); err != nil {
+		{Pages: []int{1, 2}, Name: "first", OutDir: dirA},
+		{Pages: []int{3, 4}, Name: "second", OutDir: dirB},
+	}, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -92,9 +92,9 @@ func TestExportSplitEmptyNameFallback(t *testing.T) {
 
 	app := &App{}
 	if err := app.ExportSplit(in, []OutputFileSpec{
-		{FirstPage: 1, Name: "", OutDir: outDir},
-		{FirstPage: 2, Name: "", OutDir: outDir},
-	}, nil, nil); err != nil {
+		{Pages: []int{1}, Name: "", OutDir: outDir},
+		{Pages: []int{2}, Name: "", OutDir: outDir},
+	}, nil); err != nil {
 		t.Fatal(err)
 	}
 

@@ -1,7 +1,7 @@
 export namespace main {
 	
 	export class OutputFileSpec {
-	    firstPage: number;
+	    pages: number[];
 	    name: string;
 	    outDir: string;
 	
@@ -11,7 +11,7 @@ export namespace main {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.firstPage = source["firstPage"];
+	        this.pages = source["pages"];
 	        this.name = source["name"];
 	        this.outDir = source["outDir"];
 	    }

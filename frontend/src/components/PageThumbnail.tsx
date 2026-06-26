@@ -1,5 +1,5 @@
 import { Loader } from '@mantine/core'
-import { IconRotateClockwise, IconX } from '@tabler/icons-react'
+import { IconRotateClockwise, IconX, IconGripVertical } from '@tabler/icons-react'
 import * as pageCache from '../hooks/pageCache'
 import { ITEM_PADDING, LABEL_HEIGHT } from '../constants'
 
@@ -16,6 +16,7 @@ interface Props {
   onClick: () => void
   onRotate: () => void
   onToggleSkip: () => void
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 export default function PageThumbnail({
@@ -23,6 +24,7 @@ export default function PageThumbnail({
   isSelected, isSkipped, rotation,
   isHovered, label,
   onClick, onRotate, onToggleSkip,
+  dragHandleProps,
 }: Props) {
   const isRotated = rotation !== 0
   const showRotateBtn = isHovered || isRotated
@@ -31,7 +33,7 @@ export default function PageThumbnail({
   const showSkipBtn = isHovered || isSkipped
 
   return (
-    <div style={{ padding: ITEM_PADDING, paddingBottom: 0, cursor: 'pointer' }} onClick={onClick}>
+    <div style={{ padding: ITEM_PADDING, paddingBottom: 0, cursor: 'pointer', position: 'relative' }} onClick={onClick}>
       <div style={{
         position: 'relative',
         border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
@@ -89,6 +91,21 @@ export default function PageThumbnail({
       }}>
         {label}
       </div>
+      {dragHandleProps && isHovered && (
+        <div
+          {...dragHandleProps}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute', bottom: LABEL_HEIGHT + 4, right: ITEM_PADDING + 2,
+            width: 16, height: 16, borderRadius: 3,
+            background: 'rgba(0,0,0,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'grab', color: 'white',
+          }}
+        >
+          <IconGripVertical size={10} stroke={3} />
+        </div>
+      )}
     </div>
   )
 }

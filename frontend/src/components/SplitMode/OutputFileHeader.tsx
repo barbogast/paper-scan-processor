@@ -5,7 +5,7 @@ import ClippedPath from './ClippedPath'
 interface Props {
   filename: string
   onChange: (name: string) => void
-  firstPage: number
+  segmentIndex: number
   focus: PendingFocusHandle
   folder: string | null
   onPickFolder: () => void
@@ -13,9 +13,9 @@ interface Props {
 }
 
 export default function OutputFileHeader({
-  filename, onChange, firstPage, focus, folder, onPickFolder, isDuplicate,
+  filename, onChange, segmentIndex, focus, folder, onPickFolder, isDuplicate,
 }: Props) {
-  const shouldFocus = focus.pendingFocus?.afterPage === firstPage - 1
+  const shouldFocus = focus.pendingFocus?.segmentIndex === segmentIndex
   const cursorPos = focus.pendingFocus?.cursorPos ?? 0
   return (
     <div

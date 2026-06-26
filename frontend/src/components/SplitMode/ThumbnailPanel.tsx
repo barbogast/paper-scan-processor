@@ -1,5 +1,10 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import {
+  DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
+  type DragStartEvent, type DragOverEvent, type DragEndEvent,
+} from '@dnd-kit/core'
+import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import * as pageCache from '../../hooks/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
@@ -12,17 +17,17 @@ const MAX_WIDTH = 480
 const GAP_HEIGHT = 16
 
 type ListItem =
-  | { type: 'header'; fileIndex: number; firstPage: number }
-  | { type: 'page'; page: number }
+  | { type: 'header'; segmentIndex: number }
+  | { type: 'page'; page: number; displayIndex: number }
 
-function buildItems(pageCount: number, splitPoints: Set<number>): ListItem[] {
+function buildItems(pageOrder: number[], splitPoints: Set<number>): ListItem[] {
   const result: ListItem[] = []
-  let fileIndex = 0
-  for (let page = 1; page <= pageCount; page++) {
-    if (page === 1 || splitPoints.has(page - 1)) {
-      result.push({ type: 'header', fileIndex: fileIndex++, firstPage: page })
+  let segmentIndex = 0
+  for (let i = 0; i < pageOrder.length; i++) {
+    if (i === 0 || splitPoints.has(i - 1)) {
+      result.push({ type: 'header', segmentIndex: segmentIndex++ })
     }
-    result.push({ type: 'page', page })
+    result.push({ type: 'page', page: pageOrder[i], displayIndex: i })
   }
   return result
 }
@@ -30,9 +35,11 @@ function buildItems(pageCount: number, splitPoints: Set<number>): ListItem[] {
 interface Props {
   pdfPath: string
   pageCount: number
+  pageOrder: number[]
+  onReorder: (newOrder: number[]) => void
   selectedPage: number
   onSelectPage: (page: number) => void
-  onToggleSplitPoint: (afterPage: number) => void
+  onToggleSplitPoint: (afterDisplayIndex: number) => void
   outputFiles: OutputFilesHandle
   outputFolder: string | null
   focus: PendingFocusHandle
@@ -43,7 +50,8 @@ interface Props {
 }
 
 export default function SplitThumbnailPanel({
-  pdfPath, pageCount, selectedPage, onSelectPage,
+  pdfPath, pageCount, pageOrder, onReorder,
+  selectedPage, onSelectPage,
   onToggleSplitPoint,
   outputFiles,
   outputFolder,
@@ -56,15 +64,16 @@ export default function SplitThumbnailPanel({
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
   const [hoveredGap, setHoveredGap] = useState<number | null>(null)
   const [hoveredPage, setHoveredPage] = useState<number | null>(null)
+  const [activeId, setActiveId] = useState<number | null>(null)
+  const [draggingOrder, setDraggingOrder] = useState<number[] | null>(null)
 
   const thumbWidth = panelWidth - ITEM_PADDING * 2
   const thumbHeight = Math.round(thumbWidth * PAGE_ASPECT)
   const pageItemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + GAP_HEIGHT
 
-  const splitPoints = useMemo(() => outputFiles.getSplitPoints(), [outputFiles.all])
-  const items = useMemo(() => buildItems(pageCount, splitPoints), [pageCount, splitPoints])
-  // Ref so the scroll effect can read the current list without depending on it
-  // (we don't want to re-scroll every time a split point is toggled).
+  const displayOrder = draggingOrder ?? pageOrder
+  const splitPoints = outputFiles.splitPoints
+  const items = useMemo(() => buildItems(displayOrder, splitPoints), [displayOrder, splitPoints])
   const itemsRef = useRef(items)
   itemsRef.current = items
 
@@ -101,12 +110,13 @@ export default function SplitThumbnailPanel({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      const displayIndex = pageOrder.indexOf(selectedPage)
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        if (selectedPage > 1) onSelectPage(selectedPage - 1)
+        if (displayIndex > 0) onSelectPage(pageOrder[displayIndex - 1])
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        if (selectedPage < pageCount) onSelectPage(selectedPage + 1)
+        if (displayIndex < pageOrder.length - 1) onSelectPage(pageOrder[displayIndex + 1])
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault()
         onToggleSkip(selectedPage)
@@ -114,7 +124,7 @@ export default function SplitThumbnailPanel({
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [selectedPage, pageCount, onSelectPage, onToggleSkip])
+  }, [selectedPage, pageOrder, onSelectPage, onToggleSkip])
 
   const startDrag = (e: React.MouseEvent) => {
     const startX = e.clientX
@@ -131,88 +141,140 @@ export default function SplitThumbnailPanel({
     e.preventDefault()
   }
 
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(Number(event.active.id))
+    setDraggingOrder([...pageOrder])
+  }
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setDraggingOrder(prev => {
+      const order = prev ?? pageOrder
+      const oldIndex = order.indexOf(Number(active.id))
+      const newIndex = order.indexOf(Number(over.id))
+      if (oldIndex === -1 || newIndex === -1) return prev
+      return arrayMove(order, oldIndex, newIndex)
+    })
+  }
+
+  const handleDragEnd = (_event: DragEndEvent) => {
+    if (draggingOrder) onReorder(draggingOrder)
+    setActiveId(null)
+    setDraggingOrder(null)
+  }
+
+  const handleDragCancel = () => {
+    setActiveId(null)
+    setDraggingOrder(null)
+  }
+
+  const activePageSrc = activeId != null ? pageCache.getSrc(pdfPath, activeId) : undefined
+
   return (
     <div style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
       <div style={{ display: 'flex', flexDirection: 'column', width: panelWidth, height: '100%' }}>
-        <div
-          ref={scrollRef}
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            background: 'var(--mantine-color-gray-3)',
-          }}
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
-          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-            {virtualItems.map(vItem => {
-              const item = items[vItem.index]
+          <SortableContext items={displayOrder.map(String)} strategy={verticalListSortingStrategy}>
+            <div
+              ref={scrollRef}
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                background: 'var(--mantine-color-gray-3)',
+              }}
+            >
+              <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+                {virtualItems.map(vItem => {
+                  const item = items[vItem.index]
 
-              if (item.type === 'header') {
-                return (
-                  <div
-                    key={vItem.key}
-                    style={{ position: 'absolute', top: vItem.start, left: 0, width: '100%', height: vItem.size }}
-                  >
-                    <OutputFileHeader
-                      filename={outputFiles.all.get(item.firstPage)?.name ?? ''}
-                      onChange={(name) => outputFiles.setName(item.firstPage, name)}
-                      firstPage={item.firstPage}
-                      focus={focus}
-                      folder={outputFiles.all.get(item.firstPage)?.folderOverride ?? outputFolder}
-                      onPickFolder={() => outputFiles.pickFolderOverride(item.firstPage)}
-                      isDuplicate={outputFiles.duplicateFirstPages.has(item.firstPage)}
-                    />
-                  </div>
-                )
-              }
+                  if (item.type === 'header') {
+                    return (
+                      <div
+                        key={vItem.key}
+                        style={{ position: 'absolute', top: vItem.start, left: 0, width: '100%', height: vItem.size }}
+                      >
+                        <OutputFileHeader
+                          filename={outputFiles.files[item.segmentIndex]?.name ?? ''}
+                          onChange={(name) => outputFiles.setName(item.segmentIndex, name)}
+                          segmentIndex={item.segmentIndex}
+                          focus={focus}
+                          folder={outputFiles.files[item.segmentIndex]?.folderOverride ?? outputFolder}
+                          onPickFolder={() => outputFiles.pickFolderOverride(item.segmentIndex)}
+                          isDuplicate={outputFiles.duplicates.has(item.segmentIndex)}
+                        />
+                      </div>
+                    )
+                  }
 
-              const page = item.page
-              const isSplit = splitPoints.has(page)
-              const isLastPage = page === pageCount
+                  const { page, displayIndex } = item
+                  const isLastPage = displayIndex === pageOrder.length - 1
+                  const isSplit = splitPoints.has(displayIndex)
 
-              return (
-                <div
-                  key={vItem.key}
-                  style={{
-                    position: 'absolute',
-                    top: vItem.start,
-                    left: 0,
-                    width: '100%',
-                    height: vItem.size,
-                    boxSizing: 'border-box',
-                  }}
-                  onMouseEnter={() => setHoveredPage(page)}
-                  onMouseLeave={() => setHoveredPage(null)}
-                >
-                  <PageThumbnail
-                    src={pageCache.getSrc(pdfPath, page)}
-                    pdfPath={pdfPath}
-                    page={page}
-                    thumbHeight={thumbHeight}
-                    isSelected={page === selectedPage}
-                    isSkipped={skipped.has(page)}
-                    rotation={rotations.get(page) ?? 0}
-                    isHovered={hoveredPage === page}
-                    label={String(page)}
-                    onClick={() => onSelectPage(page)}
-                    onRotate={() => onRotate(page)}
-                    onToggleSkip={() => onToggleSkip(page)}
-                  />
-                  {!isLastPage && (
-                    <GapZone
+                  return (
+                    <SortablePageItem
+                      key={page}
+                      virtualKey={vItem.key}
+                      top={vItem.start}
+                      size={vItem.size}
+                      page={page}
+                      displayIndex={displayIndex}
+                      isDraggingThis={page === activeId}
+                      pdfPath={pdfPath}
+                      thumbHeight={thumbHeight}
+                      isSelected={page === selectedPage}
+                      isSkipped={skipped.has(page)}
+                      rotation={rotations.get(page) ?? 0}
+                      isHovered={hoveredPage === page}
+                      onHoverEnter={() => setHoveredPage(page)}
+                      onHoverLeave={() => setHoveredPage(null)}
+                      onSelectPage={() => onSelectPage(page)}
+                      onRotate={() => onRotate(page)}
+                      onToggleSkip={() => onToggleSkip(page)}
+                      isLastPage={isLastPage}
                       isSplit={isSplit}
-                      isHovered={hoveredGap === page}
-                      onClick={(e) => { e.stopPropagation(); onToggleSplitPoint(page) }}
-                      onMouseEnter={() => setHoveredGap(page)}
-                      onMouseLeave={() => setHoveredGap(null)}
+                      isGapHovered={hoveredGap === displayIndex}
+                      onGapClick={(e) => { e.stopPropagation(); onToggleSplitPoint(displayIndex) }}
+                      onGapEnter={() => setHoveredGap(displayIndex)}
+                      onGapLeave={() => setHoveredGap(null)}
                     />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
+                  )
+                })}
+              </div>
+            </div>
+          </SortableContext>
+
+          <DragOverlay>
+            {activeId != null && (
+              <div style={{ opacity: 0.9 }}>
+                <PageThumbnail
+                  src={activePageSrc}
+                  pdfPath={pdfPath}
+                  page={activeId}
+                  thumbHeight={thumbHeight}
+                  isSelected={false}
+                  isSkipped={skipped.has(activeId)}
+                  rotation={rotations.get(activeId) ?? 0}
+                  isHovered={true}
+                  label={String(activeId)}
+                  onClick={() => {}}
+                  onRotate={() => {}}
+                  onToggleSkip={() => {}}
+                />
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
       </div>
 
       <div
@@ -225,6 +287,84 @@ export default function SplitThumbnailPanel({
           background: 'var(--mantine-color-gray-3)',
         }}
       />
+    </div>
+  )
+}
+
+interface SortablePageItemProps {
+  virtualKey: React.Key
+  top: number
+  size: number
+  page: number
+  displayIndex: number
+  isDraggingThis: boolean
+  pdfPath: string
+  thumbHeight: number
+  isSelected: boolean
+  isSkipped: boolean
+  rotation: number
+  isHovered: boolean
+  onHoverEnter: () => void
+  onHoverLeave: () => void
+  onSelectPage: () => void
+  onRotate: () => void
+  onToggleSkip: () => void
+  isLastPage: boolean
+  isSplit: boolean
+  isGapHovered: boolean
+  onGapClick: (e: React.MouseEvent) => void
+  onGapEnter: () => void
+  onGapLeave: () => void
+}
+
+function SortablePageItem({
+  virtualKey, top, size, page, isDraggingThis,
+  pdfPath, thumbHeight, isSelected, isSkipped, rotation,
+  isHovered, onHoverEnter, onHoverLeave, onSelectPage, onRotate, onToggleSkip,
+  isLastPage, isSplit, isGapHovered, onGapClick, onGapEnter, onGapLeave,
+}: SortablePageItemProps) {
+  const { attributes, listeners, setNodeRef } = useSortable({ id: String(page) })
+
+  return (
+    <div
+      ref={setNodeRef}
+      key={virtualKey}
+      style={{
+        position: 'absolute',
+        top,
+        left: 0,
+        width: '100%',
+        height: size,
+        boxSizing: 'border-box',
+        opacity: isDraggingThis ? 0 : 1,
+      }}
+      onMouseEnter={onHoverEnter}
+      onMouseLeave={onHoverLeave}
+    >
+      <PageThumbnail
+        src={pageCache.getSrc(pdfPath, page)}
+        pdfPath={pdfPath}
+        page={page}
+        thumbHeight={thumbHeight}
+        isSelected={isSelected}
+        isSkipped={isSkipped}
+        rotation={rotation}
+        isHovered={isHovered}
+        label={String(page)}
+        onClick={onSelectPage}
+        onRotate={onRotate}
+        onToggleSkip={onToggleSkip}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+      {!isLastPage && (
+        <GapZone
+          isSplit={isSplit}
+          isHovered={isGapHovered}
+          onClick={onGapClick}
+          onMouseEnter={onGapEnter}
+          onMouseLeave={onGapLeave}
+        />
+      )}
     </div>
   )
 }

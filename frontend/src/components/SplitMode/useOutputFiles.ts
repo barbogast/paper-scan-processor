@@ -6,90 +6,83 @@ export interface OutputFile {
   folderOverride?: string
 }
 
-// Keyed by firstPage of each output section. firstPage 1 is always present.
-type OutputFilesMap = Map<number, OutputFile>
-
 export interface OutputFilesHandle {
-  all: OutputFilesMap
-  duplicateFirstPages: Set<number>
-  getSplitPoints: () => Set<number>
-  toggle: (afterPage: number, prefillName: string) => boolean
-  setName: (firstPage: number, name: string) => void
-  pickFolderOverride: (firstPage: number) => Promise<void>
-  reset: (firstPageName: string) => void
+  files: OutputFile[]
+  splitPoints: Set<number>       // display indices after which a new segment begins
+  duplicates: Set<number>        // segment indices with duplicate name+folder
+  toggle: (afterDisplayIndex: number, prefillName: string) => { added: boolean; segmentIndex: number }
+  setName: (segmentIndex: number, name: string) => void
+  pickFolderOverride: (segmentIndex: number) => Promise<void>
+  reset: (firstSegmentName: string) => void
 }
 
 export function useOutputFiles(outputFolder: string | null): OutputFilesHandle {
-  const [files, setFiles] = useState<OutputFilesMap>(new Map([[1, { name: '' }]]))
+  const [files, setFiles] = useState<OutputFile[]>([{ name: '' }])
+  const [splitPoints, setSplitPoints] = useState<Set<number>>(() => new Set())
 
-  const toggle = (afterPage: number, prefillName: string): boolean => {
-    const firstPage = afterPage + 1
-    const adding = !files.has(firstPage)
+  const toggle = (afterDisplayIndex: number, prefillName: string) => {
+    const adding = !splitPoints.has(afterDisplayIndex)
+    // Count split points strictly before afterDisplayIndex to find the segment index
+    // of the segment that ends at afterDisplayIndex. The new segment is one beyond that.
+    const segmentIndex = [...splitPoints].filter(p => p < afterDisplayIndex).length + 1
+
+    setSplitPoints(prev => {
+      const next = new Set(prev)
+      if (next.has(afterDisplayIndex)) next.delete(afterDisplayIndex); else next.add(afterDisplayIndex)
+      return next
+    })
     setFiles(prev => {
-      const next = new Map(prev)
-      if (next.has(firstPage)) {
-        next.delete(firstPage)
+      const next = [...prev]
+      if (adding) {
+        next.splice(segmentIndex, 0, { name: prefillName })
       } else {
-        next.set(firstPage, { name: prefillName })
+        next.splice(segmentIndex, 1)
       }
       return next
     })
-    return adding
+    return { added: adding, segmentIndex }
   }
 
-  const setName = useCallback((firstPage: number, name: string) => {
+  const setName = useCallback((segmentIndex: number, name: string) => {
     setFiles(prev => {
-      const entry = prev.get(firstPage)
-      if (!entry) return prev
-      return new Map(prev).set(firstPage, { ...entry, name })
+      if (!prev[segmentIndex]) return prev
+      const next = [...prev]
+      next[segmentIndex] = { ...next[segmentIndex], name }
+      return next
     })
   }, [])
 
-  const pickFolderOverride = useCallback(async (firstPage: number) => {
+  const pickFolderOverride = useCallback(async (segmentIndex: number) => {
     const folder = await PickFolder()
     if (!folder) return
     setFiles(prev => {
-      const entry = prev.get(firstPage)
-      if (!entry) return prev
-      return new Map(prev).set(firstPage, { ...entry, folderOverride: folder })
+      if (!prev[segmentIndex]) return prev
+      const next = [...prev]
+      next[segmentIndex] = { ...next[segmentIndex], folderOverride: folder }
+      return next
     })
   }, [])
 
-  const reset = useCallback((firstPageName: string) => {
-    setFiles(new Map([[1, { name: firstPageName }]]))
+  const reset = useCallback((firstSegmentName: string) => {
+    setFiles([{ name: firstSegmentName }])
+    setSplitPoints(new Set())
   }, [])
 
-  const duplicateFirstPages = useMemo(() => {
+  const duplicates = useMemo(() => {
     const seen = new Map<string, number>()
     const dupes = new Set<number>()
-    for (const [firstPage, file] of files.entries()) {
-      const folder = file.folderOverride ?? outputFolder ?? ''
-      const key = `${folder}::${file.name}`
+    for (let i = 0; i < files.length; i++) {
+      const folder = files[i].folderOverride ?? outputFolder ?? ''
+      const key = `${folder}::${files[i].name}`
       if (seen.has(key)) {
-        dupes.add(firstPage)
+        dupes.add(i)
         dupes.add(seen.get(key)!)
       } else {
-        seen.set(key, firstPage)
+        seen.set(key, i)
       }
     }
     return dupes
   }, [files, outputFolder])
 
-  const getSplitPoints = () => {
-    const result = new Set<number>()
-    for (const firstPage of files.keys()) {
-      if (firstPage > 1) result.add(firstPage - 1)
-    }
-    return result
-  }
-
-  return {
-    all: files,
-    duplicateFirstPages,
-    getSplitPoints,
-    toggle,
-    setName,
-    pickFolderOverride,
-    reset,
-  }
+  return { files, splitPoints, duplicates, toggle, setName, pickFolderOverride, reset }
 }

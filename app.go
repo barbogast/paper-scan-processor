@@ -119,30 +119,27 @@ func (a *App) PickFolder() (string, error) {
 
 // OutputFileSpec describes one output file for ExportSplit.
 type OutputFileSpec struct {
-	FirstPage int    `json:"firstPage"` // 1-indexed; first entry must be 1
-	Name      string `json:"name"`      // filename without extension; falls back to "output-N" if empty
-	OutDir    string `json:"outDir"`    // destination directory
+	Pages  []int  `json:"pages"`  // ordered 1-indexed original page numbers (skipped/reordered by caller)
+	Name   string `json:"name"`   // filename without extension; falls back to "output-N" if empty
+	OutDir string `json:"outDir"` // destination directory
 }
 
-// ExportSplit splits the PDF at inPath according to files (sorted by FirstPage)
-// and writes each segment to its OutDir using its Name.
-// rotations maps 1-indexed page numbers to clockwise degrees (90, 180, 270).
-// skip lists 1-indexed page numbers to exclude from all output files.
-func (a *App) ExportSplit(inPath string, files []OutputFileSpec, rotations map[int]int, skip []int) error {
+// ExportSplit writes one output PDF per entry in files, assembling pages in the
+// order given by each entry's Pages list.
+// rotations maps 1-indexed original page numbers to clockwise degrees (90, 180, 270).
+func (a *App) ExportSplit(inPath string, files []OutputFileSpec, rotations map[int]int) error {
 	tmpDir, err := os.MkdirTemp("", "psp-split-*")
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(tmpDir)
 
-	splitAfter := make([]int, 0, len(files)-1)
-	for _, f := range files {
-		if f.FirstPage > 1 {
-			splitAfter = append(splitAfter, f.FirstPage-1)
-		}
+	segments := make([][]int, len(files))
+	for i, f := range files {
+		segments[i] = f.Pages
 	}
 
-	paths, err := splitPDF(inPath, splitAfter, skip, rotations, tmpDir)
+	paths, err := splitPDF(inPath, segments, rotations, tmpDir)
 	if err != nil {
 		return err
 	}
