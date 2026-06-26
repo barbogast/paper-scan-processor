@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "06f9f450249f",
+  "strategy": "manual-commit",
+  "branch": "step-9-reorder-pages",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "app.go",
+    "app_test.go",
+    "frontend/src/components/PageThumbnail.tsx",
+    "frontend/src/components/SplitMode/OutputFileHeader.tsx",
+    "frontend/src/components/SplitMode/ThumbnailPanel.tsx",
+    "frontend/src/components/SplitMode/index.tsx",
+    "frontend/src/components/SplitMode/useOutputFiles.ts",
+    "frontend/src/components/SplitMode/usePendingFocus.ts",
+    "frontend/wailsjs/go/main/App.d.ts",
+    "frontend/wailsjs/go/main/App.js",
+    "frontend/wailsjs/go/models.ts",
+    "pdf.go",
+    "pdf_test.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/06/f9f450249f/0/metadata.json",
+      "transcript": "/06/f9f450249f/0/full.jsonl",
+      "content_hash": "/06/f9f450249f/0/content_hash.txt",
+      "prompt": "/06/f9f450249f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 76,
+    "cache_creation_tokens": 464714,
+    "cache_read_tokens": 6116603,
+    "output_tokens": 101760,
+    "api_call_count": 60
+  }
+}

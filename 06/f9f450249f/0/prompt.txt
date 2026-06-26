@@ -1,0 +1,21 @@
+Make a plan for step 9: I'm escpecially intersted in how much complexity this means in frontend, backend and UX
+
+---
+
+Do it
+
+---
+
+Right now it is not possible to reorder pages positioned directly after a split point. Is this fixable? How much additional complexity?
+
+---
+
+Revert change, it doesn't help. I just checkend, and reordering is not possible at all. During the drag operation everything looks as expected, but once I drop a page the previous order is restored.
+
+---
+
+Is it possible to allow droping a page directly before or after a split element?
+
+---
+
+based on the comment in pdf.go it is not clear whether the indices in the rorations array correspond with the original page order or the the one in the segments array. improve the comment
