@@ -300,6 +300,13 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [ ] **Add `out.Sync()` in `pdf.go:copyFile`** — without a sync before close, a crash between write completion and OS flush can silently corrupt the output PDF
 - [ ] **Wrap `ThumbColumn` return in a Fragment** — currently returns a raw `JSX.Element[]` array; wrapping in `<>...</>` is more conventional and clarifies intent
 
+## Various
+- Fixes for keyboard naviation:
+  - [ ] in MergeMode navigation is implemented in index.ts, in SplitMode it's implemented in ThumbnailPanel.tsx. That's inconsistent
+  - [ ] Change going to previous / next page to up / down arrows
+  - [ ] Make MergeMode previous / next action to follow the order of the target PDF; meaning to go back and forth between file A and B
+
+
 ## Future / out of scope for v1
 
 - **Insert pages from another PDF**: allow the user to pull pages from a second PDF into the current document before splitting. Planned for v2.
