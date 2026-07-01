@@ -7,7 +7,7 @@ A desktop application for post-processing PDF files containing batches of scanne
 - **Desktop framework**: Wails
 - **Backend**: Go
 - **Frontend**: TypeScript + React
-- **UI components**: Mantine + `@mantine/dropzone`
+- **UI components**: Mantine
 - **Virtualization**: TanStack Virtual
 - **Drag-and-drop**: dnd-kit
 - **State**: Zustand
@@ -287,6 +287,18 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [ ] **Step 6: Remembered folder mappings** — auto-fill Drive destination from saved subfolder-name→Drive-folder mapping; persisted across sessions
 - [ ] **Step 7: Post-upload cleanup** — prompt to delete or archive source files; archive moves files to a user-specified local archive folder
 - [ ] **Step 8: Conflict detection** — check Drive for filename conflicts before uploading; flag conflicting files
+
+### Code cleanup
+
+- [ ] **Move `pageCache.ts` to `src/lib/`** — it's a module-level singleton, not a hook; only `usePageCacheRender` is a hook
+- [ ] **Move `usePDFFile.ts` into `MergeMode/`** — only used by MergeMode; SplitMode re-implements `rotate`/`toggleSkip` independently, so the hook is not truly shared
+- [ ] **Fix duplicate global keydown handlers** — both `SplitMode/ThumbnailPanel` and `DetailPanel` listen to `ArrowLeft`/`ArrowRight`/`Delete` on `window`; after page reordering, the panel navigates by visual order while DetailPanel navigates by numeric order — the last-registered handler wins, producing wrong navigation; remove the overlapping keys from `DetailPanel` and handle them only in the mode-level panel
+- [ ] **Remove unused packages** — `@mantine/dropzone` (CSS imported in `main.tsx` but component never used) and `zustand` (in `package.json` but never imported) can both be removed
+- [ ] **Wrap `toggle` in `useCallback` in `useOutputFiles.ts:25`** — the only exported function not memoized; causes `handleToggleSplitPoint` (which depends on it) to recreate every render despite its own `useCallback`
+- [ ] **Memoize `getSplitPoints` in `useOutputFiles.ts:79`** — creates a new `Set` on every call; make it a `useMemo` like `duplicateFirstPages`
+- [ ] **Name the magic pixel offsets in `MergeMode/index.tsx`** — `totalWidth - 22` and `colWidth + 26` are two different values for what comments describe as "scrollbar + gap"; name them as constants and reconcile
+- [ ] **Add `out.Sync()` in `pdf.go:copyFile`** — without a sync before close, a crash between write completion and OS flush can silently corrupt the output PDF
+- [ ] **Wrap `ThumbColumn` return in a Fragment** — currently returns a raw `JSX.Element[]` array; wrapping in `<>...</>` is more conventional and clarifies intent
 
 ## Future / out of scope for v1
 
