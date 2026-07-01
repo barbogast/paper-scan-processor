@@ -8,6 +8,10 @@ import DetailPanel from '../DetailPanel'
 import { usePDFFile } from './usePDFFile'
 import * as pageCache from '../../lib/pageCache'
 import { basename } from '../../utils'
+import { DRAG_HANDLE_WIDTH } from '../../constants'
+
+// Width consumed by the scrollbar inside the two-column thumbnail area.
+const SCROLLBAR_WIDTH = 22
 
 interface Props {
   onOpenInSplitMode: (path: string) => void
@@ -49,8 +53,7 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [selectedPage, fileA, fileB])
 
-  // Subtract 22px to account for scrollbar + gap
-  const colWidth = Math.floor((totalWidth - 22) / 2)
+  const colWidth = Math.floor((totalWidth - SCROLLBAR_WIDTH) / 2)
 
   const handleChoose = async (file: FirstPageIn) => {
     const loaded = await (file === 'a' ? fileA : fileB).load()
@@ -105,8 +108,7 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
         }}
       >
         <FilePickerColumn label="File A" path={fileA.path} width={colWidth} onChoose={() => handleChoose('a')} />
-        {/* Add 26 px to account for scrollbar + gap */}
-        <FilePickerColumn label="File B" path={fileB.path} width={colWidth + 26} onChoose={() => handleChoose('b')} />
+        <FilePickerColumn label="File B" path={fileB.path} width={colWidth + SCROLLBAR_WIDTH + DRAG_HANDLE_WIDTH} onChoose={() => handleChoose('b')} />
         <Group gap={8} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
           {unequalCounts && (
             <Tooltip
