@@ -1,0 +1,18 @@
+I want you to do a general review of the code base: folder layout / code organization, component hierarchy, superfluous or missing libraries, code smells
+
+---
+
+Write checklist items in spec.md for:
+- move pagecache.ts to src/lib/pageCache.ts
+- move usePDFFile.ts into the MergeMode folder
+- Wrap the result of ThumbColumn into a Fragment
+- Bug with duplodate global keydown handlers
+- Remove @mantine/dropzone
+- toggle missing useCallback in useOutputFiles.ts:25
+- Magic pixel offsets in MergeMode/index.tsx
+- copyFile in pdf.go:201 doesn't Sync()
+- getSplitPoints in useOutputFiles.ts:79 isn't memoized
+
+---
+
+add it to the checklist item with @mantine/dropzone
