@@ -293,7 +293,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Move `pageCache.ts` to `src/lib/`** — it's a module-level singleton, not a hook; only `usePageCacheRender` is a hook
 - [x] **Move `usePDFFile.ts` into `MergeMode/`** — only used by MergeMode; SplitMode re-implements `rotate`/`toggleSkip` independently, so the hook is not truly shared
 - [x] **Fix duplicate global keydown handlers** — both `SplitMode/ThumbnailPanel` and `DetailPanel` listen to `ArrowLeft`/`ArrowRight`/`Delete` on `window`; after page reordering, the panel navigates by visual order while DetailPanel navigates by numeric order — the last-registered handler wins, producing wrong navigation; remove the overlapping keys from `DetailPanel` and handle them only in the mode-level panel
-- [ ] **Remove unused packages** — `@mantine/dropzone` (CSS imported in `main.tsx` but component never used) and `zustand` (in `package.json` but never imported) can both be removed
+- [x] **Remove unused packages** — `@mantine/dropzone` (CSS imported in `main.tsx` but component never used) and `zustand` (in `package.json` but never imported) can both be removed
 - [ ] **Wrap `toggle` in `useCallback` in `useOutputFiles.ts:25`** — the only exported function not memoized; causes `handleToggleSplitPoint` (which depends on it) to recreate every render despite its own `useCallback`
 - [ ] **Memoize `getSplitPoints` in `useOutputFiles.ts:79`** — creates a new `Set` on every call; make it a `useMemo` like `duplicateFirstPages`
 - [ ] **Name the magic pixel offsets in `MergeMode/index.tsx`** — `totalWidth - 22` and `colWidth + 26` are two different values for what comments describe as "scrollbar + gap"; name them as constants and reconcile
