@@ -6,79 +6,80 @@ export interface OutputFile {
   folderOverride?: string
 }
 
-// Keyed by firstPage of each output section. firstPage 1 is always present.
+// Keyed by firstPosition (0-indexed position in pageOrder). Position 0 is always present.
 type OutputFilesMap = Map<number, OutputFile>
 
 export interface OutputFilesHandle {
   all: OutputFilesMap
   duplicateFirstPages: Set<number>
   getSplitPoints: () => Set<number>
-  toggle: (afterPage: number, prefillName: string) => boolean
-  setName: (firstPage: number, name: string) => void
-  pickFolderOverride: (firstPage: number) => Promise<void>
+  toggle: (afterPosition: number, prefillName: string) => boolean
+  setName: (firstPosition: number, name: string) => void
+  pickFolderOverride: (firstPosition: number) => Promise<void>
   reset: (firstPageName: string) => void
 }
 
 export function useOutputFiles(outputFolder: string | null): OutputFilesHandle {
-  const [files, setFiles] = useState<OutputFilesMap>(new Map([[1, { name: '' }]]))
+  const [files, setFiles] = useState<OutputFilesMap>(new Map([[0, { name: '' }]]))
 
-  const toggle = (afterPage: number, prefillName: string): boolean => {
-    const firstPage = afterPage + 1
-    const adding = !files.has(firstPage)
+  const toggle = (afterPosition: number, prefillName: string): boolean => {
+    const firstPosition = afterPosition + 1
+    const adding = !files.has(firstPosition)
     setFiles(prev => {
       const next = new Map(prev)
-      if (next.has(firstPage)) {
-        next.delete(firstPage)
+      if (next.has(firstPosition)) {
+        next.delete(firstPosition)
       } else {
-        next.set(firstPage, { name: prefillName })
+        next.set(firstPosition, { name: prefillName })
       }
       return next
     })
     return adding
   }
 
-  const setName = useCallback((firstPage: number, name: string) => {
+  const setName = useCallback((firstPosition: number, name: string) => {
     setFiles(prev => {
-      const entry = prev.get(firstPage)
+      const entry = prev.get(firstPosition)
       if (!entry) return prev
-      return new Map(prev).set(firstPage, { ...entry, name })
+      return new Map(prev).set(firstPosition, { ...entry, name })
     })
   }, [])
 
-  const pickFolderOverride = useCallback(async (firstPage: number) => {
+  const pickFolderOverride = useCallback(async (firstPosition: number) => {
     const folder = await PickFolder()
     if (!folder) return
     setFiles(prev => {
-      const entry = prev.get(firstPage)
+      const entry = prev.get(firstPosition)
       if (!entry) return prev
-      return new Map(prev).set(firstPage, { ...entry, folderOverride: folder })
+      return new Map(prev).set(firstPosition, { ...entry, folderOverride: folder })
     })
   }, [])
 
   const reset = useCallback((firstPageName: string) => {
-    setFiles(new Map([[1, { name: firstPageName }]]))
+    setFiles(new Map([[0, { name: firstPageName }]]))
   }, [])
 
   const duplicateFirstPages = useMemo(() => {
     const seen = new Map<string, number>()
     const dupes = new Set<number>()
-    for (const [firstPage, file] of files.entries()) {
+    for (const [firstPosition, file] of files.entries()) {
       const folder = file.folderOverride ?? outputFolder ?? ''
       const key = `${folder}::${file.name}`
       if (seen.has(key)) {
-        dupes.add(firstPage)
+        dupes.add(firstPosition)
         dupes.add(seen.get(key)!)
       } else {
-        seen.set(key, firstPage)
+        seen.set(key, firstPosition)
       }
     }
     return dupes
   }, [files, outputFolder])
 
+  // Returns positions after which a split occurs (i.e., firstPosition - 1 for each section > 0).
   const getSplitPoints = () => {
     const result = new Set<number>()
-    for (const firstPage of files.keys()) {
-      if (firstPage > 1) result.add(firstPage - 1)
+    for (const firstPosition of files.keys()) {
+      if (firstPosition > 0) result.add(firstPosition - 1)
     }
     return result
   }

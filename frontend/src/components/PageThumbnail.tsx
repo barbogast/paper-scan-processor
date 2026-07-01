@@ -1,5 +1,5 @@
 import { Loader } from '@mantine/core'
-import { IconRotateClockwise, IconX } from '@tabler/icons-react'
+import { IconRotateClockwise, IconX, IconArrowUp, IconArrowDown } from '@tabler/icons-react'
 import * as pageCache from '../hooks/pageCache'
 import { ITEM_PADDING, LABEL_HEIGHT } from '../constants'
 
@@ -16,6 +16,10 @@ interface Props {
   onClick: () => void
   onRotate: () => void
   onToggleSkip: () => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
+  onMoveUp?: () => void
+  onMoveDown?: () => void
 }
 
 export default function PageThumbnail({
@@ -23,12 +27,14 @@ export default function PageThumbnail({
   isSelected, isSkipped, rotation,
   isHovered, label,
   onClick, onRotate, onToggleSkip,
+  canMoveUp, canMoveDown, onMoveUp, onMoveDown,
 }: Props) {
   const isRotated = rotation !== 0
   const showRotateBtn = isHovered || isRotated
   const isOddRotation = rotation === 90 || rotation === 270
   const imgTransform = rotation ? `rotate(${rotation}deg)${isOddRotation ? ` scale(${210 / 297})` : ''}` : undefined
   const showSkipBtn = isHovered || isSkipped
+  const showMoveButtons = isHovered && (onMoveUp !== undefined || onMoveDown !== undefined)
 
   return (
     <div style={{ padding: ITEM_PADDING, paddingBottom: 0, cursor: 'pointer' }} onClick={onClick}>
@@ -78,6 +84,38 @@ export default function PageThumbnail({
           >
             <IconX size={10} stroke={3} />
           </div>
+        )}
+        {showMoveButtons && (
+          <>
+            <div
+              onClick={(e) => { e.stopPropagation(); if (canMoveUp) onMoveUp?.() }}
+              style={{
+                position: 'absolute', bottom: 3, left: 3,
+                width: 16, height: 16, borderRadius: 3,
+                background: 'rgba(0,0,0,0.45)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: canMoveUp ? 'pointer' : 'default',
+                color: 'white',
+                opacity: canMoveUp ? 1 : 0.3,
+              }}
+            >
+              <IconArrowUp size={10} stroke={3} />
+            </div>
+            <div
+              onClick={(e) => { e.stopPropagation(); if (canMoveDown) onMoveDown?.() }}
+              style={{
+                position: 'absolute', bottom: 3, right: 3,
+                width: 16, height: 16, borderRadius: 3,
+                background: 'rgba(0,0,0,0.45)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: canMoveDown ? 'pointer' : 'default',
+                color: 'white',
+                opacity: canMoveDown ? 1 : 0.3,
+              }}
+            >
+              <IconArrowDown size={10} stroke={3} />
+            </div>
+          </>
         )}
       </div>
       <div style={{

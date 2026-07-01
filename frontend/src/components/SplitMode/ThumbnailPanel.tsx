@@ -12,27 +12,27 @@ const MAX_WIDTH = 480
 const GAP_HEIGHT = 16
 
 type ListItem =
-  | { type: 'header'; fileIndex: number; firstPage: number }
-  | { type: 'page'; page: number }
+  | { type: 'header'; fileIndex: number; firstPosition: number }
+  | { type: 'page'; page: number; position: number }
 
-function buildItems(pageCount: number, splitPoints: Set<number>): ListItem[] {
+function buildItems(pageOrder: number[], splitPoints: Set<number>): ListItem[] {
   const result: ListItem[] = []
   let fileIndex = 0
-  for (let page = 1; page <= pageCount; page++) {
-    if (page === 1 || splitPoints.has(page - 1)) {
-      result.push({ type: 'header', fileIndex: fileIndex++, firstPage: page })
+  for (let pos = 0; pos < pageOrder.length; pos++) {
+    if (pos === 0 || splitPoints.has(pos - 1)) {
+      result.push({ type: 'header', fileIndex: fileIndex++, firstPosition: pos })
     }
-    result.push({ type: 'page', page })
+    result.push({ type: 'page', page: pageOrder[pos], position: pos })
   }
   return result
 }
 
 interface Props {
   pdfPath: string
-  pageCount: number
+  pageOrder: number[]
   selectedPage: number
   onSelectPage: (page: number) => void
-  onToggleSplitPoint: (afterPage: number) => void
+  onToggleSplitPoint: (afterPosition: number) => void
   outputFiles: OutputFilesHandle
   outputFolder: string | null
   focus: PendingFocusHandle
@@ -40,10 +40,11 @@ interface Props {
   onRotate: (page: number) => void
   skipped: Set<number>
   onToggleSkip: (page: number) => void
+  onMovePage: (fromPos: number, toPos: number) => void
 }
 
 export default function SplitThumbnailPanel({
-  pdfPath, pageCount, selectedPage, onSelectPage,
+  pdfPath, pageOrder, selectedPage, onSelectPage,
   onToggleSplitPoint,
   outputFiles,
   outputFolder,
@@ -52,6 +53,7 @@ export default function SplitThumbnailPanel({
   onRotate,
   skipped,
   onToggleSkip,
+  onMovePage,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
   const [hoveredGap, setHoveredGap] = useState<number | null>(null)
@@ -62,7 +64,7 @@ export default function SplitThumbnailPanel({
   const pageItemHeight = thumbHeight + LABEL_HEIGHT + ITEM_PADDING + GAP_HEIGHT
 
   const splitPoints = useMemo(() => outputFiles.getSplitPoints(), [outputFiles.all])
-  const items = useMemo(() => buildItems(pageCount, splitPoints), [pageCount, splitPoints])
+  const items = useMemo(() => buildItems(pageOrder, splitPoints), [pageOrder, splitPoints])
   // Ref so the scroll effect can read the current list without depending on it
   // (we don't want to re-scroll every time a split point is toggled).
   const itemsRef = useRef(items)
@@ -101,12 +103,13 @@ export default function SplitThumbnailPanel({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      const selectedPos = pageOrder.indexOf(selectedPage)
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        if (selectedPage > 1) onSelectPage(selectedPage - 1)
+        if (selectedPos > 0) onSelectPage(pageOrder[selectedPos - 1])
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        if (selectedPage < pageCount) onSelectPage(selectedPage + 1)
+        if (selectedPos < pageOrder.length - 1) onSelectPage(pageOrder[selectedPos + 1])
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault()
         onToggleSkip(selectedPage)
@@ -114,7 +117,7 @@ export default function SplitThumbnailPanel({
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [selectedPage, pageCount, onSelectPage, onToggleSkip])
+  }, [selectedPage, pageOrder, onSelectPage, onToggleSkip])
 
   const startDrag = (e: React.MouseEvent) => {
     const startX = e.clientX
@@ -155,21 +158,21 @@ export default function SplitThumbnailPanel({
                     style={{ position: 'absolute', top: vItem.start, left: 0, width: '100%', height: vItem.size }}
                   >
                     <OutputFileHeader
-                      filename={outputFiles.all.get(item.firstPage)?.name ?? ''}
-                      onChange={(name) => outputFiles.setName(item.firstPage, name)}
-                      firstPage={item.firstPage}
+                      filename={outputFiles.all.get(item.firstPosition)?.name ?? ''}
+                      onChange={(name) => outputFiles.setName(item.firstPosition, name)}
+                      firstPosition={item.firstPosition}
                       focus={focus}
-                      folder={outputFiles.all.get(item.firstPage)?.folderOverride ?? outputFolder}
-                      onPickFolder={() => outputFiles.pickFolderOverride(item.firstPage)}
-                      isDuplicate={outputFiles.duplicateFirstPages.has(item.firstPage)}
+                      folder={outputFiles.all.get(item.firstPosition)?.folderOverride ?? outputFolder}
+                      onPickFolder={() => outputFiles.pickFolderOverride(item.firstPosition)}
+                      isDuplicate={outputFiles.duplicateFirstPages.has(item.firstPosition)}
                     />
                   </div>
                 )
               }
 
-              const page = item.page
-              const isSplit = splitPoints.has(page)
-              const isLastPage = page === pageCount
+              const { page, position } = item
+              const isSplit = splitPoints.has(position)
+              const isLastPage = position === pageOrder.length - 1
 
               return (
                 <div
@@ -198,13 +201,17 @@ export default function SplitThumbnailPanel({
                     onClick={() => onSelectPage(page)}
                     onRotate={() => onRotate(page)}
                     onToggleSkip={() => onToggleSkip(page)}
+                    canMoveUp={position > 0}
+                    canMoveDown={!isLastPage}
+                    onMoveUp={() => onMovePage(position, position - 1)}
+                    onMoveDown={() => onMovePage(position, position + 1)}
                   />
                   {!isLastPage && (
                     <GapZone
                       isSplit={isSplit}
-                      isHovered={hoveredGap === page}
-                      onClick={(e) => { e.stopPropagation(); onToggleSplitPoint(page) }}
-                      onMouseEnter={() => setHoveredGap(page)}
+                      isHovered={hoveredGap === position}
+                      onClick={(e) => { e.stopPropagation(); onToggleSplitPoint(position) }}
+                      onMouseEnter={() => setHoveredGap(position)}
                       onMouseLeave={() => setHoveredGap(null)}
                     />
                   )}
