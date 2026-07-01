@@ -6,6 +6,10 @@ export function CheckConflicts(arg1) {
   return window['go']['main']['App']['CheckConflicts'](arg1);
 }
 
+export function DeleteFile(arg1) {
+  return window['go']['main']['App']['DeleteFile'](arg1);
+}
+
 export function ExportSplit(arg1, arg2, arg3) {
   return window['go']['main']['App']['ExportSplit'](arg1, arg2, arg3);
 }

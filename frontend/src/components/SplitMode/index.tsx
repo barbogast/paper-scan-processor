@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Box, Button, Group, Modal, Text, TextInput } from '@mantine/core'
+import { Box, Button, Divider, Group, Modal, Stack, Text, TextInput } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
-import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit, CheckConflicts } from '../../../wailsjs/go/main/App'
+import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit, CheckConflicts, DeleteFile } from '../../../wailsjs/go/main/App'
 import { ellipsisPath } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
 import { usePendingFocus } from './usePendingFocus'
@@ -28,7 +28,7 @@ export default function SplitMode({ initialPath }: Props) {
   const [pageOrder, setPageOrder] = useState<number[]>([])
   const [selectedPage, setSelectedPage] = useState(1)
   const [outputFolder, setOutputFolder] = useState<string | null>(null)
-  const [successModal, setSuccessModal] = useState<{show: boolean, path: string}>({show: false, path: ''})
+  const [successModal, setSuccessModal] = useState<{show: boolean, outputPath: string, inputPath: string}>({show: false, outputPath: '', inputPath: ''})
   const outputFiles = useOutputFiles(outputFolder)
   const focus = usePendingFocus()
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
@@ -114,11 +114,24 @@ export default function SplitMode({ initialPath }: Props) {
         return
       }
       await ExportSplit(pdfPath, files, Object.fromEntries(rotations))
-      setSuccessModal({show: true, path: outputFolder})
+      setSuccessModal({show: true, outputPath: outputFolder, inputPath: pdfPath})
     } catch (e) {
       notifications.show({ title: 'Export failed', message: String(e), color: 'red' })
     } finally {
       setExporting(false)
+    }
+  }
+
+  const closeSuccessModal = () => setSuccessModal({show: false, outputPath: '', inputPath: ''})
+
+  const handleDeleteInput = async () => {
+    const { inputPath } = successModal
+    closeSuccessModal()
+    setPdfPath(null)
+    try {
+      await DeleteFile(inputPath)
+    } catch (e) {
+      notifications.show({ title: 'Failed to delete file', message: String(e), color: 'red' })
     }
   }
 
@@ -131,11 +144,24 @@ export default function SplitMode({ initialPath }: Props) {
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Modal opened={successModal.show} onClose={() => setSuccessModal({show: false, path: ''})} title="Export complete" centered>
-        <Text size="sm" c="dimmed" mb="md">{successModal.path}</Text>
-        <Button variant="default" onClick={() => OpenFile(successModal.path!)}>
-          Open in Finder
-        </Button>
+      <Modal opened={successModal.show} onClose={closeSuccessModal} title="Export complete" centered>
+        <Stack gap="md">
+          <Group>
+            <Text size="sm" c="dimmed" style={{ flex: 1 }}>{successModal.outputPath}</Text>
+            <Button size="xs" variant="default" onClick={() => OpenFile(successModal.outputPath)}>
+              Open in Finder
+            </Button>
+          </Group>
+          <Divider />
+          <div>
+            <Text size="sm" mb={4}>What do you want to do with the input file?</Text>
+            <Text size="sm" c="dimmed" mb="sm">{successModal.inputPath.split('/').pop()}</Text>
+            <Group>
+              <Button variant="default" onClick={closeSuccessModal}>Keep</Button>
+              <Button color="red" onClick={handleDeleteInput}>Delete</Button>
+            </Group>
+          </div>
+        </Stack>
       </Modal>
       <Box
         style={{

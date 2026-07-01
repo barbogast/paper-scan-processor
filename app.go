@@ -104,6 +104,11 @@ func (a *App) OpenFile(path string) error {
 	return exec.Command("open", path).Run()
 }
 
+// DeleteFile removes the file at path.
+func (a *App) DeleteFile(path string) error {
+	return os.Remove(path)
+}
+
 // MergePDFs interleaves pages from pathA and pathB and writes the result to outPath.
 func (a *App) MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) error {
 	return mergePDFs(pathA, pathB, outPath, firstPageInA, reverseB, skipA, skipB, rotationsA, rotationsB)

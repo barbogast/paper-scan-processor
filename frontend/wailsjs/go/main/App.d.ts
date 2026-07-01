@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function CheckConflicts(arg1:Array<main.OutputFileSpec>):Promise<Array<string>>;
 
+export function DeleteFile(arg1:string):Promise<void>;
+
 export function ExportSplit(arg1:string,arg2:Array<main.OutputFileSpec>,arg3:Record<number, number>):Promise<void>;
 
 export function MergePDFs(arg1:string,arg2:string,arg3:string,arg4:boolean,arg5:boolean,arg6:Array<number>,arg7:Array<number>,arg8:Record<number, number>,arg9:Record<number, number>):Promise<void>;
