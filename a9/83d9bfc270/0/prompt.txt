@@ -1,0 +1,68 @@
+read spec.md, don't reply
+
+---
+
+I've got a new idea regarding Google Drive integration. Right now it is baked into split mode, which feels crammed. Rather I'd like to explore making it a new top-level mode, next to merge mode and split mode. The goal of this mode would be to allow the user to upload multiple files (potentially in a few subfolders) to Google Drive. The UI would support by helping to pick the right Drive folder for each file, then upload all files and delete / archive the source files on hard drive. Potential features include remembering chosen Drive folders between session.
+Questions:
+- Could a custom implementation have sufficient benefit in comparison with what Drive via a browser offers?
+- Can you think of more useful features?
+
+Only planning, no code at this point.
+
+---
+
+Several points:
+- yes, Split mode looses all awareness
+
+Yes to:
+- Batch folder assignment
+- Group by local subfolder
+- Duplicate detection (low priority because unlikely)
+- Upload queue with retry
+- Open in Drive
+
+The user should see the filesystem tree of the chosen root folder; all files in all sub folders. (The root folder can be set automatically by choosing an option in the success modal of Split mode). The user can choose the Drive folder on all levels: files and sub folders.
+It would be great if the UI could allow the user to see the contents of each PDF in thumbnail and detail view (not sure how that would fit on the screen).
+
+Once the plan is somewhat solid you can start updating spec.md
+
+---
+
+Additions:
+- The user should be able to edit the name of each file / subfolder
+
+---
+
+Can you render an image showing the proposed UI?
+
+---
+
+I'm concerned about authentication via browser window: will the browser be Safari, or the default browser (Chrome in my case)?
+
+---
+
+No, it's fine.
+
+---
+
+you earlier had an proposal for error handling. In the spec it's TBD. Fix that.
+
+---
+
+No, the relevant errors here are failing uploads. Show the error inline, continue with the other files and allow the user to retry.
+
+---
+
+If there is enough space on the UI I'd like to also see file size and number of pages per PDF
+
+---
+
+For the implementation order I'd like to first see if the Drive integration actually works: Authentication, fetching the contents of the root folder and a static (I'll provide the name) subfolder. Then upload a static file (I'll provide the path).
+
+---
+
+Note that step 1 now contains several sub tasks. Remember that I'd like those sub tasks to be separate list items named 1a, 1b, 1c, ...
+
+---
+
+Does it make sense to move the task list to Github? How would it best be impelented in Github, so that you would know what to do next?
