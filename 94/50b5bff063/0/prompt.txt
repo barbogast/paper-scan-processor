@@ -1,0 +1,9 @@
+commit my changes to spec.md
+
+---
+
+commit my changes to spec.md
+
+---
+
+reread spec.md
