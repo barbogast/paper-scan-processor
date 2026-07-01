@@ -1,0 +1,17 @@
+implement the remaining code cleanups; add a commit after each one
+
+---
+
+Revert the changes and mark the items with strike through
+
+---
+
+implement the last 3 items
+
+---
+
+reread spec.md and commit
+
+---
+
+yes
