@@ -298,7 +298,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [ ] ~~**Memoize `getSplitPoints` in `useOutputFiles.ts:79`** — creates a new `Set` on every call; make it a `useMemo` like `duplicateFirstPages`~~
 - [x] **Name the magic pixel offsets in `MergeMode/index.tsx`** — `totalWidth - 22` and `colWidth + 26` are two different values for what comments describe as "scrollbar + gap"; name them as constants and reconcile
 - [x] **Add `out.Sync()` in `pdf.go:copyFile`** — without a sync before close, a crash between write completion and OS flush can silently corrupt the output PDF
-- [ ] **Wrap `ThumbColumn` return in a Fragment** — currently returns a raw `JSX.Element[]` array; wrapping in `<>...</>` is more conventional and clarifies intent
+- [x] **Wrap `ThumbColumn` return in a Fragment** — currently returns a raw `JSX.Element[]` array; wrapping in `<>...</>` is more conventional and clarifies intent
 
 ## Various
 - Fixes for keyboard naviation:

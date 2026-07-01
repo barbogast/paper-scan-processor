@@ -186,39 +186,43 @@ function ThumbColumn({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPage])
 
-  return virtualizer.getVirtualItems().map(item => {
-    const page = pageAt(item.index)
-    return (
-      <div
-        key={item.key}
-        onMouseEnter={() => setHoveredPage(page)}
-        onMouseLeave={() => setHoveredPage(null)}
-        style={{
-          position: 'absolute',
-          top: item.start,
-          left: 0,
-          width: '100%',
-          height: item.size,
-          boxSizing: 'border-box',
-        }}
-      >
-        <PageThumbnail
-          src={pageCache.getSrc(pdfPath, page)}
-          pdfPath={pdfPath}
-          page={page}
-          thumbHeight={thumbHeight}
-          isSelected={page === selectedPage}
-          isSkipped={skipped.has(page)}
-          rotation={rotations.get(page) ?? 0}
-          isHovered={hoveredPage === page}
-          label={String(pageLabel ? pageLabel(item.index) : page)}
-          onClick={() => onSelectPage(page)}
-          onRotate={() => rotate(page)}
-          onToggleSkip={() => toggleSkip(page)}
-        />
-      </div>
-    )
-  })
+  return (
+    <>
+      {virtualizer.getVirtualItems().map(item => {
+        const page = pageAt(item.index)
+        return (
+          <div
+            key={item.key}
+            onMouseEnter={() => setHoveredPage(page)}
+            onMouseLeave={() => setHoveredPage(null)}
+            style={{
+              position: 'absolute',
+              top: item.start,
+              left: 0,
+              width: '100%',
+              height: item.size,
+              boxSizing: 'border-box',
+            }}
+          >
+            <PageThumbnail
+              src={pageCache.getSrc(pdfPath, page)}
+              pdfPath={pdfPath}
+              page={page}
+              thumbHeight={thumbHeight}
+              isSelected={page === selectedPage}
+              isSkipped={skipped.has(page)}
+              rotation={rotations.get(page) ?? 0}
+              isHovered={hoveredPage === page}
+              label={String(pageLabel ? pageLabel(item.index) : page)}
+              onClick={() => onSelectPage(page)}
+              onRotate={() => rotate(page)}
+              onToggleSkip={() => toggleSkip(page)}
+            />
+          </div>
+        )
+      })}
+    </>
+  )
 }
     
 
