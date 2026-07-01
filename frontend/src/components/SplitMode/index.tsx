@@ -219,7 +219,7 @@ export default function SplitMode({ initialPath }: Props) {
               pageCount={pageCount}
               rotation={rotations.get(selectedPage) ?? 0}
               onRotate={() => rotate(selectedPage)}
-              onNavigate={setSelectedPage}
+
             />
           </>
         ) : (

@@ -30,6 +30,25 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
     }
   }, [fileA.path, fileB.path])
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      const selectedFile = selectedPage.file === 'a' ? fileA : fileB
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        if (selectedPage.page > 1) setSelectedPage(p => ({ ...p, page: p.page - 1 }))
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        if (selectedPage.page < selectedFile.count) setSelectedPage(p => ({ ...p, page: p.page + 1 }))
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault()
+        selectedFile.toggleSkip(selectedPage.page)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [selectedPage, fileA, fileB])
+
   // Subtract 22px to account for scrollbar + gap
   const colWidth = Math.floor((totalWidth - 22) / 2)
 
@@ -138,7 +157,7 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
             pageNum={selectedPage.page}
             pageCount={selectedCount}
             rotation={selectedFile.rotations.get(selectedPage.page) ?? 0}
-            onNavigate={(page) => setSelectedPage({ file: selectedPage.file, page })}
+
             onToggleSkip={() => selectedFile.toggleSkip(selectedPage.page)}
             onRotate={() => selectedFile.rotate(selectedPage.page)}
           />

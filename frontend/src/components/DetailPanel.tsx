@@ -10,12 +10,11 @@ interface Props {
   pageNum: number
   pageCount: number
   rotation?: number
-  onNavigate: (page: number) => void
   onToggleSkip?: () => void
   onRotate?: () => void
 }
 
-export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0, onNavigate, onToggleSkip, onRotate }: Props) {
+export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0, onToggleSkip, onRotate }: Props) {
   pageCache.usePageCacheRender()
   const transformRef = useRef<ReactZoomPanPinchRef>(null)
 
@@ -32,23 +31,14 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault()
-        if (pageNum > 1) onNavigate(pageNum - 1)
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault()
-        if (pageNum < pageCount) onNavigate(pageNum + 1)
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault()
-        onToggleSkip?.()
-      } else if (e.key === 'r') {
+      if (e.key === 'r') {
         e.preventDefault()
         onRotate?.()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [pageNum, pageCount, onNavigate, onToggleSkip, onRotate])
+  }, [onRotate])
 
   const cachedWidth = pageCache.getCachedWidth(pdfPath, pageNum)
   const src = cachedWidth !== undefined && cachedWidth >= DETAIL_WIDTH
