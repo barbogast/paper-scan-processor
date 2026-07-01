@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { OpenPDF, PageCount } from '../../wailsjs/go/main/App'
-import { evict } from '../lib/pageCache'
+import { OpenPDF, PageCount } from '../../../wailsjs/go/main/App'
+import { evict } from '../../lib/pageCache'
 
 export interface PDFFile {
   path: string | null
