@@ -209,15 +209,14 @@ TBD.
 - [x] **Step 3: Filename inputs** — per-output-file editable filename field in each section header
 - [x] **Step 4: Filename prefill** — global filename template with `{date}` / `{name}` tokens; prefills each section header on creation
 - [x] **Step 5: Output folder** — global output folder picker; per-file folder override in section header
-- [ ] **Step 6: Divider drag-and-drop** — reposition or delete dividers by dragging
+- [ ] ~~Step 6: Divider drag-and-drop — reposition or delete dividers by dragging~~
 - [x] **Step 7: Rotate pages**
 - [x] **Step 8: Skip pages**
 - [x] **Step 9a: Reorder pages via up/down buttons**
-- [ ] **Step 9b: Reorder pages via drag and drop**
+- [x] **Step 9b: Reorder pages via drag and drop**
 - [ ] **Step 10: Export polish** — filename conflict check before export; keep/move/delete prompt for input file after export; enforce empty output folder on open
 - [ ] **Step 11: Keyboard shortcuts** — `Space` to toggle split point, `Tab` to move between filename inputs
 - [ ] **Step 12: Persisted settings** — last-used output folder, filename template
-- [ ] **Step 13: Make sure the output directory is empty before starting the split.
 
 ### Google Drive integration
 
