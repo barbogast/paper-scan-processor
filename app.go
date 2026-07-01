@@ -124,6 +124,30 @@ type OutputFileSpec struct {
 	OutDir string `json:"outDir"` // destination directory
 }
 
+// outputFileDest returns the destination path for the i-th OutputFileSpec.
+func outputFileDest(files []OutputFileSpec, i int) string {
+	name := strings.TrimSpace(files[i].Name)
+	if name == "" {
+		name = fmt.Sprintf("output-%d", i+1)
+	}
+	if !strings.HasSuffix(strings.ToLower(name), ".pdf") {
+		name += ".pdf"
+	}
+	return filepath.Join(files[i].OutDir, name)
+}
+
+// CheckConflicts returns the destination paths that already exist on disk.
+func (a *App) CheckConflicts(files []OutputFileSpec) ([]string, error) {
+	conflicts := []string{}
+	for i := range files {
+		dest := outputFileDest(files, i)
+		if _, err := os.Stat(dest); err == nil {
+			conflicts = append(conflicts, dest)
+		}
+	}
+	return conflicts, nil
+}
+
 // ExportSplit splits the PDF at inPath according to files and writes each
 // segment to its OutDir using its Name.
 // Each file's Pages lists the original (1-indexed) page numbers in display
@@ -142,14 +166,7 @@ func (a *App) ExportSplit(inPath string, files []OutputFileSpec, rotations map[i
 	}
 
 	for i, src := range paths {
-		name := strings.TrimSpace(files[i].Name)
-		if name == "" {
-			name = fmt.Sprintf("output-%d", i+1)
-		}
-		if !strings.HasSuffix(strings.ToLower(name), ".pdf") {
-			name += ".pdf"
-		}
-		if err := copyFile(src, filepath.Join(files[i].OutDir, name)); err != nil {
+		if err := copyFile(src, outputFileDest(files, i)); err != nil {
 			return err
 		}
 	}

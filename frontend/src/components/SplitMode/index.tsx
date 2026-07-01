@@ -3,7 +3,7 @@ import { Box, Button, Group, Modal, Text, TextInput } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
-import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit } from '../../../wailsjs/go/main/App'
+import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit, CheckConflicts } from '../../../wailsjs/go/main/App'
 import { ellipsisPath } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
 import { usePendingFocus } from './usePendingFocus'
@@ -107,6 +107,12 @@ export default function SplitMode({ initialPath }: Props) {
         const f = outputFiles.all.get(firstPos)!
         return { pages, name: f.name, outDir: f.folderOverride ?? outputFolder! }
       })
+      const conflicts = await CheckConflicts(files)
+      if (conflicts.length > 0) {
+        const names = conflicts.map(p => p.split('/').pop()).join(', ')
+        notifications.show({ title: 'Filename conflict', message: `Already exists: ${names}`, color: 'orange', autoClose: false })
+        return
+      }
       await ExportSplit(pdfPath, files, Object.fromEntries(rotations))
       setSuccessModal({show: true, path: outputFolder})
     } catch (e) {
