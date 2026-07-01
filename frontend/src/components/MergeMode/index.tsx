@@ -6,7 +6,7 @@ import { MergePDFs, OpenFile, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { usePDFFile } from '../../hooks/usePDFFile'
-import * as pageCache from '../../hooks/pageCache'
+import * as pageCache from '../../lib/pageCache'
 import { basename } from '../../utils'
 
 interface Props {

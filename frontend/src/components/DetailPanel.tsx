@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
 import { Center, Loader } from '@mantine/core'
-import * as pageCache from '../hooks/pageCache'
+import * as pageCache from '../lib/pageCache'
 
 const DETAIL_WIDTH = 1400
 

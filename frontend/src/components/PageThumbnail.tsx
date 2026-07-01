@@ -1,6 +1,6 @@
 import { Loader } from '@mantine/core'
 import { IconRotateClockwise, IconX, IconArrowUp, IconArrowDown } from '@tabler/icons-react'
-import * as pageCache from '../hooks/pageCache'
+import * as pageCache from '../lib/pageCache'
 import { ITEM_PADDING, LABEL_HEIGHT } from '../constants'
 
 interface Props {

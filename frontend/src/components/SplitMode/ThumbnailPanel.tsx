@@ -4,7 +4,7 @@ import { DndContext, DragOverlay, PointerSensor, closestCenter, useSensor, useSe
 import type { DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import * as pageCache from '../../hooks/pageCache'
+import * as pageCache from '../../lib/pageCache'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
 import type { OutputFilesHandle } from './useOutputFiles'

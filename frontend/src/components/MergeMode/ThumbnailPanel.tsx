@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box } from '@mantine/core'
-import * as pageCache from '../../hooks/pageCache'
+import * as pageCache from '../../lib/pageCache'
 import { PDFFile } from '../../hooks/usePDFFile'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
