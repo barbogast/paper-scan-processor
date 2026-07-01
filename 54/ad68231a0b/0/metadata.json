@@ -1,0 +1,78 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "54ad68231a0b",
+  "session_id": "c7c66ffb-886c-489b-9a67-c84a3e10c59c",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-01T13:33:03.170323Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "app.go",
+    "frontend/src/components/SplitMode/index.tsx",
+    "frontend/wailsjs/go/main/App.d.ts",
+    "frontend/wailsjs/go/main/App.js"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "9da0e9b7902e",
+  "token_usage": {
+    "input_tokens": 37,
+    "cache_creation_tokens": 37604,
+    "cache_read_tokens": 902940,
+    "output_tokens": 6962,
+    "api_call_count": 29
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-01T13:33:03.164206Z",
+    "agent_lines": 40,
+    "agent_removed": 5,
+    "human_added": 0,
+    "human_modified": 4,
+    "human_removed": 4,
+    "total_committed": 42,
+    "total_lines_changed": 53,
+    "agent_percentage": 84.90566037735849,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 123,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 14
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 14,
+      "user_lines_removed": 0,
+      "agent_lines_added": 157,
+      "agent_lines_removed": 9,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 14
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 16,
+      "user_lines_removed": 4,
+      "agent_lines_added": 157,
+      "agent_lines_removed": 9,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 14,
+        "frontend/src/components/SplitMode/index.tsx": 2
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/SplitMode/index.tsx": 4
+      }
+    }
+  ]
+}

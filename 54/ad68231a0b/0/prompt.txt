@@ -1,0 +1,9 @@
+would you recommend introducing zustand for the frontend?
+
+---
+
+Implement the second option for step 10, but let's only do keep or delete for now
+
+---
+
+Remember that you don't have to update the frontend bindings manually. They get automatically updated by wails (running in the background)
