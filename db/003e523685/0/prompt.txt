@@ -1,0 +1,9 @@
+Implement the first item of 10 (filename conflict)
+
+---
+
+Why did you remove several lines in ExportSplit()?
+
+---
+
+UI shows an error when there are no conflicts: "TypeError: null is not an object (evaluating 'conflicts.length')"
