@@ -1,0 +1,38 @@
+read spec.md, don't reply
+
+---
+
+make a plan for implementing step 9a. Do it in a way so that it's a preparation for 9b.
+
+---
+
+◇ ultraplan
+Starting Claude Code on the web…
+
+---
+
+◇ ultraplan · Monitor progress in Claude Code on the web https://claude.ai/code/session_017XMyZ6TNnWsam6xeVM5Mrb?from=cli
+You can continue working — when the ◇ fills, press ↓ to view results
+
+---
+
+◆ ultraplan ready · https://claude.ai/code/session_017XMyZ6TNnWsam6xeVM5Mrb?from=cli
+Press ↓ to view results
+
+---
+
+The remote ultraplan session produced a plan and is waiting for approval. Tell the user to open https://claude.ai/code/session_017XMyZ6TNnWsam6xeVM5Mrb?from=cli to review it.
+
+---
+
+Implement plan
+
+---
+
+Ultraplan terminated: no approval after 90 minutes
+
+Session: https://claude.ai/code/session_017XMyZ6TNnWsam6xeVM5Mrb?from=cli
+
+---
+
+Remote Ultraplan session failed. Wait for the user's next instructions.
