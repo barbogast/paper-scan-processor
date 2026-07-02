@@ -17,26 +17,25 @@ func TestScanLocalRootFilesInRootAndSubfolder(t *testing.T) {
 	writePDF(t, filepath.Join(root, "invoices", "b.pdf"), []string{"p1"})
 	writePDF(t, filepath.Join(root, "invoices", "a.pdf"), []string{"p1", "p2", "p3"})
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 2 {
-		t.Fatalf("got %d groups, want 2: %+v", len(groups), groups)
+
+	if tree.Name != "" {
+		t.Errorf("root name = %q, want \"\"", tree.Name)
+	}
+	if len(tree.Files) != 1 || tree.Files[0].Name != "misc" || tree.Files[0].PageCount != 2 {
+		t.Errorf("root files = %+v", tree.Files)
+	}
+	if tree.Files[0].SizeBytes <= 0 {
+		t.Errorf("root file size = %d, want > 0", tree.Files[0].SizeBytes)
 	}
 
-	rootGroup := groups[0]
-	if rootGroup.Name != "" {
-		t.Errorf("root group name = %q, want \"\"", rootGroup.Name)
+	if len(tree.Subgroups) != 1 {
+		t.Fatalf("got %d subgroups, want 1: %+v", len(tree.Subgroups), tree.Subgroups)
 	}
-	if len(rootGroup.Files) != 1 || rootGroup.Files[0].Name != "misc" || rootGroup.Files[0].PageCount != 2 {
-		t.Errorf("root group files = %+v", rootGroup.Files)
-	}
-	if rootGroup.Files[0].SizeBytes <= 0 {
-		t.Errorf("root file size = %d, want > 0", rootGroup.Files[0].SizeBytes)
-	}
-
-	sub := groups[1]
+	sub := tree.Subgroups[0]
 	if sub.Name != "invoices" {
 		t.Errorf("subgroup name = %q, want invoices", sub.Name)
 	}
@@ -59,15 +58,15 @@ func TestScanLocalRootEmptySubfolderOmitted(t *testing.T) {
 	}
 	writePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 1 {
-		t.Fatalf("got %d groups, want 1 (empty subfolder should be omitted): %+v", len(groups), groups)
+	if len(tree.Subgroups) != 0 {
+		t.Fatalf("expected the empty subfolder to be omitted, got %+v", tree.Subgroups)
 	}
-	if groups[0].Name != "" {
-		t.Errorf("group name = %q, want \"\"", groups[0].Name)
+	if len(tree.Files) != 1 || tree.Files[0].Name != "top" {
+		t.Errorf("root files = %+v", tree.Files)
 	}
 }
 
@@ -78,15 +77,15 @@ func TestScanLocalRootFlagsCorruptPDF(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 1 || len(groups[0].Files) != 2 {
-		t.Fatalf("expected both files to appear in the scan, got %+v", groups)
+	if len(tree.Files) != 2 {
+		t.Fatalf("expected both files to appear in the scan, got %+v", tree.Files)
 	}
 
-	files := groups[0].Files
+	files := tree.Files
 	if files[0].Name != "bad" || !files[0].Corrupt || files[0].PageCount != 0 {
 		t.Errorf("bad.pdf = %+v, want Corrupt=true, PageCount=0", files[0])
 	}
@@ -112,12 +111,15 @@ func TestScanLocalRootIgnoresNonPDFAndDotfiles(t *testing.T) {
 	}
 	writePDF(t, filepath.Join(root, ".hidden", "sneaky.pdf"), []string{"p1"})
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 1 || len(groups[0].Files) != 1 || groups[0].Files[0].Name != "doc" {
-		t.Fatalf("expected only doc.pdf, got %+v", groups)
+	if len(tree.Files) != 1 || tree.Files[0].Name != "doc" {
+		t.Fatalf("expected only doc.pdf, got %+v", tree.Files)
+	}
+	if len(tree.Subgroups) != 0 {
+		t.Errorf("expected .hidden to be ignored, got subgroups %+v", tree.Subgroups)
 	}
 }
 
@@ -130,15 +132,18 @@ func TestScanLocalRootRecursesMultipleLevels(t *testing.T) {
 	writePDF(t, filepath.Join(nested, "deep.pdf"), []string{"p1"})
 	writePDF(t, filepath.Join(root, "a", "shallow.pdf"), []string{"p1"})
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 1 || groups[0].Name != "a" {
-		t.Fatalf("expected a single top-level group \"a\", got %+v", groups)
+	if len(tree.Files) != 0 {
+		t.Errorf("root files = %+v, want none", tree.Files)
+	}
+	if len(tree.Subgroups) != 1 || tree.Subgroups[0].Name != "a" {
+		t.Fatalf("expected a single top-level subgroup \"a\", got %+v", tree.Subgroups)
 	}
 
-	a := groups[0]
+	a := tree.Subgroups[0]
 	if len(a.Files) != 1 || a.Files[0].Name != "shallow" {
 		t.Errorf("a's direct files = %+v, want just shallow.pdf", a.Files)
 	}
@@ -163,12 +168,12 @@ func TestScanLocalRootOmitsSubtreeWithNoPDFsAtAnyDepth(t *testing.T) {
 	}
 	writePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 1 || groups[0].Name != "" {
-		t.Fatalf("expected only the root group (empty subtree omitted), got %+v", groups)
+	if len(tree.Subgroups) != 0 {
+		t.Fatalf("expected the empty subtree to be omitted, got %+v", tree.Subgroups)
 	}
 }
 
@@ -185,12 +190,12 @@ func TestScanLocalRootDoesNotFollowSymlinkedDirectories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 1 || groups[0].Name != "real" || len(groups[0].Subgroups) != 0 {
-		t.Fatalf("expected only the real directory with no subgroups (symlink not followed), got %+v", groups)
+	if len(tree.Subgroups) != 1 || tree.Subgroups[0].Name != "real" || len(tree.Subgroups[0].Subgroups) != 0 {
+		t.Fatalf("expected only the real directory with no subgroups (symlink not followed), got %+v", tree.Subgroups)
 	}
 }
 
@@ -204,20 +209,32 @@ func TestScanLocalRootSubfoldersSortedAlphabetically(t *testing.T) {
 		writePDF(t, filepath.Join(dir, "f.pdf"), []string{"p1"})
 	}
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 3 {
-		t.Fatalf("got %d groups, want 3: %+v", len(groups), groups)
+	if len(tree.Subgroups) != 3 {
+		t.Fatalf("got %d subgroups, want 3: %+v", len(tree.Subgroups), tree.Subgroups)
 	}
-	got := []string{groups[0].Name, groups[1].Name, groups[2].Name}
+	got := []string{tree.Subgroups[0].Name, tree.Subgroups[1].Name, tree.Subgroups[2].Name}
 	want := []string{"alpha", "mid", "zeta"}
 	for i := range want {
 		if got[i] != want[i] {
-			t.Errorf("group order = %v, want %v", got, want)
+			t.Errorf("subgroup order = %v, want %v", got, want)
 			break
 		}
+	}
+}
+
+func TestScanLocalRootReturnsEmptyTreeForEmptyFolder(t *testing.T) {
+	root := t.TempDir()
+
+	tree, err := scanLocalRoot(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tree.Files) != 0 || len(tree.Subgroups) != 0 {
+		t.Errorf("expected an empty (not omitted) root, got %+v", tree)
 	}
 }
 
@@ -234,12 +251,12 @@ func TestScanLocalRootJSONNeverUsesNullForSlices(t *testing.T) {
 	}
 	writePDF(t, filepath.Join(root, "childless", "doc.pdf"), []string{"p1"})
 
-	groups, err := scanLocalRoot(root)
+	tree, err := scanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	data, err := json.Marshal(groups)
+	data, err := json.Marshal(tree)
 	if err != nil {
 		t.Fatal(err)
 	}

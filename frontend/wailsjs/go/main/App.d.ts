@@ -22,4 +22,4 @@ export function RenderPage(arg1:string,arg2:number,arg3:number):Promise<string>;
 
 export function SavePDF():Promise<string>;
 
-export function ScanLocalRoot(arg1:string):Promise<Array<main.LocalFileGroup>>;
+export function ScanLocalRoot(arg1:string):Promise<main.LocalFileGroup>;

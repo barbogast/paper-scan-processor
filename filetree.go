@@ -16,115 +16,68 @@ type LocalFile struct {
 }
 
 // LocalFileGroup is one folder's worth of files, plus its nested
-// subfolders. Name is "" for files found directly in the scanned root.
+// subfolders. Name is "" only for the root LocalFileGroup returned by
+// scanLocalRoot; every subgroup has a real folder name.
 type LocalFileGroup struct {
 	Name      string           `json:"name"`
 	Files     []LocalFile      `json:"files"`
 	Subgroups []LocalFileGroup `json:"subgroups"`
 }
 
-// newLocalFileGroup builds a LocalFileGroup, normalizing nil slices to
-// empty ones. A nil Go slice marshals to JSON `null`, which crashes the
-// frontend (e.g. `group.subgroups.length` throws on null), so every
-// LocalFileGroup must go through here rather than a bare struct literal.
-func newLocalFileGroup(name string, files []LocalFile, subgroups []LocalFileGroup) LocalFileGroup {
-	if files == nil {
-		files = []LocalFile{}
-	}
-	if subgroups == nil {
-		subgroups = []LocalFileGroup{}
-	}
-	return LocalFileGroup{Name: name, Files: files, Subgroups: subgroups}
+// scanLocalRoot scans root recursively and returns it as a LocalFileGroup:
+// its own direct PDFs in Files, and every subdirectory (at any depth) as a
+// nested Subgroups entry. Unlike a subfolder, the root is always returned
+// even if it's entirely empty, so the UI has something to render a "no
+// files" state from.
+func scanLocalRoot(root string) (LocalFileGroup, error) {
+	return scanDirectory(root, "")
 }
 
-// scanLocalRoot scans root recursively: PDFs directly in root form a single
-// group with Name "", and every subdirectory (at any depth) forms its own
-// nested group containing its direct PDF children plus its own subgroups.
-// Folders with no PDFs anywhere in their subtree are omitted entirely.
-// Symlinked directories are not followed — os.DirEntry.IsDir() reflects the
-// directory entry itself rather than the resolved target, so a symlink
-// (including one that would otherwise form a loop) is simply skipped.
-// Files whose page count can't be read (corrupt or non-PDF despite the
-// extension) are still included, flagged via LocalFile.Corrupt, rather than
-// dropped from the scan.
-func scanLocalRoot(root string) ([]LocalFileGroup, error) {
-	entries, err := os.ReadDir(root)
-	if err != nil {
-		return nil, err
-	}
-
-	groups := []LocalFileGroup{}
-
-	rootFiles, err := scanDir(root, entries)
-	if err != nil {
-		return nil, err
-	}
-	if len(rootFiles) > 0 {
-		groups = append(groups, newLocalFileGroup("", rootFiles, nil))
-	}
-
-	for _, e := range entries {
-		if !e.IsDir() || strings.HasPrefix(e.Name(), ".") {
-			continue
-		}
-		group, err := scanSubfolder(root, e.Name())
-		if err != nil {
-			return nil, err
-		}
-		if group != nil {
-			groups = append(groups, *group)
-		}
-	}
-
-	return groups, nil
-}
-
-// scanSubfolder recursively scans the subdirectory name within parent. It
-// returns nil if the subtree rooted there contains no PDFs at all, so empty
-// (sub)folders are omitted from the result.
-func scanSubfolder(parent, name string) (*LocalFileGroup, error) {
-	dir := filepath.Join(parent, name)
+// scanDirectory scans dir's direct entries in a single pass: each PDF
+// becomes a LocalFile, each non-hidden subdirectory is scanned recursively
+// (skipping symlinks) and — if its subtree contains no PDFs at all — is
+// omitted from Subgroups. name is used as the returned group's Name (pass ""
+// for the scan root). Files whose page count can't be read (corrupt or
+// non-PDF despite the extension) are still included, flagged via
+// LocalFile.Corrupt, rather than dropped from the scan.
+//
+// Both slice fields are always initialized to non-nil (even when empty),
+// since a nil Go slice marshals to JSON `null` rather than `[]`, which
+// crashes the frontend (e.g. `group.subgroups.length` throws on null).
+func scanDirectory(dir, name string) (LocalFileGroup, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		return nil, err
+		return LocalFileGroup{}, err
 	}
 
-	files, err := scanDir(dir, entries)
-	if err != nil {
-		return nil, err
-	}
-
+	files := []LocalFile{}
 	subgroups := []LocalFileGroup{}
+
 	for _, e := range entries {
-		if !e.IsDir() || strings.HasPrefix(e.Name(), ".") {
+		entryName := e.Name()
+		if strings.HasPrefix(entryName, ".") {
 			continue
 		}
-		sub, err := scanSubfolder(dir, e.Name())
-		if err != nil {
-			return nil, err
-		}
-		if sub != nil {
-			subgroups = append(subgroups, *sub)
-		}
-	}
 
-	if len(files) == 0 && len(subgroups) == 0 {
-		return nil, nil
-	}
-	group := newLocalFileGroup(name, files, subgroups)
-	return &group, nil
-}
-
-// scanDir builds the LocalFile list for the PDFs directly within dir's
-// entries, sorted alphabetically by filename.
-func scanDir(dir string, entries []os.DirEntry) ([]LocalFile, error) {
-	files := make([]LocalFile, 0, len(entries))
-	for _, e := range entries {
-		name := e.Name()
-		if e.IsDir() || strings.HasPrefix(name, ".") || !strings.HasSuffix(strings.ToLower(name), ".pdf") {
+		if e.IsDir() {
+			// os.DirEntry.IsDir() reflects the directory entry itself rather
+			// than a resolved symlink target, so a symlinked directory
+			// (including one that would otherwise form a loop) never enters
+			// this branch — it's simply skipped.
+			sub, err := scanDirectory(filepath.Join(dir, entryName), entryName)
+			if err != nil {
+				return LocalFileGroup{}, err
+			}
+			if len(sub.Files) > 0 || len(sub.Subgroups) > 0 {
+				subgroups = append(subgroups, sub)
+			}
 			continue
 		}
-		path := filepath.Join(dir, name)
+
+		if !strings.HasSuffix(strings.ToLower(entryName), ".pdf") {
+			continue
+		}
+		path := filepath.Join(dir, entryName)
 		info, err := os.Stat(path)
 		if err != nil {
 			continue
@@ -132,11 +85,12 @@ func scanDir(dir string, entries []os.DirEntry) ([]LocalFile, error) {
 		count, err := pdfPageCount(path)
 		files = append(files, LocalFile{
 			Path:      path,
-			Name:      strings.TrimSuffix(name, filepath.Ext(name)),
+			Name:      strings.TrimSuffix(entryName, filepath.Ext(entryName)),
 			SizeBytes: info.Size(),
 			PageCount: count,
 			Corrupt:   err != nil, // corrupt or non-PDF despite the extension
 		})
 	}
-	return files, nil
+
+	return LocalFileGroup{Name: name, Files: files, Subgroups: subgroups}, nil
 }

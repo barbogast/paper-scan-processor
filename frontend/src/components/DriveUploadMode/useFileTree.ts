@@ -17,7 +17,7 @@ export interface LocalFileGroup {
 
 export interface FileTreeHandle {
   root: string | null
-  groups: LocalFileGroup[]
+  tree: LocalFileGroup | null
   loading: boolean
   error: string | null
   pickRoot: () => Promise<void>
@@ -25,7 +25,7 @@ export interface FileTreeHandle {
 
 export function useFileTree(): FileTreeHandle {
   const [root, setRoot] = useState<string | null>(null)
-  const [groups, setGroups] = useState<LocalFileGroup[]>([])
+  const [tree, setTree] = useState<LocalFileGroup | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,14 +37,14 @@ export function useFileTree(): FileTreeHandle {
     setLoading(true)
     setError(null)
     try {
-      setGroups(await ScanLocalRoot(folder))
+      setTree(await ScanLocalRoot(folder))
     } catch (e) {
-      setGroups([])
+      setTree(null)
       setError(String(e))
     } finally {
       setLoading(false)
     }
   }, [])
 
-  return { root, groups, loading, error, pickRoot }
+  return { root, tree, loading, error, pickRoot }
 }

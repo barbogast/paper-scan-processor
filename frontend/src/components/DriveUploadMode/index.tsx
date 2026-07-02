@@ -8,9 +8,8 @@ const LEFT_PANEL_WIDTH = 300
 const INDENT_PER_LEVEL = 16
 
 export default function DriveUploadMode() {
-  const { root, groups, loading, error, pickRoot } = useFileTree()
-  const rootGroup = groups.find(g => g.name === '')
-  const subfolderGroups = groups.filter(g => g.name !== '')
+  const { root, tree, loading, error, pickRoot } = useFileTree()
+  const isEmpty = tree !== null && tree.files.length === 0 && tree.subgroups.length === 0
 
   // Groups start expanded; presence in this set (keyed by the group's full
   // path, e.g. "invoices/2026") means collapsed.
@@ -41,25 +40,27 @@ export default function DriveUploadMode() {
 
         {loading && <Loader size="sm" />}
         {error && <Text size="sm" c="red">{error}</Text>}
-        {!loading && !error && root && groups.length === 0 && (
+        {!loading && !error && isEmpty && (
           <Text size="sm" c="dimmed">No PDF files found under this folder.</Text>
         )}
         {!loading && !root && (
           <Button size="xs" onClick={pickRoot}>Choose Root Folder</Button>
         )}
 
-        <Stack gap="md" mt="sm">
-          {subfolderGroups.map(group => (
-            <GroupNode
-              key={group.name}
-              group={group}
-              groupKey={group.name}
-              collapsedGroups={collapsedGroups}
-              onToggle={toggleGroup}
-            />
-          ))}
-          {rootGroup && <FileList files={rootGroup.files} />}
-        </Stack>
+        {tree && (
+          <Stack gap="md" mt="sm">
+            {tree.subgroups.map(group => (
+              <GroupNode
+                key={group.name}
+                group={group}
+                groupKey={group.name}
+                collapsedGroups={collapsedGroups}
+                onToggle={toggleGroup}
+              />
+            ))}
+            <FileList files={tree.files} />
+          </Stack>
+        )}
       </Box>
 
       <Box
