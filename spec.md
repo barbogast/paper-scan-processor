@@ -281,7 +281,8 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Step 1c: File upload** — upload a hardcoded local file to a hardcoded Drive folder
 - [x] **Step 2a: Filesystem scan backend** — `scanLocalRoot` + `ScanLocalRoot` RPC; scans root folder recursively, returning files grouped by subfolder (nested to match the folder structure) with size and page count; symlinked directories are not followed; files whose page count can't be read are included and flagged via `Corrupt` rather than dropped
 - [x] **Step 2b: File tree UI** — new Drive Upload tab; root folder picker; three-column layout shell; recursive, collapsible (default expanded) file tree wired to the scan, indented per nesting level, with file size and page count as secondary metadata; corrupt files shown with a warning icon
-- [ ] **Step 3: Drive folder assignment UI + inline renaming** — folder browser modal with lazy-loaded Drive tree and recently used list; assignment at subfolder and file level; batch assignment for multi-select; inline editable name for each subfolder and file (controls the Drive upload name, not the local filename)
+- [ ] **Step 3a: Drive folder assignment UI** — folder browser modal with lazy-loaded Drive tree and recently used list; assignment at subfolder and file level; batch assignment for multi-select
+- [ ] **Step 3b: Inline renaming** — inline editable name for each subfolder and file (controls the Drive upload name, not the local filename)
 - [ ] **Step 4: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
 - [ ] **Step 5: Upload queue** — per-file upload with progress; inline error + Retry on failure; "Open in Drive" link per group after completion
 - [ ] **Step 6: Remembered folder mappings** — auto-fill Drive destination from saved subfolder-name→Drive-folder mapping; persisted across sessions
