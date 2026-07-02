@@ -287,6 +287,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [ ] **Step 6: Remembered folder mappings** — auto-fill Drive destination from saved subfolder-name→Drive-folder mapping; persisted across sessions
 - [ ] **Step 7: Post-upload cleanup** — prompt to delete or archive source files; archive moves files to a user-specified local archive folder
 - [ ] **Step 8: Conflict detection** — check Drive for filename conflicts before uploading; flag conflicting files
+- [ ] **Step 9: Keychain storage** — store the Drive refresh token in the macOS Keychain instead of a plain JSON file, so it is encrypted at rest and not readable by other user-level processes
 
 ### Code cleanup
 
