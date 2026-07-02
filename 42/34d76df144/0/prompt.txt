@@ -1,0 +1,5 @@
+Don't do the drive specific todos right now
+
+---
+
+Instead in PageThumbnail, there is a button repeated 4 times. Extract into component.
