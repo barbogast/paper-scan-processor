@@ -308,6 +308,32 @@ If a file upload fails, the error is shown inline next to that file in the left 
   - [ ] Make MergeMode previous / next action to follow the order of the target PDF; meaning to go back and forth between file A and B
 
 
+## Code review findings
+
+Findings from a source review of the current codebase (non-Drive code). Drive Upload findings are tracked separately below since that mode is still under construction.
+
+- [ ] **Split mode leaks page-cache memory** — `SplitMode` never calls `pageCache.evict()`, on file change or unmount, unlike `MergeMode` which does both. Every PDF opened in Split mode leaves its rendered thumbnails and full-res detail images in memory permanently.
+- [ ] **`Shift+R` (rotate counter-clockwise) is not implemented** — documented in the keyboard shortcuts table, but only clockwise rotation exists anywhere (thumbnail button and the `r` key both just do `+90°`); there is no CCW code path at all.
+- [ ] **`DetailPanel`'s rotate shortcut breaks under Shift/Caps Lock** — its keydown handler checks `e.key === 'r'` only, so with Shift held (or Caps Lock on) `e.key` is `'R'` and nothing happens, not even a clockwise rotate.
+- [ ] **Thumbnail controls are keyboard/screen-reader unreachable** — rotate/skip/move buttons on thumbnails, split-point gap zones, and the folder-path click target are all unlabeled `<div onClick>`s: not focusable, no `role`/`aria-label`.
+- [ ] **Unthrottled page-cache effect causes re-renders on every mouse move** — `SplitMode/ThumbnailPanel` and `MergeMode/ThumbnailPanel` both run a page-cache-loading `useEffect` with no dependency array, so hovering a thumbnail (`hoveredPage`/`hoveredGap` state) re-runs the load loop over the whole visible virtual window on every render.
+- [ ] **Spec says `mutool`, code uses `pdftoppm`** — `app.go`'s `RenderPage` shells out to `pdftoppm` (poppler), not `mutool draw` as documented in the tech stack section above; system dependency claim is stale.
+- [ ] **Spec still lists Zustand as the state library** — it was removed as an unused dependency (see Code cleanup); state is plain React hooks throughout. Tech stack section needs updating.
+- [x] **`.gitignore` is incomplete** — doesn't cover `.DS_Store` or the compiled `paper-scan-processor` binary at repo root; both currently show as untracked.
+- [ ] **`pdfFromPage` silently falls back to page `0` on parse failure** — `pdf.go`'s `fmt.Sscanf` result is never checked; if pdfcpu's split-filename convention ever changes, a page would silently sort to the front instead of raising an error.
+- [ ] **No frontend tests at all** — Go has solid coverage but there isn't a single frontend test file. The pure-logic hooks (`useOutputFiles`, especially `duplicateFirstPages`/`getSplitPoints`) are exactly the kind of thing that's easy to get subtly wrong and hard to verify by eye in the running app; worth unit-testing even if UI itself stays manually tested.
+
+### Drive Upload (code not finished — findings apply to Steps 1a–1c)
+
+- [ ] **Drive API queries are built with unescaped string interpolation** — `DriveFindFolder`/`DriveListFolder` use `fmt.Sprintf` to embed `name`/`parentID` into the query string. A folder name containing a single quote breaks the query (acknowledged in a comment but not handled); should escape `'` per Drive's query syntax.
+- [ ] **`DriveFindFolder` doesn't handle duplicate folder names** — it takes `result.Files[0]` unconditionally, but Drive allows multiple folders with the same name in the same parent, so resolution is nondeterministic once that happens.
+- [ ] **`DriveListFolder` has no pagination** — `Files.List()` is called once; results are silently capped at Drive's default page size (~100 items) with no error or indication that the list is incomplete.
+- [ ] **No caching of the authenticated Drive client** — `driveService`/`driveClient` re-read and re-parse `drive_token.json` from disk on every single API call instead of caching a client in memory; will multiply once concurrent per-file uploads (Step 5) exist.
+- [ ] **Refreshed OAuth tokens are never written back to disk** — only the first-run flow calls `driveSaveToken`; every later call reloads the same stale on-disk token and silently re-refreshes it against Google again.
+- [ ] **OAuth callback server has no concurrency guard** — `driveRunOAuthFlow` binds a hardcoded port (8765) with no mutex/single-flight protection; two concurrent calls into `driveClient()` before a token exists will race to bind the same port, and the loser gets a raw "address already in use" error.
+- [ ] **`driveSaveToken` discards the `Close()` error** — after encoding the token, the deferred `f.Close()` error is silently dropped (unlike the one place in the same file that explicitly acknowledges doing so with `//nolint`); a failed flush is reported as success and only surfaces later as a corrupt/unreadable token file.
+- [ ] **Refresh token is stored as plaintext JSON** — readable by any local process running as the same user. Already tracked as Step 9 (Keychain storage) below, but worth flagging that the current implementation doesn't yet meet the "stored locally" bar the spec's Authentication section implies.
+
 ## Future / out of scope for v1
 
 - **Insert pages from another PDF**: allow the user to pull pages from a second PDF into the current document before splitting. Planned for v2.
