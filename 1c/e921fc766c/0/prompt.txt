@@ -1,0 +1,37 @@
+Right now there are several go files in the root folder. What's common practice to organize go files?
+
+---
+
+Is it possible to have all go files in a subfolder? Like `src` or `backend`?
+
+---
+
+How does the code in drive_folders.go and drive_upload.go authenticate against Google Drive?
+
+---
+
+So each go file implicitely imports all exports from the same package?
+
+---
+
+But doesn't that make it hard to see where a symbol came from? From which file it was imported?
+
+---
+
+Ouff, that's quite bad, IMO. I don't like the "use an IDE" argument at all, code should be readable just as is and not need any tooltips. And using grep is also way too cumbersome. I can't see how this scales beyond super small projects.
+
+---
+
+So the logic is: lowercase identifiers are from the same file, uppercase are same file or other file of same package, a.B is from package a. Correct?
+
+---
+
+Horrible. But yeah, got it.
+
+---
+
+Why did you name DriveClient uppercase? It's not imported from a different pacakge, is it?
+
+---
+
+yes
