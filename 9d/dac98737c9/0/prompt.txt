@@ -3,3 +3,7 @@ Let's do step 2 of Drive Upload Mode. Is there anything particular to consider?
 ---
 
 Not sure yet. Let's start with the simple solution (one level) and add a checklist item to expand it later.
+
+---
+
+You staged the changes for the cleanup but didn't commit. Do that now. And remember for future: Cleanups should be committed immediately, before starting the actual implementation
