@@ -90,7 +90,10 @@ func filterSkipped(pages []string, skip []int) []string {
 // The page number is derived from the pdfcpu split filename.
 func applyRotations(pages []string, rotations map[int]int) error {
 	for _, p := range pages {
-		origPage := pdfFromPage(filepath.Base(p))
+		origPage, err := pdfFromPage(filepath.Base(p))
+		if err != nil {
+			return err
+		}
 		rot, ok := rotations[origPage]
 		if !ok || rot == 0 {
 			continue
@@ -171,9 +174,13 @@ func sortedPDFsInDir(dir string) ([]string, error) {
 		if e.IsDir() || !strings.HasSuffix(strings.ToLower(e.Name()), ".pdf") {
 			continue
 		}
+		fromPage, err := pdfFromPage(e.Name())
+		if err != nil {
+			return nil, err
+		}
 		files = append(files, item{
 			path:     filepath.Join(dir, e.Name()),
-			fromPage: pdfFromPage(e.Name()),
+			fromPage: fromPage,
 		})
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].fromPage < files[j].fromPage })
@@ -217,14 +224,13 @@ func copyFile(src, dst string) error {
 
 // pdfFromPage extracts the first page number from a pdfcpu split filename
 // such as "doc_1.pdf" or "doc_3-5.pdf".
-func pdfFromPage(name string) int {
+func pdfFromPage(name string) (int, error) {
 	name = strings.TrimSuffix(name, ".pdf")
 	parts := strings.Split(name, "_")
-	if len(parts) == 0 {
-		return 0
-	}
 	rangeStr := parts[len(parts)-1]
-	n := 0
-	fmt.Sscanf(strings.SplitN(rangeStr, "-", 2)[0], "%d", &n)
-	return n
+	var n int
+	if _, err := fmt.Sscanf(strings.SplitN(rangeStr, "-", 2)[0], "%d", &n); err != nil {
+		return 0, fmt.Errorf("unexpected pdfcpu split filename %q: %w", name, err)
+	}
+	return n, nil
 }
