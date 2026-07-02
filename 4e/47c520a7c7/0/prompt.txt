@@ -1,0 +1,17 @@
+start implementing the first item for drive upload mode
+
+---
+
+Do I need to do steps 1 to 4 only for the test, or also for regular usage?
+
+---
+
+But this means that the credentials are stored on my hard drive in plain sight without any protection - right?
+
+---
+
+Well, the file is reasable for all applications that I start, right? So that's most of what runs on this computer. Placing it into the keychain sounds sensible - add this as the last step to the list
+
+---
+
+Why store drive_credentials.json under Library/Application Support/...?
