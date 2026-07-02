@@ -23,9 +23,9 @@ func TestDriveAuthenticate(t *testing.T) {
 	skipUnlessDriveEnabled(t)
 	ctx := context.Background()
 
-	client, err := DriveClient(ctx)
+	client, err := driveClient(ctx)
 	if err != nil {
-		t.Fatalf("DriveClient: %v", err)
+		t.Fatalf("driveClient: %v", err)
 	}
 
 	svc, err := drive.NewService(ctx, option.WithHTTPClient(client))

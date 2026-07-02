@@ -47,10 +47,10 @@ func driveOAuthConfig() (*oauth2.Config, error) {
 	return cfg, nil
 }
 
-// DriveClient returns an authenticated HTTP client for the Google Drive API.
+// driveClient returns an authenticated HTTP client for the Google Drive API.
 // On first call it opens the system default browser to perform the OAuth flow
 // and saves the resulting token for reuse in future sessions.
-func DriveClient(ctx context.Context) (*http.Client, error) {
+func driveClient(ctx context.Context) (*http.Client, error) {
 	cfg, err := driveOAuthConfig()
 	if err != nil {
 		return nil, err

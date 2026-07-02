@@ -17,7 +17,7 @@ type DriveItem struct {
 }
 
 func driveService(ctx context.Context) (*drive.Service, error) {
-	client, err := DriveClient(ctx)
+	client, err := driveClient(ctx)
 	if err != nil {
 		return nil, err
 	}
