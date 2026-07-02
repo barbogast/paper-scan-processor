@@ -43,10 +43,10 @@ export default function SplitMode({ initialPath }: Props) {
     }
   }, [pdfPath])
 
-  const rotate = (page: number) => {
+  const rotate = (page: number, delta: 90 | -90 = 90) => {
     setRotations(prev => {
       const next = new Map(prev)
-      const deg = ((next.get(page) ?? 0) + 90) % 360
+      const deg = ((next.get(page) ?? 0) + delta + 360) % 360
       if (deg === 0) next.delete(page); else next.set(page, deg)
       return next
     })
@@ -225,8 +225,7 @@ export default function SplitMode({ initialPath }: Props) {
               pageNum={selectedPage}
               pageCount={pageCount}
               rotation={rotations.get(selectedPage) ?? 0}
-              onRotate={() => rotate(selectedPage)}
-
+              onRotate={(delta) => rotate(selectedPage, delta)}
             />
           </>
         ) : (

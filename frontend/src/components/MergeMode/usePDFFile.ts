@@ -9,7 +9,7 @@ export interface PDFFile {
   rotations: Map<number, number>
   load: () => Promise<boolean>
   toggleSkip: (page: number) => void
-  rotate: (page: number) => void
+  rotate: (page: number, delta?: 90 | -90) => void
 }
 
 export function usePDFFile(): PDFFile {
@@ -38,10 +38,10 @@ export function usePDFFile(): PDFFile {
     })
   }
 
-  const rotate = (page: number) => {
+  const rotate = (page: number, delta: 90 | -90 = 90) => {
     setRotations(prev => {
       const next = new Map(prev)
-      const deg = ((next.get(page) ?? 0) + 90) % 360
+      const deg = ((next.get(page) ?? 0) + delta + 360) % 360
       if (deg === 0) next.delete(page); else next.set(page, deg)
       return next
     })

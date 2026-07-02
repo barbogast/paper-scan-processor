@@ -11,7 +11,7 @@ interface Props {
   pageCount: number
   rotation?: number
   onToggleSkip?: () => void
-  onRotate?: () => void
+  onRotate?: (delta: 90 | -90) => void
 }
 
 export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0, onToggleSkip, onRotate }: Props) {
@@ -31,10 +31,9 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-      if (e.key === 'r') {
-        e.preventDefault()
-        onRotate?.()
-      }
+      if (e.key.toLowerCase() !== 'r') return
+      e.preventDefault()
+      onRotate?.(e.shiftKey ? -90 : 90)
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)

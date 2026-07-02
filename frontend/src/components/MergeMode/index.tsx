@@ -159,9 +159,8 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
             pageNum={selectedPage.page}
             pageCount={selectedCount}
             rotation={selectedFile.rotations.get(selectedPage.page) ?? 0}
-
             onToggleSkip={() => selectedFile.toggleSkip(selectedPage.page)}
-            onRotate={() => selectedFile.rotate(selectedPage.page)}
+            onRotate={(delta) => selectedFile.rotate(selectedPage.page, delta)}
           />
         )}
       </Box>
