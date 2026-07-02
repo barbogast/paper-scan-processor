@@ -47,3 +47,7 @@ That's fine. Start the implementation.
 ---
 
 I'm getting a js error: TypeError: null is not an object (evaluating 'group.subgroups.length')
+
+---
+
+yes
