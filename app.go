@@ -114,12 +114,18 @@ func (a *App) MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB boo
 	return mergePDFs(pathA, pathB, outPath, firstPageInA, reverseB, skipA, skipB, rotationsA, rotationsB)
 }
 
-// PickFolder shows a folder-select dialog and returns the chosen path.
-// Returns an empty string if the user cancels.
-func (a *App) PickFolder() (string, error) {
+// PickFolder shows a folder-select dialog with the given title and returns
+// the chosen path. Returns an empty string if the user cancels.
+func (a *App) PickFolder(title string) (string, error) {
 	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
-		Title: "Choose Output Folder",
+		Title: title,
 	})
+}
+
+// ScanLocalRoot scans root one level deep and returns its PDFs grouped by
+// subfolder, with size and page count metadata.
+func (a *App) ScanLocalRoot(root string) ([]LocalFileGroup, error) {
+	return scanLocalRoot(root)
 }
 
 // OutputFileSpec describes one output file for ExportSplit.

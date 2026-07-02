@@ -30,8 +30,8 @@ export function PageCount(arg1) {
   return window['go']['main']['App']['PageCount'](arg1);
 }
 
-export function PickFolder() {
-  return window['go']['main']['App']['PickFolder']();
+export function PickFolder(arg1) {
+  return window['go']['main']['App']['PickFolder'](arg1);
 }
 
 export function RenderPage(arg1, arg2, arg3) {
@@ -40,4 +40,8 @@ export function RenderPage(arg1, arg2, arg3) {
 
 export function SavePDF() {
   return window['go']['main']['App']['SavePDF']();
+}
+
+export function ScanLocalRoot(arg1) {
+  return window['go']['main']['App']['ScanLocalRoot'](arg1);
 }

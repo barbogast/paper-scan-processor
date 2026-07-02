@@ -99,7 +99,7 @@ export default function SplitMode({ initialPath }: Props) {
   }
 
   const handlePickOutputFolder = async () => {
-    const folder = await PickFolder()
+    const folder = await PickFolder('Choose Output Folder')
     if (folder) setOutputFolder(folder)
   }
 

@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Box, Group, Tabs, Text } from '@mantine/core'
 import MergeMode from './components/MergeMode'
 import SplitMode from './components/SplitMode'
+import DriveUploadMode from './components/DriveUploadMode'
 
-type AppMode = 'split' | 'merge'
+type AppMode = 'split' | 'merge' | 'drive'
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>('split')
@@ -33,14 +34,15 @@ export default function App() {
             <Tabs.List>
               <Tabs.Tab value="split">Split</Tabs.Tab>
               <Tabs.Tab value="merge">Merge</Tabs.Tab>
+              <Tabs.Tab value="drive">Drive Upload</Tabs.Tab>
             </Tabs.List>
           </Tabs>
         </Group>
       </Box>
       <Box style={{ flex: 1, overflow: 'hidden' }}>
-        {mode === 'split'
-          ? <SplitMode initialPath={splitInitialPath} />
-          : <MergeMode onOpenInSplitMode={handleOpenInSplitMode} />}
+        {mode === 'split' && <SplitMode initialPath={splitInitialPath} />}
+        {mode === 'merge' && <MergeMode onOpenInSplitMode={handleOpenInSplitMode} />}
+        {mode === 'drive' && <DriveUploadMode />}
       </Box>
     </Box>
   )

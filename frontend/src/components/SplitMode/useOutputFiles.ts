@@ -46,7 +46,7 @@ export function useOutputFiles(outputFolder: string | null): OutputFilesHandle {
   }, [])
 
   const pickFolderOverride = useCallback(async (firstPosition: number) => {
-    const folder = await PickFolder()
+    const folder = await PickFolder('Choose Output Folder')
     if (!folder) return
     setFiles(prev => {
       const entry = prev.get(firstPosition)
