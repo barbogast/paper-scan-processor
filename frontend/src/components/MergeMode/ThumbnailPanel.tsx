@@ -174,9 +174,12 @@ function ThumbColumn({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemHeight])
 
+  // Keyed on the visible range so this only re-runs when scroll position, data, or
+  // sizing actually change — not on unrelated re-renders like hover state.
   useEffect(() => {
     for (const item of virtualizer.getVirtualItems()) pageCache.load(pdfPath, pageAt(item.index), thumbWidth)
-  })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [virtualizer.range?.startIndex, virtualizer.range?.endIndex, pdfPath, thumbWidth, reverse, count])
 
   useEffect(() => {
     if (selectedPage !== null && count > 0) {

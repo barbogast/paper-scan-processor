@@ -93,12 +93,16 @@ export default function SplitThumbnailPanel({
   const virtualItems = virtualizer.getVirtualItems()
   pageCache.usePageCacheRender()
 
+  // Keyed on the visible range (not virtualItems itself, which is a fresh array every
+  // render) so this only re-runs when scroll position, data, or sizing actually change —
+  // not on unrelated re-renders like hover state.
   useEffect(() => {
     for (const vItem of virtualItems) {
       const item = items[vItem.index]
       if (item.type === 'page') pageCache.load(pdfPath, item.page, thumbWidth)
     }
-  })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [virtualizer.range?.startIndex, virtualizer.range?.endIndex, items, pdfPath, thumbWidth])
 
   useEffect(() => {
     const index = itemsRef.current.findIndex(item => item.type === 'page' && item.page === selectedPage)
