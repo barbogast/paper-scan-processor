@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c087fd32e4bb",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "app.go",
+    "filetree.go",
+    "filetree_test.go",
+    "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/DriveUploadMode/useFileTree.test.ts",
+    "frontend/src/components/DriveUploadMode/useFileTree.ts",
+    "frontend/wailsjs/go/main/App.d.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c0/87fd32e4bb/0/metadata.json",
+      "transcript": "/c0/87fd32e4bb/0/full.jsonl",
+      "content_hash": "/c0/87fd32e4bb/0/content_hash.txt",
+      "prompt": "/c0/87fd32e4bb/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14378,
+    "cache_creation_tokens": 517842,
+    "cache_read_tokens": 38433268,
+    "output_tokens": 135966,
+    "api_call_count": 240
+  }
+}
