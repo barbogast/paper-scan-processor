@@ -311,7 +311,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 
 Findings from a source review of the current codebase (non-Drive code). Drive Upload findings are tracked separately below since that mode is still under construction.
 
-- [ ] **Split mode leaks page-cache memory** — `SplitMode` never calls `pageCache.evict()`, on file change or unmount, unlike `MergeMode` which does both. Every PDF opened in Split mode leaves its rendered thumbnails and full-res detail images in memory permanently.
+- [x] **Split mode leaks page-cache memory** — `SplitMode` never calls `pageCache.evict()`, on file change or unmount, unlike `MergeMode` which does both. Every PDF opened in Split mode leaves its rendered thumbnails and full-res detail images in memory permanently.
 - [ ] **`Shift+R` (rotate counter-clockwise) is not implemented** — documented in the keyboard shortcuts table, but only clockwise rotation exists anywhere (thumbnail button and the `r` key both just do `+90°`); there is no CCW code path at all.
 - [ ] **`DetailPanel`'s rotate shortcut breaks under Shift/Caps Lock** — its keydown handler checks `e.key === 'r'` only, so with Shift held (or Caps Lock on) `e.key` is `'R'` and nothing happens, not even a clockwise rotate.
 - [ ] **Thumbnail controls are keyboard/screen-reader unreachable** — rotate/skip/move buttons on thumbnails, split-point gap zones, and the folder-path click target are all unlabeled `<div onClick>`s: not focusable, no `role`/`aria-label`.

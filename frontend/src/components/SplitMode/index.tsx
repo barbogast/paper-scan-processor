@@ -7,6 +7,7 @@ import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit, CheckConflicts, 
 import { ellipsisPath } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
 import { usePendingFocus } from './usePendingFocus'
+import * as pageCache from '../../lib/pageCache'
 
 const DEFAULT_TEMPLATE = '{date} {name}'
 
@@ -35,6 +36,12 @@ export default function SplitMode({ initialPath }: Props) {
   const [exporting, setExporting] = useState(false)
   const [rotations, setRotations] = useState<Map<number, number>>(() => new Map())
   const [skipped, setSkipped] = useState<Set<number>>(() => new Set())
+
+  useEffect(() => {
+    return () => {
+      if (pdfPath) pageCache.evict(pdfPath)
+    }
+  }, [pdfPath])
 
   const rotate = (page: number) => {
     setRotations(prev => {
