@@ -1,0 +1,21 @@
+read spec.md, don't reply
+
+---
+
+Do a review of the codebase
+
+---
+
+Any comments on the source code?
+
+---
+
+be more critical about the code
+
+---
+
+Write the results of both reviews into a TODO-list in spec.md. Write anything relating to Drive into a separate list as this code isn't finished yet.
+
+---
+
+You did not include the results from the first review
