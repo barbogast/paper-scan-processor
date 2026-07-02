@@ -67,3 +67,7 @@ Wouldn't it make sense to remove the special case for root and just have it as a
 ---
 
 I wonder if the code would be simplified by merging scanSubfolder, scanDir and scanChildren. The naming of these functions doesn't really tell what they are doing. And the hierarchy of the flow is weird: scanChildren uses scanDir to process (file) entries in a loop, and then loops again over (directory) entries. I think all of that would be clearer if it would be one function.
+
+---
+
+commit
