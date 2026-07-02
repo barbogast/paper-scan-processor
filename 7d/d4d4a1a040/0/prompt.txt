@@ -75,3 +75,11 @@ commit
 ---
 
 Step 3 in spec.md contains 2 distinct tasks: split those up
+
+---
+
+commit
+
+---
+
+I've updated spec.md; reread it and commit
