@@ -1,0 +1,5 @@
+The rotate functions and the rotateCCW functions are nearly identical. Doesn't it make more sense to pass the direction as a parameter?
+
+---
+
+How can the famous Fable 5 model miss such an easy to spot improvement?

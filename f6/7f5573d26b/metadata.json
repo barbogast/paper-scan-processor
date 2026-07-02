@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f67f5573d26b",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "frontend/src/components/DetailPanel.tsx",
+    "frontend/src/components/MergeMode/index.tsx",
+    "frontend/src/components/MergeMode/usePDFFile.ts",
+    "frontend/src/components/SplitMode/index.tsx",
+    "spec.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f6/7f5573d26b/0/metadata.json",
+      "transcript": "/f6/7f5573d26b/0/full.jsonl",
+      "content_hash": "/f6/7f5573d26b/0/content_hash.txt",
+      "prompt": "/f6/7f5573d26b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2574,
+    "cache_creation_tokens": 206076,
+    "cache_read_tokens": 6172320,
+    "output_tokens": 14008,
+    "api_call_count": 37
+  }
+}

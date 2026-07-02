@@ -1,0 +1,79 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f67f5573d26b",
+  "session_id": "79cec24d-8205-413d-a2ac-27d5e8894623",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-02T11:19:39.607181Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "frontend/src/components/DetailPanel.tsx",
+    "frontend/src/components/MergeMode/index.tsx",
+    "frontend/src/components/MergeMode/usePDFFile.ts",
+    "frontend/src/components/SplitMode/index.tsx",
+    "spec.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "6eb2bf3d87c5",
+  "checkpoint_transcript_start": 426,
+  "transcript_lines_at_start": 426,
+  "token_usage": {
+    "input_tokens": 2574,
+    "cache_creation_tokens": 206076,
+    "cache_read_tokens": 6172320,
+    "output_tokens": 14008,
+    "api_call_count": 37
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-02T11:19:39.578998Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 16,
+    "total_committed": 0,
+    "total_lines_changed": 16,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 138,
+      "user_lines_removed": 16,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/agents/entire-search.md": 25,
+        ".claude/settings.json": 84,
+        ".claude/settings.local.json": 16,
+        "frontend/src/components/DetailPanel.tsx": 4,
+        "frontend/src/components/MergeMode/index.tsx": 1,
+        "frontend/src/components/MergeMode/usePDFFile.ts": 3,
+        "frontend/src/components/SplitMode/index.tsx": 3,
+        "spec.md": 2
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/DetailPanel.tsx": 5,
+        "frontend/src/components/MergeMode/index.tsx": 2,
+        "frontend/src/components/MergeMode/usePDFFile.ts": 3,
+        "frontend/src/components/SplitMode/index.tsx": 4,
+        "spec.md": 2
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 16,
+      "user_lines_removed": 0,
+      "agent_lines_added": 122,
+      "agent_lines_removed": 16,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 16
+      }
+    }
+  ]
+}
