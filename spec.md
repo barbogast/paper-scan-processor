@@ -276,9 +276,9 @@ If a file upload fails, the error is shown inline next to that file in the left 
 
 ### Drive Upload mode
 
-- [ ] **Step 1a: OAuth authentication** — Go backend only, no UI; OAuth via system default browser with localhost callback; credentials stored locally and reused across sessions
-- [ ] **Step 1b: Folder listing** — list contents of a hardcoded root folder and a hardcoded subfolder via Drive API
-- [ ] **Step 1c: File upload** — upload a hardcoded local file to a hardcoded Drive folder
+- [x] **Step 1a: OAuth authentication** — Go backend only, no UI; OAuth via system default browser with localhost callback; credentials stored locally and reused across sessions
+- [x] **Step 1b: Folder listing** — list contents of a hardcoded root folder and a hardcoded subfolder via Drive API
+- [x] **Step 1c: File upload** — upload a hardcoded local file to a hardcoded Drive folder
 - [ ] **Step 2: Filesystem scan + file tree UI** — root folder picker; recursive scan and display of files grouped by subfolder; file size and page count as secondary metadata
 - [ ] **Step 3: Drive folder assignment UI + inline renaming** — folder browser modal with lazy-loaded Drive tree and recently used list; assignment at subfolder and file level; batch assignment for multi-select; inline editable name for each subfolder and file (controls the Drive upload name, not the local filename)
 - [ ] **Step 4: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
