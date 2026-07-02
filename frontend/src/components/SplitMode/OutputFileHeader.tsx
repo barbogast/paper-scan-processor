@@ -1,6 +1,6 @@
 import { ITEM_PADDING, HEADER_HEIGHT } from '../../constants'
 import { PendingFocusHandle } from './usePendingFocus'
-import ClippedPath from './ClippedPath'
+import ClippedPath from '../ClippedPath'
 
 interface Props {
   filename: string
