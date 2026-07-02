@@ -1,0 +1,5 @@
+"go test" still runs only one test case (and exists sucessfully)
+
+---
+
+Right now the tests actually modify the Drive by uploading files. What's the best way to avoid this? Skip the test by default and only actually run it when explicitley requested? Or using mocks? Or deleting it?
