@@ -10,10 +10,10 @@ import (
 
 // DriveItem represents a file or folder in Google Drive.
 type DriveItem struct {
-	ID       string
-	Name     string
-	IsFolder bool
-	Size     int64 // bytes; 0 for folders
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	IsFolder bool   `json:"isFolder"`
+	Size     int64  `json:"size"` // bytes; 0 for folders
 }
 
 func driveService(ctx context.Context) (*drive.Service, error) {

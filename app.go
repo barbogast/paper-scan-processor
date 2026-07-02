@@ -129,6 +129,13 @@ func (a *App) ScanLocalRoot(root string) (LocalFileGroup, error) {
 	return scanLocalRoot(root)
 }
 
+// ListDriveFolder returns the direct children of the Drive folder with the
+// given ID ("root" for the top level of My Drive), folders first then
+// files. Triggers the OAuth flow on first use if no token is cached yet.
+func (a *App) ListDriveFolder(folderID string) ([]DriveItem, error) {
+	return DriveListFolder(a.ctx, folderID)
+}
+
 // OutputFileSpec describes one output file for ExportSplit.
 type OutputFileSpec struct {
 	Pages  []int  `json:"pages"`  // ordered 1-indexed original page numbers (skip already filtered by caller)

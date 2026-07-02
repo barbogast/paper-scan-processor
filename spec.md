@@ -281,9 +281,11 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Step 1c: File upload** — upload a hardcoded local file to a hardcoded Drive folder
 - [x] **Step 2a: Filesystem scan backend** — `scanLocalRoot` + `ScanLocalRoot` RPC; scans root folder recursively, returning files grouped by subfolder (nested to match the folder structure) with size and page count; symlinked directories are not followed; files whose page count can't be read are included and flagged via `Corrupt` rather than dropped
 - [x] **Step 2b: File tree UI** — new Drive Upload tab; root folder picker; three-column layout shell; recursive, collapsible (default expanded) file tree wired to the scan, indented per nesting level, with file size and page count as secondary metadata; corrupt files shown with a warning icon
-- [ ] **Step 3a: Drive folder assignment UI** — folder browser modal with lazy-loaded Drive tree and recently used list
-- [ ] **Step 3b: Drive folder assignment UI** — assignment at subfolder and file level
-- [ ] **Step 3c: Drive folder assignment UI** — batch assignment for multi-select
+- [x] **Step 3a: Drive folder browser backend** — `ListDriveFolder` App RPC, thin wrapper over the existing `DriveListFolder`
+- [ ] **Step 3b: Folder browser modal UI** — lazy-loaded Drive tree browsing and folder selection; no recently-used list yet
+- [ ] **Step 3c: Recently used folders list** — persisted MRU list, shown in the modal
+- [ ] **Step 3d: Drive folder assignment UI** — assignment at subfolder and file level
+- [ ] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select
 - [ ] **Step 4: Inline renaming** — inline editable name for each subfolder and file (controls the Drive upload name, not the local filename)
 - [ ] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
 - [ ] **Step 6: Upload queue** — per-file upload with progress; inline error + Retry on failure; "Open in Drive" link per group after completion

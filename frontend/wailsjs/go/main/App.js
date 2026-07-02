@@ -14,6 +14,10 @@ export function ExportSplit(arg1, arg2, arg3) {
   return window['go']['main']['App']['ExportSplit'](arg1, arg2, arg3);
 }
 
+export function ListDriveFolder(arg1) {
+  return window['go']['main']['App']['ListDriveFolder'](arg1);
+}
+
 export function MergePDFs(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {
   return window['go']['main']['App']['MergePDFs'](arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 }
