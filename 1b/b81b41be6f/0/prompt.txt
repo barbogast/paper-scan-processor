@@ -1,0 +1,9 @@
+Why does "go test" run only one test case?
+
+---
+
+yes
+
+---
+
+Wouldn't it be better to start some kind of testutils file?
