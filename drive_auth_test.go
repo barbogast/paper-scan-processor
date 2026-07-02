@@ -20,6 +20,7 @@ import (
 )
 
 func TestDriveAuthenticate(t *testing.T) {
+	skipIfNoDriveCredentials(t)
 	ctx := context.Background()
 
 	client, err := DriveClient(ctx)

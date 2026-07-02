@@ -11,6 +11,7 @@ const driveUploadLocalPath = "example-pdfs-merge/backs.pdf"
 const driveUploadFolderName = "scan"
 
 func TestDriveUploadFile(t *testing.T) {
+	skipIfNoDriveCredentials(t)
 	ctx := context.Background()
 
 	folderID, err := DriveFindFolder(ctx, "root", driveUploadFolderName)
