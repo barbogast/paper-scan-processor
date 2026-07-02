@@ -1,0 +1,77 @@
+Let's do step 2 of Drive Upload Mode. Is there anything particular to consider?
+
+---
+
+Not sure yet. Let's start with the simple solution (one level) and add a checklist item to expand it later.
+
+---
+
+You staged the changes for the cleanup but didn't commit. Do that now. And remember for future: Cleanups should be committed immediately, before starting the actual implementation
+
+---
+
+I'm not sure about the name DriveFile and DriveFileGroup: The "Drive" part of the name sounds to me like this represents a file in the Drive, whereas it really is about files on the local harddrive. Right?
+
+---
+
+in scanDir(), what's the reason to loop the directory entries twice?
+
+---
+
+Don't silently skip corrupt PDFs, instead return them with a "corrupt" flag and show a warning sign in the frontend
+
+---
+
+commit
+
+---
+
+Make folders in UI collapsible, starting out as expanded
+
+---
+
+How about putting the collapsed state into LocalFileGroup?
+
+---
+
+Let's talk about deeper folder levels: What are your suggestions?
+
+---
+
+I wonder how exactly it would look like on the UI. Can you provide a mock?
+
+---
+
+That's fine. Start the implementation.
+
+---
+
+I'm getting a js error: TypeError: null is not an object (evaluating 'group.subgroups.length')
+
+---
+
+yes
+
+---
+
+give suggestions for a name of this project
+
+---
+
+scanLocalRoot() and scanSubfolder() are very similar. Does it make sense to merge them?
+
+---
+
+Wouldn't it make sense to remove the special case for root and just have it as a normal folder, containing its files and its subgroups? I don't see the benefit of the current distinction between root and subfolder
+
+---
+
+I wonder if the code would be simplified by merging scanSubfolder, scanDir and scanChildren. The naming of these functions doesn't really tell what they are doing. And the hierarchy of the flow is weird: scanChildren uses scanDir to process (file) entries in a loop, and then loops again over (directory) entries. I think all of that would be clearer if it would be one function.
+
+---
+
+commit
+
+---
+
+Step 3 in spec.md contains 2 distinct tasks: split those up
