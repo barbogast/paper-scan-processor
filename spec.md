@@ -282,7 +282,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Step 2a: Filesystem scan backend** — `scanLocalRoot` + `ScanLocalRoot` RPC; scans root folder recursively, returning files grouped by subfolder (nested to match the folder structure) with size and page count; symlinked directories are not followed; files whose page count can't be read are included and flagged via `Corrupt` rather than dropped
 - [x] **Step 2b: File tree UI** — new Drive Upload tab; root folder picker; three-column layout shell; recursive, collapsible (default expanded) file tree wired to the scan, indented per nesting level, with file size and page count as secondary metadata; corrupt files shown with a warning icon
 - [x] **Step 3a: Drive folder browser backend** — `ListDriveFolder` App RPC, thin wrapper over the existing `DriveListFolder`
-- [ ] **Step 3b: Folder browser modal UI** — lazy-loaded Drive tree browsing and folder selection; no recently-used list yet
+- [x] **Step 3b: Folder browser modal UI** — lazy-loaded Drive tree browsing and folder selection; no recently-used list yet
 - [ ] **Step 3c: Recently used folders list** — persisted MRU list, shown in the modal
 - [ ] **Step 3d: Drive folder assignment UI** — assignment at subfolder and file level
 - [ ] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select

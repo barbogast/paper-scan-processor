@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Box, Button, Loader, Stack, Text, Tooltip } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
 import ClippedPath from '../ClippedPath'
+import DriveFolderPickerModal from './DriveFolderPickerModal'
 import { useFileTree, LocalFile, LocalFileGroup } from './useFileTree'
 import { formatFileSize } from '../../utils'
 
@@ -22,6 +24,10 @@ export default function DriveUploadMode() {
     })
   }
 
+  // Temporary: lets the Drive folder picker modal (Step 3b) be tried out
+  // manually before Step 3d wires it into real per-subfolder/file fields.
+  const [pickerOpen, setPickerOpen] = useState(false)
+
   return (
     <Box style={{ display: 'flex', height: '100%' }}>
       <Box
@@ -37,6 +43,15 @@ export default function DriveUploadMode() {
         <Box mb="sm">
           <ClippedPath path={root} onClick={pickRoot} placeholder="Choose root folder…" />
         </Box>
+
+        <Button size="xs" variant="default" mb="sm" onClick={() => setPickerOpen(true)}>
+          Pick Drive folder (test)
+        </Button>
+        <DriveFolderPickerModal
+          opened={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          onSelect={folder => notifications.show({ title: 'Drive folder selected', message: folder.path })}
+        />
 
         {loading && <Loader size="sm" />}
         {error && <Text size="sm" c="red">{error}</Text>}
