@@ -27,7 +27,7 @@ describe('useFileTree', () => {
 
   it('scans the chosen root and stores the resulting groups', async () => {
     vi.mocked(PickFolder).mockResolvedValueOnce('/output/batch')
-    const groups = [{ name: 'invoices', files: [{ path: '/output/batch/invoices/a.pdf', name: 'a', sizeBytes: 100, pageCount: 2 }] }]
+    const groups = [{ name: 'invoices', files: [{ path: '/output/batch/invoices/a.pdf', name: 'a', sizeBytes: 100, pageCount: 2, corrupt: false }], subgroups: [] }]
     vi.mocked(ScanLocalRoot).mockResolvedValueOnce(groups as any)
 
     const { result } = renderHook(() => useFileTree())

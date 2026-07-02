@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -119,7 +121,7 @@ func TestScanLocalRootIgnoresNonPDFAndDotfiles(t *testing.T) {
 	}
 }
 
-func TestScanLocalRootDoesNotRecurseTwoLevels(t *testing.T) {
+func TestScanLocalRootRecursesMultipleLevels(t *testing.T) {
 	root := t.TempDir()
 	nested := filepath.Join(root, "a", "b")
 	if err := os.MkdirAll(nested, 0o755); err != nil {
@@ -132,8 +134,63 @@ func TestScanLocalRootDoesNotRecurseTwoLevels(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(groups) != 1 || groups[0].Name != "a" || len(groups[0].Files) != 1 || groups[0].Files[0].Name != "shallow" {
-		t.Fatalf("expected only the one-level-deep file, got %+v", groups)
+	if len(groups) != 1 || groups[0].Name != "a" {
+		t.Fatalf("expected a single top-level group \"a\", got %+v", groups)
+	}
+
+	a := groups[0]
+	if len(a.Files) != 1 || a.Files[0].Name != "shallow" {
+		t.Errorf("a's direct files = %+v, want just shallow.pdf", a.Files)
+	}
+	if len(a.Subgroups) != 1 || a.Subgroups[0].Name != "b" {
+		t.Fatalf("a's subgroups = %+v, want a single subgroup \"b\"", a.Subgroups)
+	}
+
+	b := a.Subgroups[0]
+	if len(b.Files) != 1 || b.Files[0].Name != "deep" {
+		t.Errorf("b's files = %+v, want just deep.pdf", b.Files)
+	}
+	if len(b.Subgroups) != 0 {
+		t.Errorf("b's subgroups = %+v, want none", b.Subgroups)
+	}
+}
+
+func TestScanLocalRootOmitsSubtreeWithNoPDFsAtAnyDepth(t *testing.T) {
+	root := t.TempDir()
+	emptyNested := filepath.Join(root, "empty", "also-empty")
+	if err := os.MkdirAll(emptyNested, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
+
+	groups, err := scanLocalRoot(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(groups) != 1 || groups[0].Name != "" {
+		t.Fatalf("expected only the root group (empty subtree omitted), got %+v", groups)
+	}
+}
+
+func TestScanLocalRootDoesNotFollowSymlinkedDirectories(t *testing.T) {
+	root := t.TempDir()
+	real := filepath.Join(root, "real")
+	if err := os.Mkdir(real, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writePDF(t, filepath.Join(real, "doc.pdf"), []string{"p1"})
+
+	// A symlink back to an ancestor would form an infinite loop if followed.
+	if err := os.Symlink(root, filepath.Join(real, "loop")); err != nil {
+		t.Fatal(err)
+	}
+
+	groups, err := scanLocalRoot(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(groups) != 1 || groups[0].Name != "real" || len(groups[0].Subgroups) != 0 {
+		t.Fatalf("expected only the real directory with no subgroups (symlink not followed), got %+v", groups)
 	}
 }
 
@@ -161,5 +218,32 @@ func TestScanLocalRootSubfoldersSortedAlphabetically(t *testing.T) {
 			t.Errorf("group order = %v, want %v", got, want)
 			break
 		}
+	}
+}
+
+// TestScanLocalRootJSONNeverUsesNullForSlices guards against Go's nil-slice
+// marshaling to JSON `null` instead of `[]`, which crashes the frontend
+// (e.g. `group.subgroups.length` throws on null). A leaf group (no
+// subfolders) is exactly the case that previously produced a nil Subgroups
+// slice.
+func TestScanLocalRootJSONNeverUsesNullForSlices(t *testing.T) {
+	root := t.TempDir()
+	writePDF(t, filepath.Join(root, "leaf.pdf"), []string{"p1"})
+	if err := os.Mkdir(filepath.Join(root, "childless"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writePDF(t, filepath.Join(root, "childless", "doc.pdf"), []string{"p1"})
+
+	groups, err := scanLocalRoot(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := json.Marshal(groups)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(data), "null") {
+		t.Errorf("JSON output contains null (should be [] for empty slices): %s", data)
 	}
 }

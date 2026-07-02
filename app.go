@@ -122,8 +122,9 @@ func (a *App) PickFolder(title string) (string, error) {
 	})
 }
 
-// ScanLocalRoot scans root one level deep and returns its PDFs grouped by
-// subfolder, with size and page count metadata.
+// ScanLocalRoot recursively scans root and returns its PDFs grouped by
+// subfolder (nested to match the folder structure), with size and page
+// count metadata.
 func (a *App) ScanLocalRoot(root string) ([]LocalFileGroup, error) {
 	return scanLocalRoot(root)
 }

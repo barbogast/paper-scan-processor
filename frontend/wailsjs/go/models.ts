@@ -23,6 +23,7 @@ export namespace main {
 	export class LocalFileGroup {
 	    name: string;
 	    files: LocalFile[];
+	    subgroups: LocalFileGroup[];
 	
 	    static createFrom(source: any = {}) {
 	        return new LocalFileGroup(source);
@@ -32,6 +33,7 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.name = source["name"];
 	        this.files = this.convertValues(source["files"], LocalFile);
+	        this.subgroups = this.convertValues(source["subgroups"], LocalFileGroup);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -1,14 +1,27 @@
+import { useState } from 'react'
 import { Box, Button, Loader, Stack, Text, Tooltip } from '@mantine/core'
 import ClippedPath from '../ClippedPath'
-import { useFileTree, LocalFile } from './useFileTree'
+import { useFileTree, LocalFile, LocalFileGroup } from './useFileTree'
 import { formatFileSize } from '../../utils'
 
 const LEFT_PANEL_WIDTH = 300
+const INDENT_PER_LEVEL = 16
 
 export default function DriveUploadMode() {
   const { root, groups, loading, error, pickRoot } = useFileTree()
   const rootGroup = groups.find(g => g.name === '')
   const subfolderGroups = groups.filter(g => g.name !== '')
+
+  // Groups start expanded; presence in this set (keyed by the group's full
+  // path, e.g. "invoices/2026") means collapsed.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const toggleGroup = (groupKey: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(groupKey)) next.delete(groupKey); else next.add(groupKey)
+      return next
+    })
+  }
 
   return (
     <Box style={{ display: 'flex', height: '100%' }}>
@@ -37,10 +50,13 @@ export default function DriveUploadMode() {
 
         <Stack gap="md" mt="sm">
           {subfolderGroups.map(group => (
-            <Box key={group.name}>
-              <Text size="sm" fw={600}>📁 {group.name}</Text>
-              <FileList files={group.files} />
-            </Box>
+            <GroupNode
+              key={group.name}
+              group={group}
+              groupKey={group.name}
+              collapsedGroups={collapsedGroups}
+              onToggle={toggleGroup}
+            />
           ))}
           {rootGroup && <FileList files={rootGroup.files} />}
         </Stack>
@@ -58,6 +74,59 @@ export default function DriveUploadMode() {
       </Box>
 
       <Box style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+    </Box>
+  )
+}
+
+interface GroupNodeProps {
+  group: LocalFileGroup
+  groupKey: string
+  collapsedGroups: Set<string>
+  onToggle: (groupKey: string) => void
+}
+
+function GroupNode({ group, groupKey, collapsedGroups, onToggle }: GroupNodeProps) {
+  const expanded = !collapsedGroups.has(groupKey)
+  return (
+    <Box>
+      <button
+        type="button"
+        onClick={() => onToggle(groupKey)}
+        aria-expanded={expanded}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          width: '100%',
+          border: 'none',
+          background: 'transparent',
+          padding: 0,
+          cursor: 'pointer',
+          textAlign: 'left',
+          fontFamily: 'inherit',
+        }}
+      >
+        <Text size="xs" c="dimmed" style={{ width: 10, flexShrink: 0 }}>{expanded ? '▼' : '▶'}</Text>
+        <Text size="sm" fw={600}>📁 {group.name}</Text>
+      </button>
+      {expanded && (
+        <Box pl={INDENT_PER_LEVEL}>
+          <FileList files={group.files} />
+          {group.subgroups.length > 0 && (
+            <Stack gap={8} mt={4}>
+              {group.subgroups.map(sub => (
+                <GroupNode
+                  key={sub.name}
+                  group={sub}
+                  groupKey={`${groupKey}/${sub.name}`}
+                  collapsedGroups={collapsedGroups}
+                  onToggle={onToggle}
+                />
+              ))}
+            </Stack>
+          )}
+        </Box>
+      )}
     </Box>
   )
 }

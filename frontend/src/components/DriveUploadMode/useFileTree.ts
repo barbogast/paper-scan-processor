@@ -12,6 +12,7 @@ export interface LocalFile {
 export interface LocalFileGroup {
   name: string
   files: LocalFile[]
+  subgroups: LocalFileGroup[]
 }
 
 export interface FileTreeHandle {
