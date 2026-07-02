@@ -10,7 +10,6 @@ A desktop application for post-processing PDF files containing batches of scanne
 - **UI components**: Mantine
 - **Virtualization**: TanStack Virtual
 - **Drag-and-drop**: dnd-kit
-- **State**: Zustand
 - **PDF manipulation**: pdfcpu
 - **PDF rendering** (thumbnails): `pdftoppm` (Poppler, system install, called as subprocess)
 
@@ -318,7 +317,7 @@ Findings from a source review of the current codebase (non-Drive code). Drive Up
 - [ ] **Thumbnail controls are keyboard/screen-reader unreachable** — rotate/skip/move buttons on thumbnails, split-point gap zones, and the folder-path click target are all unlabeled `<div onClick>`s: not focusable, no `role`/`aria-label`.
 - [ ] **Unthrottled page-cache effect causes re-renders on every mouse move** — `SplitMode/ThumbnailPanel` and `MergeMode/ThumbnailPanel` both run a page-cache-loading `useEffect` with no dependency array, so hovering a thumbnail (`hoveredPage`/`hoveredGap` state) re-runs the load loop over the whole visible virtual window on every render.
 - [x] **Spec says `mutool`, code uses `pdftoppm`** — `app.go`'s `RenderPage` shells out to `pdftoppm` (poppler), not `mutool draw` as documented in the tech stack section above; system dependency claim is stale.
-- [ ] **Spec still lists Zustand as the state library** — it was removed as an unused dependency (see Code cleanup); state is plain React hooks throughout. Tech stack section needs updating.
+- [x] **Spec still lists Zustand as the state library** — it was removed as an unused dependency (see Code cleanup); state is plain React hooks throughout. Tech stack section needs updating.
 - [x] **`.gitignore` is incomplete** — doesn't cover `.DS_Store` or the compiled `paper-scan-processor` binary at repo root; both currently show as untracked.
 - [ ] **`pdfFromPage` silently falls back to page `0` on parse failure** — `pdf.go`'s `fmt.Sscanf` result is never checked; if pdfcpu's split-filename convention ever changes, a page would silently sort to the front instead of raising an error.
 - [ ] **No frontend tests at all** — Go has solid coverage but there isn't a single frontend test file. The pure-logic hooks (`useOutputFiles`, especially `duplicateFirstPages`/`getSplitPoints`) are exactly the kind of thing that's easy to get subtly wrong and hard to verify by eye in the running app; worth unit-testing even if UI itself stays manually tested.
