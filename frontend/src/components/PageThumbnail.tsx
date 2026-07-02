@@ -58,73 +58,40 @@ export default function PageThumbnail({
           )}
         </div>
         {showRotateBtn && (
-          <button
-            type="button"
-            aria-label="Rotate page clockwise"
-            onClick={(e) => { e.stopPropagation(); onRotate() }}
-            style={{
-              position: 'absolute', top: 3, left: 3,
-              width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
-              background: isRotated ? 'var(--mantine-color-blue-6)' : 'rgba(0,0,0,0.45)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: 'white',
-            }}
-          >
-            <IconRotateClockwise size={10} stroke={3} />
-          </button>
+          <ThumbnailIconButton
+            ariaLabel="Rotate page clockwise"
+            onClick={onRotate}
+            position={{ top: 3, left: 3 }}
+            active={isRotated}
+            icon={<IconRotateClockwise size={10} stroke={3} />}
+          />
         )}
         {showSkipBtn && (
-          <button
-            type="button"
-            aria-label={isSkipped ? 'Unskip page' : 'Skip page'}
-            onClick={(e) => { e.stopPropagation(); onToggleSkip() }}
-            style={{
-              position: 'absolute', top: 3, right: 3,
-              width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
-              background: isSkipped ? 'var(--mantine-color-orange-6)' : 'rgba(0,0,0,0.45)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: 'white',
-            }}
-          >
-            <IconX size={10} stroke={3} />
-          </button>
+          <ThumbnailIconButton
+            ariaLabel={isSkipped ? 'Unskip page' : 'Skip page'}
+            onClick={onToggleSkip}
+            position={{ top: 3, right: 3 }}
+            active={isSkipped}
+            activeColor="var(--mantine-color-orange-6)"
+            icon={<IconX size={10} stroke={3} />}
+          />
         )}
         {showMoveButtons && (
           <>
-            <button
-              type="button"
-              aria-label="Move page up"
+            <ThumbnailIconButton
+              ariaLabel="Move page up"
+              onClick={() => onMoveUp?.()}
+              position={{ bottom: 3, left: 3 }}
               disabled={!canMoveUp}
-              onClick={(e) => { e.stopPropagation(); onMoveUp?.() }}
-              style={{
-                position: 'absolute', bottom: 3, left: 3,
-                width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
-                background: 'rgba(0,0,0,0.45)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: canMoveUp ? 'pointer' : 'default',
-                color: 'white',
-                opacity: canMoveUp ? 1 : 0.3,
-              }}
-            >
-              <IconArrowUp size={10} stroke={3} />
-            </button>
-            <button
-              type="button"
-              aria-label="Move page down"
+              icon={<IconArrowUp size={10} stroke={3} />}
+            />
+            <ThumbnailIconButton
+              ariaLabel="Move page down"
+              onClick={() => onMoveDown?.()}
+              position={{ bottom: 3, right: 3 }}
               disabled={!canMoveDown}
-              onClick={(e) => { e.stopPropagation(); onMoveDown?.() }}
-              style={{
-                position: 'absolute', bottom: 3, right: 3,
-                width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
-                background: 'rgba(0,0,0,0.45)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: canMoveDown ? 'pointer' : 'default',
-                color: 'white',
-                opacity: canMoveDown ? 1 : 0.3,
-              }}
-            >
-              <IconArrowDown size={10} stroke={3} />
-            </button>
+              icon={<IconArrowDown size={10} stroke={3} />}
+            />
           </>
         )}
       </div>
@@ -138,5 +105,41 @@ export default function PageThumbnail({
         {label}
       </div>
     </div>
+  )
+}
+
+interface ThumbnailIconButtonProps {
+  ariaLabel: string
+  onClick: () => void
+  icon: React.ReactNode
+  position: { top?: number; bottom?: number; left?: number; right?: number }
+  active?: boolean
+  activeColor?: string
+  disabled?: boolean
+}
+
+function ThumbnailIconButton({
+  ariaLabel, onClick, icon, position,
+  active = false, activeColor = 'var(--mantine-color-blue-6)', disabled = false,
+}: ThumbnailIconButtonProps) {
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={(e) => { e.stopPropagation(); onClick() }}
+      style={{
+        position: 'absolute',
+        ...position,
+        width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
+        background: active ? activeColor : 'rgba(0,0,0,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: disabled ? 'default' : 'pointer',
+        color: 'white',
+        opacity: disabled ? 0.3 : 1,
+      }}
+    >
+      {icon}
+    </button>
   )
 }
