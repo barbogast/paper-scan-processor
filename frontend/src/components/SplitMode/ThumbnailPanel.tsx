@@ -309,13 +309,18 @@ function GapZone({ isSplit, isHovered, onClick, onMouseEnter, onMouseLeave }: Ga
     : undefined
 
   return (
-    <div
+    <button
+      type="button"
+      aria-label={isSplit ? 'Remove split point here' : 'Add split point here'}
+      aria-pressed={isSplit}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       style={{
+        width: '100%',
         height: GAP_HEIGHT,
         background: bg,
+        border: 'none',
         display: 'flex',
         alignItems: 'center',
         paddingLeft: ITEM_PADDING,
@@ -329,6 +334,6 @@ function GapZone({ isSplit, isHovered, onClick, onMouseEnter, onMouseLeave }: Ga
       {!isSplit && isHovered && (
         <div style={{ flex: 1, height: 0, borderTop: '1px dashed var(--mantine-color-gray-5)' }} />
       )}
-    </div>
+    </button>
   )
 }

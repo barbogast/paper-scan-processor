@@ -10,7 +10,7 @@ interface Props {
 // Displays a filesystem path, anchored to its right end so the filename is always visible.
 // Uses scrollLeft (rather than direction:rtl) to avoid Unicode BiDi issues with the leading slash.
 export default function ClippedPath({ path, onClick, placeholder = 'Choose folder…' }: Props) {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLButtonElement>(null)
   const [clipped, setClipped] = useState(false)
 
   // Runs before paint to avoid a flash of the unscrolled (left-anchored) path.
@@ -33,11 +33,20 @@ export default function ClippedPath({ path, onClick, placeholder = 'Choose folde
           paddingRight: 1,
         }}>…</span>
       )}
-      <div
+      <button
+        type="button"
         ref={ref}
         onClick={onClick}
+        aria-label={path ? `Change destination folder (currently ${path})` : placeholder}
         style={{
+          display: 'block',
+          width: '100%',
+          border: 'none',
+          background: 'transparent',
+          padding: 0,
+          textAlign: 'left',
           fontSize: 11,
+          fontFamily: 'inherit',
           color: path ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-dimmed)',
           cursor: 'pointer',
           whiteSpace: 'nowrap',
@@ -45,7 +54,7 @@ export default function ClippedPath({ path, onClick, placeholder = 'Choose folde
         }}
       >
         {path ?? placeholder}
-      </div>
+      </button>
     </div>
   )
 

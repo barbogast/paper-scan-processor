@@ -58,40 +58,47 @@ export default function PageThumbnail({
           )}
         </div>
         {showRotateBtn && (
-          <div
+          <button
+            type="button"
+            aria-label="Rotate page clockwise"
             onClick={(e) => { e.stopPropagation(); onRotate() }}
             style={{
               position: 'absolute', top: 3, left: 3,
-              width: 16, height: 16, borderRadius: 3,
+              width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
               background: isRotated ? 'var(--mantine-color-blue-6)' : 'rgba(0,0,0,0.45)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', color: 'white',
             }}
           >
             <IconRotateClockwise size={10} stroke={3} />
-          </div>
+          </button>
         )}
         {showSkipBtn && (
-          <div
+          <button
+            type="button"
+            aria-label={isSkipped ? 'Unskip page' : 'Skip page'}
             onClick={(e) => { e.stopPropagation(); onToggleSkip() }}
             style={{
               position: 'absolute', top: 3, right: 3,
-              width: 16, height: 16, borderRadius: 3,
+              width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
               background: isSkipped ? 'var(--mantine-color-orange-6)' : 'rgba(0,0,0,0.45)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', color: 'white',
             }}
           >
             <IconX size={10} stroke={3} />
-          </div>
+          </button>
         )}
         {showMoveButtons && (
           <>
-            <div
-              onClick={(e) => { e.stopPropagation(); if (canMoveUp) onMoveUp?.() }}
+            <button
+              type="button"
+              aria-label="Move page up"
+              disabled={!canMoveUp}
+              onClick={(e) => { e.stopPropagation(); onMoveUp?.() }}
               style={{
                 position: 'absolute', bottom: 3, left: 3,
-                width: 16, height: 16, borderRadius: 3,
+                width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
                 background: 'rgba(0,0,0,0.45)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: canMoveUp ? 'pointer' : 'default',
@@ -100,12 +107,15 @@ export default function PageThumbnail({
               }}
             >
               <IconArrowUp size={10} stroke={3} />
-            </div>
-            <div
-              onClick={(e) => { e.stopPropagation(); if (canMoveDown) onMoveDown?.() }}
+            </button>
+            <button
+              type="button"
+              aria-label="Move page down"
+              disabled={!canMoveDown}
+              onClick={(e) => { e.stopPropagation(); onMoveDown?.() }}
               style={{
                 position: 'absolute', bottom: 3, right: 3,
-                width: 16, height: 16, borderRadius: 3,
+                width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
                 background: 'rgba(0,0,0,0.45)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: canMoveDown ? 'pointer' : 'default',
@@ -114,7 +124,7 @@ export default function PageThumbnail({
               }}
             >
               <IconArrowDown size={10} stroke={3} />
-            </div>
+            </button>
           </>
         )}
       </div>
