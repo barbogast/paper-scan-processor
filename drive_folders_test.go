@@ -10,7 +10,7 @@ import (
 const driveRootFolderName = "scan"
 
 func TestDriveListFolders(t *testing.T) {
-	skipIfNoDriveCredentials(t)
+	skipUnlessDriveEnabled(t)
 	ctx := context.Background()
 
 	// Find "scan" at the Drive root.
