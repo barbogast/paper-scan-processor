@@ -284,7 +284,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Step 3a: Drive folder browser backend** — `ListDriveFolder` App RPC, thin wrapper over the existing `DriveListFolder`
 - [x] **Step 3b: Folder browser modal UI** — lazy-loaded Drive tree browsing and folder selection; no recently-used list yet
 - [ ] **Step 3c: Recently used folders list** — persisted MRU list, shown in the modal
-- [ ] **Step 3d: Drive folder assignment UI** — assignment at subfolder and file level
+- [x] **Step 3d: Drive folder assignment UI** — assignment at subfolder and file level; a subfolder's assignment propagates to all files and nested subfolders beneath it unless overridden closer to the leaf; a clear (✕) control resets an explicit assignment back to inherited/not-assigned
 - [ ] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select
 - [ ] **Step 4: Inline renaming** — inline editable name for each subfolder and file (controls the Drive upload name, not the local filename)
 - [ ] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)

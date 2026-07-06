@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Box, Button, Loader, Stack, Text, Tooltip } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
 import ClippedPath from '../ClippedPath'
 import DriveFolderPickerModal from './DriveFolderPickerModal'
 import { useFileTree, LocalFile, LocalFileGroup } from './useFileTree'
+import { useDriveAssignments, DriveAssignment, DriveAssignmentsHandle } from './useDriveAssignments'
 import { formatFileSize } from '../../utils'
 
 const LEFT_PANEL_WIDTH = 300
 const INDENT_PER_LEVEL = 16
+
+type PickerTarget = { type: 'group'; key: string } | { type: 'file'; path: string }
 
 export default function DriveUploadMode() {
   const { root, tree, loading, error, pickRoot } = useFileTree()
@@ -24,9 +26,13 @@ export default function DriveUploadMode() {
     })
   }
 
-  // Temporary: lets the Drive folder picker modal (Step 3b) be tried out
-  // manually before Step 3d wires it into real per-subfolder/file fields.
-  const [pickerOpen, setPickerOpen] = useState(false)
+  const assignments = useDriveAssignments()
+  const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null)
+  const handlePicked = (folder: DriveAssignment) => {
+    if (pickerTarget?.type === 'group') assignments.setGroupAssignment(pickerTarget.key, folder)
+    else if (pickerTarget?.type === 'file') assignments.setFileOverride(pickerTarget.path, folder)
+    setPickerTarget(null)
+  }
 
   return (
     <Box style={{ display: 'flex', height: '100%' }}>
@@ -44,13 +50,10 @@ export default function DriveUploadMode() {
           <ClippedPath path={root} onClick={pickRoot} placeholder="Choose root folder…" />
         </Box>
 
-        <Button size="xs" variant="default" mb="sm" onClick={() => setPickerOpen(true)}>
-          Pick Drive folder (test)
-        </Button>
         <DriveFolderPickerModal
-          opened={pickerOpen}
-          onClose={() => setPickerOpen(false)}
-          onSelect={folder => notifications.show({ title: 'Drive folder selected', message: folder.path })}
+          opened={pickerTarget !== null}
+          onClose={() => setPickerTarget(null)}
+          onSelect={handlePicked}
         />
 
         {loading && <Loader size="sm" />}
@@ -71,9 +74,12 @@ export default function DriveUploadMode() {
                 groupKey={group.name}
                 collapsedGroups={collapsedGroups}
                 onToggle={toggleGroup}
+                assignments={assignments}
+                inheritedAssignment={null}
+                onPick={setPickerTarget}
               />
             ))}
-            <FileList files={tree.files} />
+            <FileList files={tree.files} assignments={assignments} inheritedAssignment={null} onPick={setPickerTarget} />
           </Stack>
         )}
       </Box>
@@ -99,10 +105,16 @@ interface GroupNodeProps {
   groupKey: string
   collapsedGroups: Set<string>
   onToggle: (groupKey: string) => void
+  assignments: DriveAssignmentsHandle
+  inheritedAssignment: DriveAssignment | null
+  onPick: (target: PickerTarget) => void
 }
 
-function GroupNode({ group, groupKey, collapsedGroups, onToggle }: GroupNodeProps) {
+function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, onPick }: GroupNodeProps) {
   const expanded = !collapsedGroups.has(groupKey)
+  const own = assignments.groupAssignments.get(groupKey) ?? null
+  const effective = own ?? inheritedAssignment
+
   return (
     <Box>
       <button
@@ -125,9 +137,16 @@ function GroupNode({ group, groupKey, collapsedGroups, onToggle }: GroupNodeProp
         <Text size="xs" c="dimmed" style={{ width: 10, flexShrink: 0 }}>{expanded ? '▼' : '▶'}</Text>
         <Text size="sm" fw={600}>📁 {group.name}</Text>
       </button>
+      <DriveAssignmentField
+        label={group.name}
+        assignment={effective}
+        isOwn={own !== null}
+        onPick={() => onPick({ type: 'group', key: groupKey })}
+        onClear={() => assignments.clearGroupAssignment(groupKey)}
+      />
       {expanded && (
         <Box pl={INDENT_PER_LEVEL}>
-          <FileList files={group.files} />
+          <FileList files={group.files} assignments={assignments} inheritedAssignment={effective} onPick={onPick} />
           {group.subgroups.length > 0 && (
             <Stack gap={8} mt={4}>
               {group.subgroups.map(sub => (
@@ -137,6 +156,9 @@ function GroupNode({ group, groupKey, collapsedGroups, onToggle }: GroupNodeProp
                   groupKey={`${groupKey}/${sub.name}`}
                   collapsedGroups={collapsedGroups}
                   onToggle={onToggle}
+                  assignments={assignments}
+                  inheritedAssignment={effective}
+                  onPick={onPick}
                 />
               ))}
             </Stack>
@@ -147,24 +169,86 @@ function GroupNode({ group, groupKey, collapsedGroups, onToggle }: GroupNodeProp
   )
 }
 
-function FileList({ files }: { files: LocalFile[] }) {
+interface FileListProps {
+  files: LocalFile[]
+  assignments: DriveAssignmentsHandle
+  inheritedAssignment: DriveAssignment | null
+  onPick: (target: PickerTarget) => void
+}
+
+function FileList({ files, assignments, inheritedAssignment, onPick }: FileListProps) {
   return (
     <Stack gap={6} mt={4}>
-      {files.map(file => (
-        <Box key={file.path} pl={4}>
-          <Text size="sm" c={file.corrupt ? 'red' : undefined}>
-            📄 {file.name}
-            {file.corrupt && (
-              <Tooltip label="Could not read this file — it may be corrupt or not a valid PDF">
-                <span> ⚠️</span>
-              </Tooltip>
-            )}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {file.corrupt ? 'Unreadable' : `${file.pageCount} pages`} · {formatFileSize(file.sizeBytes)}
-          </Text>
-        </Box>
-      ))}
+      {files.map(file => {
+        const own = assignments.fileOverrides.get(file.path) ?? null
+        const effective = own ?? inheritedAssignment
+        return (
+          <Box key={file.path} pl={4}>
+            <Text size="sm" c={file.corrupt ? 'red' : undefined}>
+              📄 {file.name}
+              {file.corrupt && (
+                <Tooltip label="Could not read this file — it may be corrupt or not a valid PDF">
+                  <span> ⚠️</span>
+                </Tooltip>
+              )}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {file.corrupt ? 'Unreadable' : `${file.pageCount} pages`} · {formatFileSize(file.sizeBytes)}
+            </Text>
+            <DriveAssignmentField
+              label={file.name}
+              assignment={effective}
+              isOwn={own !== null}
+              onPick={() => onPick({ type: 'file', path: file.path })}
+              onClear={() => assignments.clearFileOverride(file.path)}
+            />
+          </Box>
+        )
+      })}
     </Stack>
+  )
+}
+
+interface DriveAssignmentFieldProps {
+  label: string
+  assignment: DriveAssignment | null
+  isOwn: boolean
+  onPick: () => void
+  onClear: () => void
+}
+
+function DriveAssignmentField({ label, assignment, isOwn, onPick, onClear }: DriveAssignmentFieldProps) {
+  return (
+    <Box style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <button
+        type="button"
+        onClick={onPick}
+        aria-label={`Set Drive folder for ${label}`}
+        style={{
+          flex: 1,
+          textAlign: 'left',
+          border: 'none',
+          background: 'transparent',
+          padding: 0,
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+          minWidth: 0,
+        }}
+      >
+        <Text size="xs" c="dimmed" fs={!isOwn && assignment ? 'italic' : undefined} truncate="end">
+          Drive: {assignment ? assignment.path : 'not assigned'}
+        </Text>
+      </button>
+      {isOwn && (
+        <button
+          type="button"
+          onClick={onClear}
+          aria-label={`Clear Drive folder for ${label}`}
+          style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer', flexShrink: 0 }}
+        >
+          <Text size="xs" c="dimmed">✕</Text>
+        </button>
+      )}
+    </Box>
   )
 }

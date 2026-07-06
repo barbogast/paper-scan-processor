@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Box, Button, Group, Loader, Modal, Text } from '@mantine/core'
 import { ListDriveFolder } from '../../../wailsjs/go/main/App'
+import { DriveAssignment } from './useDriveAssignments'
 
 interface DriveFolder {
   id: string
@@ -99,7 +100,7 @@ function DriveTreeNode({ item, path, selectedId, onSelect, defaultExpanded }: Dr
 interface Props {
   opened: boolean
   onClose: () => void
-  onSelect: (folder: { id: string; path: string }) => void
+  onSelect: (folder: DriveAssignment) => void
 }
 
 export default function DriveFolderPickerModal({ opened, onClose, onSelect }: Props) {
@@ -111,7 +112,7 @@ export default function DriveFolderPickerModal({ opened, onClose, onSelect }: Pr
 
   const confirm = () => {
     if (!selected) return
-    onSelect({ id: selected.id, path: selected.path })
+    onSelect({ driveFolderId: selected.id, path: selected.path })
     onClose()
   }
 
