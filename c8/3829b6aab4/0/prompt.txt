@@ -127,3 +127,7 @@ commit changes
 ---
 
 index.ts contains 4 components now. That's too many.
+
+---
+
+yes
