@@ -1,4 +1,4 @@
-import { Box, Stack, Text, Tooltip } from '@mantine/core'
+import { Box, Group, Stack, Text, Tooltip } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
 import { LocalFile } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
@@ -19,24 +19,28 @@ export default function FileList({ files, assignments, inheritedAssignment, onPi
         const effective = own ?? inheritedAssignment
         return (
           <Box key={file.path} pl={4}>
-            <Text size="sm" c={file.corrupt ? 'red' : undefined}>
-              📄 {file.name}
-              {file.corrupt && (
-                <Tooltip label="Could not read this file — it may be corrupt or not a valid PDF">
-                  <span> ⚠️</span>
-                </Tooltip>
-              )}
-            </Text>
-            <Text size="xs" c="dimmed">
+            <Group gap={8} wrap="nowrap" align="center">
+              <Group gap={4} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+                <Text size="sm" c={file.corrupt ? 'red' : undefined} truncate="end">
+                  📄 {file.name}
+                </Text>
+                {file.corrupt && (
+                  <Tooltip label="Could not read this file — it may be corrupt or not a valid PDF">
+                    <span>⚠️</span>
+                  </Tooltip>
+                )}
+              </Group>
+              <DriveAssignmentField
+                label={file.name}
+                assignment={effective}
+                isOwn={own !== null}
+                onPick={() => onPick({ type: 'file', path: file.path })}
+                onClear={() => assignments.clearFileOverride(file.path)}
+              />
+            </Group>
+            <Text size="xs" c="dimmed" mt={2}>
               {file.corrupt ? 'Unreadable' : `${file.pageCount} pages`} · {formatFileSize(file.sizeBytes)}
             </Text>
-            <DriveAssignmentField
-              label={file.name}
-              assignment={effective}
-              isOwn={own !== null}
-              onPick={() => onPick({ type: 'file', path: file.path })}
-              onClear={() => assignments.clearFileOverride(file.path)}
-            />
           </Box>
         )
       })}

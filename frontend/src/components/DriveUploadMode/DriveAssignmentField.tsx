@@ -9,9 +9,12 @@ interface Props {
   onClear: () => void
 }
 
+// Pinned to the right of its row (filename or folder header) by the caller,
+// so badges land at a consistent horizontal position regardless of nesting
+// depth - scannable as a column rather than a per-row detail.
 export default function DriveAssignmentField({ label, assignment, isOwn, onPick, onClear }: Props) {
   return (
-    <Box mt={4} style={{ display: 'flex', alignItems: 'center', gap: 4, maxWidth: '100%' }}>
+    <Box style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
       <Badge
         component="button"
         type="button"
@@ -21,7 +24,7 @@ export default function DriveAssignmentField({ label, assignment, isOwn, onPick,
         variant={isOwn ? 'light' : 'outline'}
         size="sm"
         radius="sm"
-        style={{ cursor: 'pointer', fontWeight: isOwn ? 600 : 400, textTransform: 'none', maxWidth: '100%', flexShrink: 1 }}
+        style={{ cursor: 'pointer', fontWeight: isOwn ? 600 : 400, textTransform: 'none', maxWidth: 140 }}
         styles={{ label: { overflow: 'hidden', textOverflow: 'ellipsis' } }}
       >
         📁 {assignment ? assignment.path : 'Not assigned'}

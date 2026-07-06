@@ -1,4 +1,4 @@
-import { Box, Stack, Text } from '@mantine/core'
+import { Box, Group, Stack, Text } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
 import FileList from './FileList'
 import { LocalFileGroup } from './useFileTree'
@@ -23,33 +23,36 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
 
   return (
     <Box>
-      <button
-        type="button"
-        onClick={() => onToggle(groupKey)}
-        aria-expanded={expanded}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          width: '100%',
-          border: 'none',
-          background: 'transparent',
-          padding: 0,
-          cursor: 'pointer',
-          textAlign: 'left',
-          fontFamily: 'inherit',
-        }}
-      >
-        <Text size="xs" c="dimmed" style={{ width: 10, flexShrink: 0 }}>{expanded ? '▼' : '▶'}</Text>
-        <Text size="sm" fw={600}>📁 {group.name}</Text>
-      </button>
-      <DriveAssignmentField
-        label={group.name}
-        assignment={effective}
-        isOwn={own !== null}
-        onPick={() => onPick({ type: 'group', key: groupKey })}
-        onClear={() => assignments.clearGroupAssignment(groupKey)}
-      />
+      <Group gap={8} wrap="nowrap" align="center">
+        <button
+          type="button"
+          onClick={() => onToggle(groupKey)}
+          aria-expanded={expanded}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            flex: 1,
+            minWidth: 0,
+            border: 'none',
+            background: 'transparent',
+            padding: 0,
+            cursor: 'pointer',
+            textAlign: 'left',
+            fontFamily: 'inherit',
+          }}
+        >
+          <Text size="xs" c="dimmed" style={{ width: 10, flexShrink: 0 }}>{expanded ? '▼' : '▶'}</Text>
+          <Text size="sm" fw={600} truncate="end">📁 {group.name}</Text>
+        </button>
+        <DriveAssignmentField
+          label={group.name}
+          assignment={effective}
+          isOwn={own !== null}
+          onPick={() => onPick({ type: 'group', key: groupKey })}
+          onClear={() => assignments.clearGroupAssignment(groupKey)}
+        />
+      </Group>
       {expanded && (
         <Box pl={INDENT_PER_LEVEL}>
           <FileList files={group.files} assignments={assignments} inheritedAssignment={effective} onPick={onPick} />
