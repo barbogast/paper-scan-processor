@@ -1,0 +1,555 @@
+Let's do step 2 of Drive Upload Mode. Is there anything particular to consider?
+
+---
+
+Not sure yet. Let's start with the simple solution (one level) and add a checklist item to expand it later.
+
+---
+
+You staged the changes for the cleanup but didn't commit. Do that now. And remember for future: Cleanups should be committed immediately, before starting the actual implementation
+
+---
+
+I'm not sure about the name DriveFile and DriveFileGroup: The "Drive" part of the name sounds to me like this represents a file in the Drive, whereas it really is about files on the local harddrive. Right?
+
+---
+
+in scanDir(), what's the reason to loop the directory entries twice?
+
+---
+
+Don't silently skip corrupt PDFs, instead return them with a "corrupt" flag and show a warning sign in the frontend
+
+---
+
+commit
+
+---
+
+Make folders in UI collapsible, starting out as expanded
+
+---
+
+How about putting the collapsed state into LocalFileGroup?
+
+---
+
+Let's talk about deeper folder levels: What are your suggestions?
+
+---
+
+I wonder how exactly it would look like on the UI. Can you provide a mock?
+
+---
+
+That's fine. Start the implementation.
+
+---
+
+I'm getting a js error: TypeError: null is not an object (evaluating 'group.subgroups.length')
+
+---
+
+yes
+
+---
+
+give suggestions for a name of this project
+
+---
+
+scanLocalRoot() and scanSubfolder() are very similar. Does it make sense to merge them?
+
+---
+
+Wouldn't it make sense to remove the special case for root and just have it as a normal folder, containing its files and its subgroups? I don't see the benefit of the current distinction between root and subfolder
+
+---
+
+I wonder if the code would be simplified by merging scanSubfolder, scanDir and scanChildren. The naming of these functions doesn't really tell what they are doing. And the hierarchy of the flow is weird: scanChildren uses scanDir to process (file) entries in a loop, and then loops again over (directory) entries. I think all of that would be clearer if it would be one function.
+
+---
+
+commit
+
+---
+
+Step 3 in spec.md contains 2 distinct tasks: split those up
+
+---
+
+commit
+
+---
+
+I've updated spec.md; reread it and commit
+
+---
+
+Remember to do small steps when building checklists. Except for trivial features I want to split the implementation into reviewable chunks whenever it is possible and makes sense.
+
+---
+
+Let's start on Step 3a
+
+---
+
+yes
+
+---
+
+Remember: Don't commit without my explicit confirmation
+
+---
+
+How come the go function is called DriveListFolder() while the exported version is called ListDriveFolder?
+
+---
+
+Let's do 3d. Quick plan first
+
+---
+
+go ahead
+
+---
+
+in useDriveAssignment.ts: in the DriveAssignment type the field is called id, whereas in the rest of the file it seems to be be called groupKey. Inconstitent?
+
+---
+
+yes
+
+---
+
+commit changes
+
+---
+
+index.ts contains 4 components now. That's too many.
+
+---
+
+yes
+
+---
+
+In future I want to explicitely confirm `git commit ...` commands
+
+---
+
+The tests in useDriveAssignments.test.ts are not really worth it, since the code in useDriveAssignments.ts is trivial. What do you think?
+
+---
+
+yes
+
+---
+
+yes
+
+---
+
+I'd like to work on the design of the FileList next: Right now, page count, file size and drive folder all use the same font style. Also, they are not clearly vertically aligned, so it's hard to see which files have Drive folders selected and which don't, for example. Here is a screenshot:
+
+---
+
+[Image #2] anything to improve?
+
+---
+
+commit
+
+---
+
+What do you think about moving the DriveAssignment right to the FileList entry? Vertically aligned?
+
+---
+
+commit
+
+---
+
+For FileList entries that are eclipsed show a tooltip with the full name
+
+---
+
+Add a small delay before showing the tooltip. Also, do the same for folder names
+
+---
+
+yes
+
+---
+
+I'd like to analyze this conversation later on: Is there a way to preserve it so I can point it to you in a separate claude code context?
+
+---
+
+Let's rather do it right now: I'd like you to have a look at this conversation and make suggestion on how I can improve my workflow with claude code. Feel free to refer to best practices, both from anthropic and the community and be critical of my approach. For context, I'm trying to get the tool done, without trying to be perfect, but still try to get to a reasonable code quality and learn how to effectively use claude code. I do care about limiting autonomous access to my computer but chose to not spend too much time on it to make better progress.
+Considering this: what can I do better? Be critical, and contradict me if necessary.
+
+---
+
+Explain what /code-review and /verify does
+
+---
+
+/code-review
+
+---
+
+<task-notification>
+<task-id>a8ef30a08537e4ef3</task-id>
+<tool-use-id>toolu_01QnUun7PgEov2TGfHHcKZRE</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a8ef30a08537e4ef3.output</output-file>
+<status>completed</status>
+<summary>Agent "Code review angle H: CLAUDE.md conventions" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>No CLAUDE.md or CLAUDE.local.md files exist anywhere in the repository (searched the entire tree), and there is no user-level `~/.claude/CLAUDE.md` either. There are no governing convention files for this diff.
+
+Findings: none. No CLAUDE.md file applies to any of the changed files, so there is nothing to check the diff against, and I am not inventing any violations.</result>
+<usage><subagent_tokens>19722</subagent_tokens><tool_uses>2</tool_uses><duration_ms>31784</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a53a78b308737046c</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a53a78b308737046c.output</output-file>
+<status>completed</status>
+<summary>Agent "Code review angle E: simplification" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Based on reading the diff and the DriveUploadMode component tree in full, here are my findings:
+
+**Finding 1**
+- file: frontend/src/components/DriveUploadMode/GroupNode.tsx
+- line: 22-23
+- summary: The "own assignment, else inherited" resolution (`own ?? null` then `effective = own ?? inheritedAssignment`) is duplicated verbatim in FileList.tsx (lines 19-20) instead of being one shared helper.
+- failure_scenario: The inheritance rule ("file/group override wins, else fall back to ancestor") lives in two places; a future change to the rule (e.g. adding a third tier, or logging when an override shadows an inherited value) requires remembering to edit both GroupNode.tsx and FileList.tsx, and it's easy to update one and miss the other.
+
+**Finding 2**
+- file: frontend/src/components/DriveUploadMode/GroupNode.tsx
+- line: 8
+- summary: `const INDENT_PER_LEVEL = 16` is redefined identically in DriveFolderPickerModal.tsx (line 12) rather than being a single shared constant.
+- failure_scenario: If the tree indentation is ever tweaked for visual consistency (e.g. bumped to 18px), it's easy to update one file and leave the other tree's indentation inconsistent with it, since nothing ties the two constants together.
+
+**Finding 3**
+- file: frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx
+- line: 22
+- summary: `DriveTreeNode` re-implements the same recursive "expand/collapse toggle + indent-by-depth + nested list" shape as GroupNode.tsx, as a separate hand-rolled component rather than a shared recursive-tree primitive parameterized by node-specific rendering (loading spinner + selection highlight vs. assignment badge + own/effective).
+- failure_scenario: Structural fixes to the tree pattern (e.g. keyboard navigation between rows, consistent aria-expanded handling, or the expand-triangle rendering) must be ported by hand across two independently-maintained recursive tree components instead of a single shared one.
+
+**Finding 4**
+- file: frontend/src/components/DriveUploadMode/TruncatedText.tsx
+- line: 17
+- summary: The "measure scrollWidth vs clientWidth in useLayoutEffect and conditionally wrap in a Tooltip" truncation-detection logic is copy-pasted from ClippedPath.tsx (frontend/src/components/ClippedPath.tsx, lines 17-23) rather than factored into one shared hook, and the code comment itself acknowledges this ("same technique as ../ClippedPath.tsx").
+- failure_scenario: A fix to the truncation-detection heuristic (e.g. debouncing on resize, or fixing an edge case in scrollWidth measurement) has to be applied twice by hand, and the two copies can silently drift apart since nothing enforces they stay identical.
+
+**Finding 5**
+- file: frontend/src/components/DriveUploadMode/GroupNode.tsx
+- line: 62-73
+- summary: `collapsedGroups`, `onToggle`, and `assignments` are threaded unchanged through every recursion level of GroupNode (and down into FileList) purely to be passed on to descendants, rather than being supplied via context.
+- failure_scenario: Adding any new cross-cutting piece of tree state (e.g. a "focused node" or "search filter" flag) requires adding a prop to the interface and pass-through call at every level of index.tsx → GroupNode → GroupNode → FileList, inflating each component's prop list even though most levels never read the value themselves.
+
+**Finding 6**
+- file: frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx
+- line: 107
+- summary: The picker modal tracks `selected` as a fresh local `{id, name, path}` object even though `id` and `path` duplicate fields already defined on `DriveAssignment` (`driveFolderId`, `path`), so there are effectively two shapes representing "a chosen Drive folder."
+- failure_scenario: Someone extending the assignment shape (e.g. adding a `mimeType` field to `DriveAssignment`) has to remember this modal keeps its own parallel, differently-named copy of the same data, making the relationship between "what's selected in the picker" and "what an assignment is" harder to see at a glance.</result>
+<usage><subagent_tokens>33781</subagent_tokens><tool_uses>12</tool_uses><duration_ms>72844</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ade9d57c8357a6289</task-id>
+<tool-use-id>toolu_01C7ffNKkKaxXHKxQtSuQiws</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/ade9d57c8357a6289.output</output-file>
+<status>completed</status>
+<summary>Agent "Code review angle D: reuse" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have enough to report findings.
+
+## Findings
+
+**file**: frontend/src/components/DriveUploadMode/TruncatedText.tsx
+**line**: 17-20
+**summary**: Reimplements the exact "measure scrollWidth vs clientWidth, then conditionally wrap in a Tooltip" truncation-detection technique already implemented in frontend/src/components/ClippedPath.tsx (lines 17-23, 61-63), instead of factoring the shared measurement logic into a common hook.
+**failure_scenario**: The truncation-detection heuristic (and its timing choice of `useLayoutEffect` to avoid flash-of-untruncated-text) now lives in two places; a future fix to the measurement approach (e.g. switching to `ResizeObserver` for dynamic layouts) has to be found and applied twice, and the component's own comment ("same technique as ../ClippedPath.tsx") shows the author noticed the duplication but didn't remove it.
+
+**file**: frontend/src/components/DriveUploadMode/FileList.tsx
+**line**: 326-330
+**summary**: Renders a corrupt-file warning as a raw `⚠️` emoji inside a `Tooltip`, whereas frontend/src/components/MergeMode/index.tsx (lines 113-120) already establishes the app's convention of using `IconAlertTriangle` from `@tabler/icons-react` for warning-with-tooltip UI.
+**failure_scenario**: The app now renders warnings two different ways (emoji glyph vs. Tabler icon); the emoji's size/color won't track the theme's warning color token the way `IconAlertTriangle` does, and any future icon-set change (e.g. swapping icon libraries or adding dark-mode-aware coloring) will miss this instance since it isn't using the shared icon import.
+
+**file**: frontend/src/components/DriveUploadMode/DriveAssignmentField.tsx
+**line**: 39-46
+**summary**: Builds a bare `✕` text glyph as a "clear" button, duplicating the purpose of the already-imported `IconX` from `@tabler/icons-react` used for the same "clear/remove" affordance in frontend/src/components/PageThumbnail.tsx (line 76).
+**failure_scenario**: Two different "clear" icon representations (emoji glyph vs. vector icon) ship in the same app; the glyph won't scale/anti-alias consistently across platforms the way the SVG icon does, and a future icon-styling change (stroke width, color, size token) applied to `IconX` usages won't reach this button.</result>
+<usage><subagent_tokens>51194</subagent_tokens><tool_uses>19</tool_uses><duration_ms>149261</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a95da6b0bedf089e0</task-id>
+<tool-use-id>toolu_0132YYxohFKn1vgnmmhntLCt</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a95da6b0bedf089e0.output</output-file>
+<status>completed</status>
+<summary>Agent "Code review angle F: efficiency" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Good, matches. I now have everything I need for the report.
+
+## Findings
+
+**1**
+- file: filetree.go
+- line: 47–93 (loop at 56, recursion at 67, per-file work at 80–92)
+- summary: `scanDirectory` walks the entire tree and calls `os.Stat` + `pdfPageCount` (which opens and parses each PDF via `api.PageCountFile`) fully sequentially, one file at a time, with no concurrency.
+- failure_scenario: For a root containing thousands of scanned PDFs (the tool's own use case — batches of scanned documents), the whole `ScanLocalRoot` RPC call blocks until every file has been individually opened and parsed one after another; e.g. 5,000 files at ~10-20ms each to open/parse is roughly a full minute of single-core, single-threaded wall time even though page-count parsing is trivially parallelizable across a worker pool.
+
+**2**
+- file: frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx
+- line: 22–40 (state/load) and 118-121 (`&lt;Modal opened={opened}&gt;` wrapping `&lt;DriveTreeNode item={ROOT} ... defaultExpanded /&gt;`)
+- summary: All lazily-fetched Drive folder listings live in per-node component state inside `DriveTreeNode`, and Mantine's `Modal` (used with no `keepMounted`) unmounts its children when `opened` goes false, so every close discards the entire fetched tree.
+- failure_scenario: A user assigning Drive folders to several different files/groups in the same session re-opens this picker each time; each re-open re-fetches `ListDriveFolder('root')` and re-fetches any previously-expanded path again from scratch (redundant Drive API round-trips per picker open) instead of hitting an already-warm cache — the test at DriveFolderPickerModal.test.tsx:65-75 only proves no refetch within a single mount, not across close/reopen.
+
+**3**
+- file: frontend/src/components/DriveUploadMode/index.tsx
+- line: 18-25 (`toggleGroup`/`setCollapsedGroups`) and 68-80 (tree render); frontend/src/components/DriveUploadMode/GroupNode.tsx:20 (component not wrapped in `React.memo`)
+- summary: `collapsedGroups` and `assignments` are single pieces of state at the top of the tree, replaced wholesale (`new Set(prev)` / `new Map(prev)`) on every toggle or assignment, and passed down through `GroupNode`/`FileList` with no memoization anywhere in the recursion.
+- failure_scenario: Expanding/collapsing one deeply-nested folder, or assigning a Drive folder to one single file, causes React to re-render every `GroupNode` and `FileList` in the whole tree (not just the changed node), since the new `Set`/`Map` reference and un-memoized child components give React no way to bail out — costly on the large trees this feature exists to browse.
+
+**4**
+- file: frontend/src/components/DriveUploadMode/useDriveAssignments.ts
+- line: 20-22, 26-30, 32-34, 36-40 (`setGroupAssignment`/`clearGroupAssignment`/`setFileOverride`/`clearFileOverride`)
+- summary: Every single assignment or clear operation copies the *entire* `Map` (`new Map(prev)`) rather than mutating in place via a ref or using an immutable-map structure sized to the change.
+- failure_scenario: Minor at today's expected scale (assignment count, not file count), but if a batch/bulk-assign path is ever added on top of this, each call becomes an O(n) full-map copy rather than O(1); combined with finding 3, each copy also produces a new object identity that forces the whole-tree re-render.</result>
+<usage><subagent_tokens>53105</subagent_tokens><tool_uses>10</tool_uses><duration_ms>146849</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>af47bae7e45333b37</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/af47bae7e45333b37.output</output-file>
+<status>completed</status>
+<summary>Agent "Code review angle G: altitude" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Findings:
+
+**1.**
+- file: `app.go`
+- line: 135
+- summary: `ListDriveFolder` exposes the known-incomplete `DriveListFolder` (no pagination, no escaping, no caching — all called out in spec.md's "Drive Upload (code not finished)" section) directly as the RPC backing a new, load-bearing browse-and-assign UI, instead of closing those gaps before the UI came to depend on the layer being correct.
+- failure_scenario: Any Drive folder with more than ~100 children (Drive's default page size) silently truncates in the picker with zero indication — a user assigning uploads to that folder simply never sees some of its real subfolders, and picks what looks like a complete list. Fixing this later means the picker's "load children" contract changes shape (from a flat list to a paginated/streamed one), forcing rework of `DriveTreeNode`'s state and loading logic in `frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx`, not just a backend patch.
+
+**2.**
+- file: `frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx`
+- line: 32
+- summary: The folder-browser `load()` call has no accommodation for `DriveListFolder`'s known unescaped-query-string bug, so a real, uncontrollable input (the user's own Drive folder names) can break browsing.
+- failure_scenario: Any folder name containing a single quote (e.g. "Alice's Files," common in real Drive accounts) breaks the `Files.List` query server-side; the modal's generic `catch (e) =&gt; setError(String(e))` surfaces a raw Go/API error string instead of anything actionable, and that whole subtree becomes permanently unbrowsable until the backend is fixed — a bug that used to be confined to a non-interactive Step-1 code path is now directly in the user-facing assignment flow.
+
+**3.**
+- file: `drive_folders.go`
+- line: 19 (`driveService`, called from `app.go:135` on every `ListDriveFolder` invocation)
+- summary: The new lazy-loading Drive tree browser turns "no client caching" from a latent Step-1 concern into an active per-click cost, since every folder expand in the picker re-reads and re-parses `drive_token.json` from disk.
+- failure_scenario: Expanding a moderately nested Drive tree while assigning folders to a batch (the whole point of this feature) triggers a token-file read+parse per click; this was tolerable when the API was only exercised once per hardcoded test call (Step 1b) but is now a repeated cost baked into the interaction the UI encourages, and fixing it requires introducing a cached-client lifecycle in `drive_folders.go`/`driveClient` that the frontend has no way to work around.
+
+**4.**
+- file: `frontend/src/components/DriveUploadMode/useDriveAssignments.ts`
+- line: 21-25
+- summary: The bottom-up "own ?? inherited" resolution is deliberately kept out of the assignments hook and lives only inside `GroupNode`/`FileList`'s render-time prop threading (`GroupNode.tsx:23`, `FileList.tsx:20`), so there is no reusable function that answers "what Drive folder does file X actually resolve to."
+- failure_scenario: Step 6 (upload queue) and any "disable Upload until everything is assigned" validation need exactly this resolved-assignment-per-file data outside of a React render tree; since it's not exposed as a pure function over `(tree, assignments)`, that logic will have to be re-derived a second time (e.g., in the upload-queue code or a new selector), duplicating the traversal instead of reusing one already-written and tested tree walk.
+
+**5.**
+- file: `frontend/src/components/DriveUploadMode/GroupNode.tsx`
+- line: 66
+- summary: `groupKey` (and the assignment maps keyed by it in `useDriveAssignments.ts`) is built purely by joining folder *display names* (`` `${groupKey}/${sub.name}` ``), conflating stable identity with the very field that spec.md Step 4 — the immediate next planned step — makes user-editable.
+- failure_scenario: Once inline renaming of a subfolder's Drive-upload name ships, renaming a folder changes the key its assignment is stored under, silently orphaning any already-set group assignment (it falls back to "not assigned" or to a stale sibling's entry with the same new name) with no migration path; the assignment identity scheme will need to be redone against a stable per-group id/path that `LocalFileGroup` (`filetree.go`) doesn't currently carry.
+
+**6.**
+- file: `frontend/src/components/DriveUploadMode/useDriveAssignments.ts`
+- line: 10
+- summary: `PickerTarget`'s two-variant union (`group` | `file`) and the modal's single-`DriveAssignment` `onSelect` callback are sized exactly for today's one-target-at-a-time flow, with no room for the multi-select batch assignment spec.md lists as Step 3e, the next item in this same feature.
+- failure_scenario: When batch assignment lands, `PickerTarget` needs to carry a set of targets (not one), and `DriveFolderPickerModal`'s `onSelect(folder: DriveAssignment)` plus `index.tsx`'s `handlePicked` (which does a single `if/else` dispatch) will need restructuring to apply one picked folder to many targets — a second pass through code written in this same diff rather than an extension of it.</result>
+<usage><subagent_tokens>52522</subagent_tokens><tool_uses>9</tool_uses><duration_ms>143162</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>aac64ff0b4ff492cb</task-id>
+<tool-use-id>toolu_019xEz9h5EX6Cn5DiZDcfvkD</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/aac64ff0b4ff492cb.output</output-file>
+<status>completed</status>
+<summary>Agent "Code review angle C: cross-file tracer" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Based on cross-file tracing of the changed/added functions and hooks (`PickFolder`, `ScanLocalRoot`, `ListDriveFolder`, `DriveItem`, and the new `useFileTree`/`useDriveAssignments` hooks), I verified: `go build`, `go vet`, `npm run tsc`, and the full vitest suite all pass, and every `PickFolder` call site was updated to the new signature. The signature/shape changes themselves (`PickFolder(title)`, `ScanLocalRoot` returning a single `LocalFileGroup`, `ListDriveFolder`/`DriveItem` JSON tags) are wired correctly everywhere. The real cross-file problems I found are in how the new hooks/components in `DriveUploadMode` compose with each other rather than in the exported signatures per se:
+
+1. summary: Picking a new root folder does not reset the `useDriveAssignments()` state or `collapsedGroups`, so Drive-folder assignments and collapse state from a previous scan silently carry over and can misattach to a same-named subfolder/file in the new tree.
+   file: frontend/src/components/DriveUploadMode/index.tsx
+   line: 18 (collapsedGroups) and 27 (assignments), with no effect keyed on `root`/`tree` from `useFileTree` (destructured at line 13) to clear either.
+   failure_scenario: User scans root "~/Scans/Batch1", assigns its "invoices" subfolder to Drive folder "Finance/Invoices" (calls `assignments.setGroupAssignment('invoices', ...)`, keyed purely by folder name). User then clicks the root path again and picks a different root "~/Scans/Batch2", which also happens to contain a top-level "invoices" subfolder (a very common naming pattern for scanned-document batches). As soon as the new tree loads, that subfolder immediately shows "Finance/Invoices" as its Drive destination even though the user never assigned anything for Batch2 — a stale assignment silently reused across unrelated roots.
+
+2. summary: `scanDirectory`'s recursive error propagation means a single unreadable subdirectory anywhere in the tree aborts the entire scan, and the frontend caller has no way to show a partial tree — it wipes everything to an error state.
+   file: filetree.go
+   line: 67-70 (`sub, err := scanDirectory(...); if err != nil { return LocalFileGroup{}, err }`), consumed by frontend/src/components/DriveUploadMode/useFileTree.ts line 40-44 (`catch (e) { setTree(null); setError(String(e)) }`)
+   failure_scenario: User picks a root folder that contains hundreds of valid PDFs across many subfolders, plus one subfolder with restrictive permissions (e.g. `chmod 000`, or a stale/offline network-mounted folder) three levels deep. `os.ReadDir` on that one subfolder fails, the error bubbles all the way up through every recursive call, and `ScanLocalRoot` returns an error for the *whole* root — the UI shows only a red error message and no tree at all, even though 99% of the folder was scannable.
+
+3. summary: `pickRoot` has no guard against concurrent invocation (no request token/AbortController), and the UI element that triggers it (`ClippedPath`) stays clickable even while a scan is already in flight, so two overlapping scans can resolve out of order and leave `tree` showing results for a folder other than the one `root` displays.
+   file: frontend/src/components/DriveUploadMode/useFileTree.ts
+   line: 32-47 (the whole `pickRoot` callback — `setRoot(folder)` at line 36 is not correlated with which `ScanLocalRoot` call's result is later applied at line 40)
+   failure_scenario: User clicks the root path (`ClippedPath` at frontend/src/components/DriveUploadMode/index.tsx line 48, which is rendered and clickable regardless of `loading`) to pick folder A, then — while the (slow, e.g. large/networked) scan for A is still in flight — clicks it again and picks folder B, whose scan happens to be faster/completes first. `setRoot` will end up reflecting B (the last `PickFolder` call to resolve), but the two `ScanLocalRoot` promises can resolve in either order; if A's scan resolves after B's, `tree` ends up showing folder A's contents while the header path shown via `ClippedPath` says folder B.</result>
+<usage><subagent_tokens>83948</subagent_tokens><tool_uses>17</tool_uses><duration_ms>330088</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a4ecdd050f0f1df6d</task-id>
+<tool-use-id>toolu_01UaqGdbBtmv8C4fqqWKEWUB</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a4ecdd050f0f1df6d.output</output-file>
+<status>completed</status>
+<summary>Agent "Code review angle A: line-by-line scan" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result># Findings — Angle A (line-by-line diff scan)
+
+**1**
+- file: filetree.go
+- line: 67-69
+- summary: A read error on any single nested subdirectory (permission denied, transient I/O error, etc.) propagates all the way up via `return LocalFileGroup{}, err`, aborting the entire recursive scan instead of skipping just that subfolder.
+- failure_scenario: User picks a root folder containing one permission-restricted subdirectory anywhere in the tree (e.g. a folder they don't own, a locked network-share subfolder, or a macOS-protected directory). `ScanLocalRoot` returns an error for the whole tree and the UI shows nothing but an error message, even though every other sibling folder with hundreds of valid PDFs was perfectly readable. Contrast with the file-level handling two branches below, where a bad/corrupt file is still included and merely flagged — directories get no equivalent graceful degradation.
+
+**2**
+- file: filetree.go
+- line: 81-84
+- summary: When `os.Stat` fails for a `.pdf`-named entry, the file is silently dropped (`continue`) instead of being included and flagged, contradicting the function's own doc comment that says unreadable files "are still included, flagged via Corrupt... rather than dropped from the scan."
+- failure_scenario: A `.pdf` file is deleted or becomes permission-denied between the `os.ReadDir` call and the `os.Stat` call (TOCTOU race — plausible on a network drive, an external disk being ejected, or a concurrently-running cleanup script). That file vanishes from the tree entirely with no warning icon and no entry in the UI, unlike a corrupt-but-statable PDF which correctly shows the ⚠️ badge.
+
+**3**
+- file: frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx
+- line: 80
+- summary: The inline fetch-error `&lt;Text&gt;` is rendered unconditionally (only gated on `error`), not on `expanded`, so it stays visible under a folder row after the user collapses it.
+- failure_scenario: User expands a folder whose `ListDriveFolder` call fails (e.g. transient network error), sees the inline error text, then clicks the arrow to collapse that row. `expanded` flips to `false` but `error` state is never cleared, so the stale error message continues to render below the now-collapsed folder indefinitely (until the user re-expands and re-triggers `load()`).
+
+**4**
+- file: frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx
+- line: 46-48
+- summary: `toggle()` only guards against re-fetching with `children === null`, not against an in-flight `loading` request, so rapidly collapsing/re-expanding a node before its first `ListDriveFolder` call resolves fires a duplicate, redundant request.
+- failure_scenario: User clicks a folder's expand arrow, then (while the Drive API call is still pending, e.g. on a slow connection) clicks collapse then expand again before the first response lands — `children` is still `null` at the second expand click, so `load()` fires a second `ListDriveFolder(item.id)` call for the same folder, wasting an API round trip and (harmlessly but wastefully) racing two `setChildren` calls.
+
+**5**
+- file: frontend/src/components/DriveUploadMode/useFileTree.ts
+- line: 33
+- summary: `await PickFolder('Choose Root Folder')` is not wrapped in try/catch, so if the native folder-picker dialog call itself throws/rejects, it becomes an unhandled promise rejection instead of surfacing via the hook's `error` state.
+- failure_scenario: `runtime.OpenDirectoryDialog` errors out on the Go side (e.g. OS dialog subsystem failure) — `PickFolder` rejects before `setLoading(true)` is ever reached, so `loading` stays `false`, `error` stays `null`, and the user sees no feedback at all that their click did nothing, while the rejection surfaces only as an uncaught console error.</result>
+<usage><subagent_tokens>75607</subagent_tokens><tool_uses>29</tool_uses><duration_ms>371347</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a2ed934fdf4811401</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a2ed934fdf4811401.output</output-file>
+<status>completed</status>
+<summary>Agent "Code review angle B: removed-behavior audit" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Auto-generated Wails cache file, irrelevant.
+
+I've completed a thorough commit-by-commit audit of this diff against Angle B's mandate (removed/replaced lines and their invariants). Here is my honest assessment.
+
+Summary of method: I reviewed the full `git diff 64e4207 HEAD`, then walked every intermediate commit (`git log 64e4207..HEAD`) that touched a refactored area — the scan-function unification (`8af0219`), the local-tree shape unification, the frontend component split (`be8a858`), the badge/truncation restyles, and the deleted `useDriveAssignments.test.ts` (`acb20a6`) — diffing each step against its predecessor to check whether any guard, error path, or validated case quietly disappeared. In every refactor I checked (Go `scanChildren`/`scanSubfolder`/`scanDir` → `scanDirectory`; frontend `index.tsx` monolith → `GroupNode.tsx`/`FileList.tsx`/`DriveAssignmentField.tsx`; `PickFolder()` → `PickFolder(title)`; `DriveFolderPickerModal`'s `onSelect` payload rename to `driveFolderId`), the accompanying tests were updated in lockstep and the underlying invariant (empty-subtree omission, non-nil slice JSON marshaling, symlink-skip, corrupt-file inclusion, group/file assignment inheritance-with-override, cancel-returns-empty-string) was still enforced and still covered afterward.
+
+The one place where test coverage was measurably reduced is:
+
+- file: frontend/src/components/DriveUploadMode/useDriveAssignments.ts
+- line: 20 (the `useDriveAssignments` hook body, whose dedicated unit tests were deleted in commit acb20a6)
+- summary: The deleted `useDriveAssignments.test.ts` was the only place explicitly asserting that `groupAssignments` and `fileOverrides` are independent Maps (a key used as both a group key and a file path doesn't cross-contaminate); that specific case is not exercised by any remaining test.
+- failure_scenario: Not an actual reachable bug — the two maps are structurally separate `useState` instances, so a collision is impossible by construction, not just by convention. I'm listing this only because it's the one concrete instance of a deleted test whose exact case (shared-key namespacing) isn't re-verified anywhere else; I don't have a real input that would produce wrong output from it, so treat it as the weakest possible entry, not a live bug.
+
+I did not find any other candidate where a deleted/replaced line's invariant fails to hold in the current code — every other refactor step preserved behavior, and `go test ./...` and the frontend `vitest run` suite (18 tests) both pass cleanly against HEAD. Given the instruction not to pad with weak findings, I'm reporting just this one, with low confidence, rather than manufacturing five more.</result>
+<usage><subagent_tokens>108124</subagent_tokens><tool_uses>50</tool_uses><duration_ms>482985</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a903b49da11df46bd</task-id>
+<tool-use-id>toolu_01SA1Ft8XhCWbUgttszUjbPf</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a903b49da11df46bd.output</output-file>
+<status>completed</status>
+<summary>Agent "Verify altitude/design findings" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All evidence gathered. Here are the verdicts.
+
+**Candidate 1: CONFIRMED**
+Reasoning: `GroupNode.tsx:66` builds the recursion key as `groupKey={`${groupKey}/${sub.name}`}` (and the top-level call in `index.tsx:72` uses `groupKey={group.name}`) — purely name-based, no id. `filetree.go`'s `LocalFileGroup` (lines 21-25) has only `Name`, `Files`, `Subgroups` — no stable id field, and the comment explicitly says "Name is '' only for the root... every subgroup has a real folder name." `useDriveAssignments.ts` stores assignments in `Map&lt;string, DriveAssignment&gt;` keyed by exactly this string (`groupAssignments`/`fileOverrides`), with no other identity concept. `spec.md:289` confirms the next planned step: "Step 4: Inline renaming — inline editable name for each subfolder and file (controls the Drive upload name, not the local filename)." Once names become editable, the path-of-names key changes on rename, silently orphaning the `Map` entry exactly as described.
+
+**Candidate 2: CONFIRMED**
+Reasoning: `app.go:135` — `func (a *App) ListDriveFolder(folderID string) ([]DriveItem, error) { return DriveListFolder(a.ctx, folderID) }` is a direct passthrough. `drive_folders.go:50` doc comment: "// Note: results are capped at 100 items (Drive API default page size)." and the implementation (lines 51-75) calls `svc.Files.List().Q(q)...Do()` exactly once with no `PageToken`/`Pages()` loop. This is now wired to the interactive `DriveFolderPickerModal.tsx`'s `load()` (line 32: `await ListDriveFolder(item.id)`), reachable on every expand click, with the truncation surfaced as silence (no total count, no "more items" indicator).
+
+**Candidate 3: CONFIRMED**
+Reasoning: `drive_folders.go:34-37` (`DriveFindFolder`) and `:56` (`DriveListFolder`) both build queries via `fmt.Sprintf("... '%s' ...", name/folderID, ...)` with no escaping, and `spec.md:333` explicitly tracks this: "acknowledged in a comment but not handled." This is now reachable through `DriveFolderPickerModal.tsx`'s `load()` (line 32) on any folder-name node the user browses into, not just a hardcoded test path — a bigger exposure surface than before. On the recovery question: `load()`'s catch sets `error` and leaves `children` as `null` (lines 34-38), but this is not a dead end — `toggle()` (lines 46-49) re-invokes `load()` the next time the node is expanded (since `children === null` still holds), so collapsing and re-expanding retries the fetch. It's clunky (no explicit "Retry" button, and the stale error text isn't cleared until a new attempt runs) but not a permanently unbrowsable subtree.
+
+**Candidate 4: CONFIRMED**
+Reasoning: `drive_folders.go:19-25`, `driveService` calls `driveClient(ctx)` fresh every invocation with no memoization. `drive_auth.go`'s `driveClient` (lines 53-77) calls `driveLoadToken(tokenPath)` (line 65), which does `os.Open` + `json.NewDecoder(f).Decode(&amp;t)` (lines 120-126) — a fresh disk read/parse on every single call, no package-level cache of the `*http.Client` or token. `spec.md:336` already flags this as a known finding ("No caching... will multiply once concurrent per-file uploads (Step 5) exist"), and the candidate correctly notes it's now also incurred per-click in the new interactive picker (`ListDriveFolder` → `DriveListFolder` → `driveService` → `driveClient`) since every expand triggers a full disk round-trip.
+
+**Candidate 5: CONFIRMED**
+Reasoning: `useDriveAssignments.ts` exports only the raw `Map`s and setters/clearers (`DriveAssignmentsHandle` interface, lines 12-19) plus an explicit comment (lines 21-25): "Resolving the *effective* assignment for a given group/file (own, else inherited...) is the caller's job, since only the caller knows the tree structure to walk." The `own ?? inherited` logic is duplicated inline in `GroupNode.tsx:22-23` and `FileList.tsx:19-20`, with no exported pure function taking `(tree, assignments)`. `spec.md:291` (Step 6: Upload queue) will need exactly this to validate "everything is assigned" before allowing upload, and `spec.md:294` (Step 9: Conflict detection) similarly needs resolved per-file destinations outside a render — neither can currently reuse this logic without walking the tree themselves.
+
+**Candidate 6: CONFIRMED**
+Reasoning: `useDriveAssignments.ts:10` — `PickerTarget = { type: 'group'; key: string } | { type: 'file'; path: string }` carries exactly one key/path, no array/multi-select variant. `index.tsx`'s `handlePicked` (lines 29-33) applies the picked folder to a single `pickerTarget` (`assignments.setGroupAssignment(pickerTarget.key, folder)` or `setFileOverride(pickerTarget.path, folder)`), and `pickerTarget` itself is single-valued state (`useState&lt;PickerTarget | null&gt;`). `spec.md:288` lists "Step 3e: ... batch assignment for multi-select" as a not-yet-done next step, and `spec.md:218` describes the target behavior: "Selecting multiple items (files and/or subfolders) and assigning a Drive folder applies it to all selected items at once" — the current single-target shape doesn't support that without rework.</result>
+<usage><subagent_tokens>45433</subagent_tokens><tool_uses>15</tool_uses><duration_ms>61583</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a6a67586aed367c8c</task-id>
+<tool-use-id>toolu_01XQTuzaLwmxqiX5qXzbPngW</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a6a67586aed367c8c.output</output-file>
+<status>completed</status>
+<summary>Agent "Verify reuse/cleanup findings" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All verifications complete. Summary of findings:
+
+**Candidate 1: CONFIRMED**
+`TruncatedText.tsx` and `ClippedPath.tsx` both use `useLayoutEffect` + `el.scrollWidth &gt; el.clientWidth` to detect truncation, then conditionally wrap in Mantine `Tooltip`. `TruncatedText.tsx`'s own comment even says "same technique as ../ClippedPath.tsx" — the duplication is acknowledged in the code itself, just not extracted.
+
+**Candidate 2: CONFIRMED**
+`grep` confirms `IconAlertTriangle` is imported from `@tabler/icons-react` and used at `MergeMode/index.tsx:119` (`&lt;IconAlertTriangle size={18} color="var(--mantine-color-yellow-6)" /&gt;` inside a `Tooltip`), and `@tabler/icons-react` is a real dependency (`frontend/package.json:20`). `FileList.tsx` instead renders `&lt;Tooltip label="Could not read this file…"&gt;&lt;span&gt;⚠️&lt;/span&gt;&lt;/Tooltip&gt;` — a raw emoji, not the icon component. Claim is accurate as stated.
+
+**Candidate 3: CONFIRMED**
+`grep` confirms `IconX` is imported and used at `PageThumbnail.tsx:2` and `:76` (`icon={&lt;IconX size={10} stroke={3} /&gt;}`). `DriveAssignmentField.tsx` instead renders a bare `✕` text glyph inside a `&lt;button&gt;` for its clear action. Claim is accurate as stated.
+
+**Candidate 4: CONFIRMED**
+`GroupNode.tsx`: `const own = assignments.groupAssignments.get(groupKey) ?? null; const effective = own ?? inheritedAssignment`. `FileList.tsx`: `const own = assignments.fileOverrides.get(file.path) ?? null; const effective = own ?? inheritedAssignment`. Identical two-line resolution idiom, only the map/key source differs — a real candidate for a shared helper like `resolveAssignment(map, key, inherited)`.
+
+**Candidate 5: CONFIRMED**
+`grep -rn "INDENT_PER_LEVEL"` shows `const INDENT_PER_LEVEL = 16` defined identically in both `GroupNode.tsx:8` and `DriveFolderPickerModal.tsx:12`.
+
+**Candidate 6: PLAUSIBLE**
+Both share the expand/collapse-triangle + indented nested-list shape, but `DriveTreeNode` does live async `ListDriveFolder` fetching, loading/error state, and single-selection highlighting, while `GroupNode` works off pre-scanned data and renders per-node `DriveAssignmentField` badges with inherited-assignment propagation. Real behavioral divergence exists, so full unification isn't obviously correct, but the shared "row disclosure + indent" visual chrome could reasonably be factored into a small presentational primitive. Judgment call, not a clear-cut violation.
+
+**Candidate 7: PLAUSIBLE (weak)**
+`selected` state is `{id, name, path}`; `DriveAssignment` is `{driveFolderId, path}`. There's real overlap on `path` and `id`↔`driveFolderId`, but `selected` also needs `name` (used in the confirm button label `Select "${selected.name}"`), which `DriveAssignment` doesn't carry. So it isn't a clean drop-in duplicate — reusing `DriveAssignment` would require extending it or keeping `name` separate anyway. Not factually wrong, just a small/partial finding.
+
+**Candidate 8: CONFIRMED**
+`scanDirectory` in `filetree.go` iterates `entries` in a plain `for` loop, calling `os.Stat` and `pdfPageCount` inline per file with no goroutines, channels, or worker pool anywhere in the file.
+
+**Candidate 9: CONFIRMED**
+`DriveFolderPickerModal.tsx:120`: `&lt;Modal opened={opened} onClose={onClose} title="Choose a Drive folder" size="md"&gt;` — no `keepMounted` prop, so Mantine's default unmount-on-close applies. `DriveTreeNode`'s `children`/`expanded`/`loading` state is local `useState` inside that component (not lifted to the modal or any outer cache), so it's destroyed on unmount; reopening restarts from `ROOT` with `defaultExpanded` and re-fetches.
+
+**Candidate 10: CONFIRMED**
+`grep -rn "React.memo|useMemo|memo("` over `DriveUploadMode/` returns nothing — no memoization anywhere in the tree. `index.tsx`'s `toggleGroup` does `setCollapsedGroups(prev =&gt; { const next = new Set(prev); ...; return next })` and `useDriveAssignments.ts`'s setters do `setGroupAssignments(prev =&gt; new Map(prev).set(...))` / similar — both replace the whole Set/Map by reference on every single toggle/assignment, and these are passed straight through unmemoized `GroupNode`/`FileList`.</result>
+<usage><subagent_tokens>35302</subagent_tokens><tool_uses>12</tool_uses><duration_ms>62739</duration_ms></usage>
+</task-notification>
+
+---
+
+Can you store the results of this review for later processing?
