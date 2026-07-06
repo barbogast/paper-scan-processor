@@ -13,7 +13,7 @@ interface Props {
 
 export default function FileList({ files, assignments, inheritedAssignment, onPick }: Props) {
   return (
-    <Stack gap={6} mt={4}>
+    <Stack gap={10} mt={4}>
       {files.map(file => {
         const own = assignments.fileOverrides.get(file.path) ?? null
         const effective = own ?? inheritedAssignment

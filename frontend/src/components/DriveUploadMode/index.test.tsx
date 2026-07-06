@@ -79,13 +79,13 @@ describe('DriveUploadMode assignment fields', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear Drive folder for invoices' }))
 
-    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for invoices' }))).toContain('not assigned')
-    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('not assigned')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for invoices' }))).toContain('Not assigned')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('Not assigned')
   })
 
   it('a root-level loose file has no group to inherit from', async () => {
     await setupWithTree()
-    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for misc' }))).toContain('not assigned')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for misc' }))).toContain('Not assigned')
     expect(screen.queryByRole('button', { name: 'Clear Drive folder for misc' })).toBeNull()
   })
 })
