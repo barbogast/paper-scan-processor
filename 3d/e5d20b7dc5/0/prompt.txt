@@ -1,0 +1,5 @@
+read spec.md, don't reply
+
+---
+
+help me write a claude.md. I'm not a fan of being super verbose here (hence I was running without one till now)
