@@ -1,5 +1,6 @@
 import { Box, Group, Stack, Text, Tooltip } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
+import TruncatedText from './TruncatedText'
 import { LocalFile } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
 import { formatFileSize } from '../../utils'
@@ -21,9 +22,9 @@ export default function FileList({ files, assignments, inheritedAssignment, onPi
           <Box key={file.path} pl={4}>
             <Group gap={8} wrap="nowrap" align="center">
               <Group gap={4} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-                <Text size="sm" c={file.corrupt ? 'red' : undefined} truncate="end">
+                <TruncatedText label={file.name} size="sm" c={file.corrupt ? 'red' : undefined}>
                   📄 {file.name}
-                </Text>
+                </TruncatedText>
                 {file.corrupt && (
                   <Tooltip label="Could not read this file — it may be corrupt or not a valid PDF">
                     <span>⚠️</span>

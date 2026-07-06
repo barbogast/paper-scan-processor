@@ -1,5 +1,6 @@
 import { Box, Group, Stack, Text } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
+import TruncatedText from './TruncatedText'
 import FileList from './FileList'
 import { LocalFileGroup } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
@@ -43,7 +44,7 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
           }}
         >
           <Text size="xs" c="dimmed" style={{ width: 10, flexShrink: 0 }}>{expanded ? '▼' : '▶'}</Text>
-          <Text size="sm" fw={600} truncate="end">📁 {group.name}</Text>
+          <TruncatedText label={group.name} size="sm" fw={600}>📁 {group.name}</TruncatedText>
         </button>
         <DriveAssignmentField
           label={group.name}
