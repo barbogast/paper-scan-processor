@@ -5,6 +5,10 @@ export interface DriveAssignment {
   path: string
 }
 
+// Identifies what a picked Drive folder should be applied to: a subfolder
+// group (by its path key) or an individual file (by its filesystem path).
+export type PickerTarget = { type: 'group'; key: string } | { type: 'file'; path: string }
+
 export interface DriveAssignmentsHandle {
   groupAssignments: Map<string, DriveAssignment>
   fileOverrides: Map<string, DriveAssignment>
