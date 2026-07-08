@@ -6,11 +6,20 @@ export function makeResizeDragHandler(width: number, onWidthChange: (w: number) 
     const startX = e.clientX
     const startWidth = width
     const clamp = (w: number) => Math.max(min, Math.min(max, w))
-    const onMove = (ev: MouseEvent) => onWidthChange(clamp(startWidth + ev.clientX - startX))
-    const onUp = (ev: MouseEvent) => {
-      onWidthChange(clamp(startWidth + ev.clientX - startX))
+    const stop = () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+    }
+    const onMove = (ev: MouseEvent) => {
+      // If the button was released outside the window, no mouseup reaches us —
+      // ev.buttons reports the current state regardless, so treat that as drag-end
+      // instead of leaving the panel resizing on every later mouse movement.
+      if (ev.buttons === 0) { stop(); return }
+      onWidthChange(clamp(startWidth + ev.clientX - startX))
+    }
+    const onUp = (ev: MouseEvent) => {
+      onWidthChange(clamp(startWidth + ev.clientX - startX))
+      stop()
     }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
