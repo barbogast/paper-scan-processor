@@ -287,7 +287,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Step 3d: Drive folder assignment UI** — assignment at subfolder and file level; a subfolder's assignment propagates to all files and nested subfolders beneath it unless overridden closer to the leaf; a clear (✕) control resets an explicit assignment back to inherited/not-assigned
 - [ ] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select
 - [ ] **Step 4: Inline renaming** — inline editable name for each subfolder and file (controls the Drive upload name, not the local filename)
-- [ ] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
+- [x] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
 - [ ] **Step 6: Upload queue** — per-file upload with progress; inline error + Retry on failure; "Open in Drive" link per group after completion
 - [ ] **Step 7: Remembered folder mappings** — auto-fill Drive destination from saved subfolder-name→Drive-folder mapping; persisted across sessions
 - [ ] **Step 8: Post-upload cleanup** — prompt to delete or archive source files; archive moves files to a user-specified local archive folder

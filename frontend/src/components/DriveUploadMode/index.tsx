@@ -1,16 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Button, Loader, Stack, Text } from '@mantine/core'
 import ClippedPath from '../ClippedPath'
+import DetailPanel from '../DetailPanel'
 import DriveFolderPickerModal from './DriveFolderPickerModal'
+import DriveThumbnailPanel from './ThumbnailPanel'
 import GroupNode from './GroupNode'
 import FileList from './FileList'
 import ResizableLeftPanel from './ResizableLeftPanel'
-import { useFileTree } from './useFileTree'
+import { useFileTree, LocalFile } from './useFileTree'
 import { useDriveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
+import * as pageCache from '../../lib/pageCache'
 
 export default function DriveUploadMode() {
   const { root, tree, loading, error, pickRoot } = useFileTree()
   const isEmpty = tree !== null && tree.files.length === 0 && tree.subgroups.length === 0
+
+  const [selectedFile, setSelectedFile] = useState<LocalFile | null>(null)
+  const [selectedPage, setSelectedPage] = useState(1)
+  const handleSelectFile = (file: LocalFile) => {
+    setSelectedFile(file)
+    setSelectedPage(1)
+  }
+
+  useEffect(() => {
+    return () => { if (selectedFile) pageCache.evict(selectedFile.path) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFile?.path])
 
   // Groups start expanded; presence in this set (keyed by the group's full
   // path, e.g. "invoices/2026") means collapsed.
@@ -66,26 +81,33 @@ export default function DriveUploadMode() {
                   assignments={assignments}
                   inheritedAssignment={null}
                   onPick={setPickerTarget}
+                  selectedPath={selectedFile?.path ?? null}
+                  onSelectFile={handleSelectFile}
                 />
               ))}
-              <FileList files={tree.files} assignments={assignments} inheritedAssignment={null} onPick={setPickerTarget} />
+              <FileList
+                files={tree.files}
+                assignments={assignments}
+                inheritedAssignment={null}
+                onPick={setPickerTarget}
+                selectedPath={selectedFile?.path ?? null}
+                onSelectFile={handleSelectFile}
+              />
             </Stack>
           )}
         </>
       }
     >
-      <Box
-        style={{
-          flex: '0 0 auto', width: 220, height: '100%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'var(--mantine-color-gray-1)',
-          borderRight: '1px solid var(--mantine-color-gray-3)',
-        }}
-      >
-        <Text size="sm" c="dimmed">Select a file to preview</Text>
-      </Box>
+      <DriveThumbnailPanel
+        pdfPath={selectedFile?.path ?? null}
+        pageCount={selectedFile?.pageCount ?? 0}
+        selectedPage={selectedPage}
+        onSelectPage={setSelectedPage}
+      />
 
-      <Box style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+      {selectedFile
+        ? <DetailPanel pdfPath={selectedFile.path} pageNum={selectedPage} pageCount={selectedFile.pageCount} />
+        : <Box style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />}
     </ResizableLeftPanel>
   )
 }

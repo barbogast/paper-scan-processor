@@ -9,6 +9,16 @@ afterEach(() => {
   cleanup()
 })
 
+// jsdom doesn't implement ResizeObserver; react-zoom-pan-pinch's TransformWrapper
+// (used by DetailPanel) constructs one on init.
+if (typeof window.ResizeObserver !== 'function') {
+  window.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+}
+
 // jsdom doesn't implement matchMedia; Mantine's MantineProvider needs it to
 // detect color-scheme preference.
 if (typeof window.matchMedia !== 'function') {

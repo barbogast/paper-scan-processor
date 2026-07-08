@@ -10,16 +10,28 @@ interface Props {
   assignments: DriveAssignmentsHandle
   inheritedAssignment: DriveAssignment | null
   onPick: (target: PickerTarget) => void
+  selectedPath: string | null
+  onSelectFile: (file: LocalFile) => void
 }
 
-export default function FileList({ files, assignments, inheritedAssignment, onPick }: Props) {
+export default function FileList({ files, assignments, inheritedAssignment, onPick, selectedPath, onSelectFile }: Props) {
   return (
     <Stack gap={10} mt={4}>
       {files.map(file => {
         const own = assignments.fileOverrides.get(file.path) ?? null
         const effective = own ?? inheritedAssignment
         return (
-          <Box key={file.path} pl={4}>
+          <Box
+            key={file.path}
+            pl={4}
+            py={2}
+            onClick={() => !file.corrupt && onSelectFile(file)}
+            style={{
+              cursor: file.corrupt ? 'default' : 'pointer',
+              borderRadius: 4,
+              background: selectedPath === file.path ? 'var(--mantine-color-blue-0)' : undefined,
+            }}
+          >
             <Group gap={8} wrap="nowrap" align="center">
               <Group gap={4} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
                 <TruncatedText label={file.name} size="sm" c={file.corrupt ? 'red' : undefined}>

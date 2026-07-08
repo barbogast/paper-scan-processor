@@ -8,6 +8,7 @@ vi.mock('../../../wailsjs/go/main/App', () => ({
   PickFolder: vi.fn(),
   ScanLocalRoot: vi.fn(),
   ListDriveFolder: vi.fn(),
+  RenderPage: vi.fn().mockResolvedValue(''),
 }))
 
 const TREE = {
@@ -87,5 +88,37 @@ describe('DriveUploadMode assignment fields', () => {
     await setupWithTree()
     expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for misc' }))).toContain('Not assigned')
     expect(screen.queryByRole('button', { name: 'Clear Drive folder for misc' })).toBeNull()
+  })
+})
+
+describe('DriveUploadMode file preview', () => {
+  beforeEach(() => {
+    vi.mocked(PickFolder).mockReset()
+    vi.mocked(ScanLocalRoot).mockReset()
+    vi.mocked(ListDriveFolder).mockReset()
+  })
+
+  it('selecting a file loads it into the thumbnail strip and detail panel', async () => {
+    await setupWithTree()
+    expect(screen.getByText('Select a file to preview')).toBeTruthy()
+
+    fireEvent.click(screen.getByText('📄 a'))
+
+    expect(screen.queryByText('Select a file to preview')).toBeNull()
+    expect(await screen.findByAltText('Page 1')).toBeTruthy() // detail view
+  })
+
+  it('selecting a different file resets to its first page', async () => {
+    await setupWithTree()
+
+    fireEvent.click(screen.getByText('📄 a')) // file "a" has 2 pages
+    await screen.findByAltText('Page 1')
+
+    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    await screen.findByAltText('Page 2')
+
+    fireEvent.click(screen.getByText('📄 misc')) // "misc" only has 1 page
+    expect(await screen.findByAltText('Page 1')).toBeTruthy()
+    expect(screen.queryByAltText('Page 2')).toBeNull()
   })
 })

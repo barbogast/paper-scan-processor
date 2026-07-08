@@ -2,7 +2,7 @@ import { Box, Group, Stack, Text } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from './TruncatedText'
 import FileList from './FileList'
-import { LocalFileGroup } from './useFileTree'
+import { LocalFile, LocalFileGroup } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
 
 const INDENT_PER_LEVEL = 16
@@ -15,9 +15,11 @@ interface Props {
   assignments: DriveAssignmentsHandle
   inheritedAssignment: DriveAssignment | null
   onPick: (target: PickerTarget) => void
+  selectedPath: string | null
+  onSelectFile: (file: LocalFile) => void
 }
 
-export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, onPick }: Props) {
+export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, onPick, selectedPath, onSelectFile }: Props) {
   const expanded = !collapsedGroups.has(groupKey)
   const own = assignments.groupAssignments.get(groupKey) ?? null
   const effective = own ?? inheritedAssignment
@@ -56,7 +58,14 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
       </Group>
       {expanded && (
         <Box pl={INDENT_PER_LEVEL}>
-          <FileList files={group.files} assignments={assignments} inheritedAssignment={effective} onPick={onPick} />
+          <FileList
+            files={group.files}
+            assignments={assignments}
+            inheritedAssignment={effective}
+            onPick={onPick}
+            selectedPath={selectedPath}
+            onSelectFile={onSelectFile}
+          />
           {group.subgroups.length > 0 && (
             <Stack gap={8} mt={4}>
               {group.subgroups.map(sub => (
@@ -69,6 +78,8 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
                   assignments={assignments}
                   inheritedAssignment={effective}
                   onPick={onPick}
+                  selectedPath={selectedPath}
+                  onSelectFile={onSelectFile}
                 />
               ))}
             </Stack>
