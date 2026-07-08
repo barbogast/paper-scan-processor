@@ -5,6 +5,7 @@ import type { DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import * as pageCache from '../../lib/pageCache'
+import { makeResizeDragHandler } from '../../lib/resizableWidth'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
 import type { OutputFilesHandle } from './useOutputFiles'
@@ -60,6 +61,7 @@ export default function SplitThumbnailPanel({
   onMovePage,
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
+  const startDrag = makeResizeDragHandler(panelWidth, setPanelWidth, MIN_WIDTH, MAX_WIDTH)
   const [hoveredGap, setHoveredGap] = useState<number | null>(null)
   const [hoveredPage, setHoveredPage] = useState<number | null>(null)
   const [activeId, setActiveId] = useState<number | null>(null)
@@ -135,21 +137,6 @@ export default function SplitThumbnailPanel({
     const fromPos = pageOrder.indexOf(active.id as number)
     const toPos = pageOrder.indexOf(over.id as number)
     if (fromPos !== -1 && toPos !== -1) onMovePage(fromPos, toPos)
-  }
-
-  const startDrag = (e: React.MouseEvent) => {
-    const startX = e.clientX
-    const startWidth = panelWidth
-    const clamp = (w: number) => Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, w))
-    const onMove = (ev: MouseEvent) => setPanelWidth(clamp(startWidth + ev.clientX - startX))
-    const onUp = (ev: MouseEvent) => {
-      setPanelWidth(clamp(startWidth + ev.clientX - startX))
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-    }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-    e.preventDefault()
   }
 
   return (

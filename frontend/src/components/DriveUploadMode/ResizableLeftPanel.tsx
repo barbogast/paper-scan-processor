@@ -1,6 +1,7 @@
 import { useState, ReactNode } from 'react'
 import { Box } from '@mantine/core'
 import { DRAG_HANDLE_WIDTH } from '../../constants'
+import { makeResizeDragHandler } from '../../lib/resizableWidth'
 
 const DEFAULT_LEFT_PANEL_WIDTH = 300
 const MIN_LEFT_PANEL_WIDTH = 180
@@ -16,21 +17,7 @@ interface Props {
 // and `children` trees passed in from the parent's last render.
 export default function ResizableLeftPanel({ left, children }: Props) {
   const [leftWidth, setLeftWidth] = useState(DEFAULT_LEFT_PANEL_WIDTH)
-
-  const startDrag = (e: React.MouseEvent) => {
-    const startX = e.clientX
-    const startWidth = leftWidth
-    const clamp = (w: number) => Math.max(MIN_LEFT_PANEL_WIDTH, Math.min(MAX_LEFT_PANEL_WIDTH, w))
-    const onMove = (ev: MouseEvent) => setLeftWidth(clamp(startWidth + ev.clientX - startX))
-    const onUp = (ev: MouseEvent) => {
-      setLeftWidth(clamp(startWidth + ev.clientX - startX))
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-    }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-    e.preventDefault()
-  }
+  const startDrag = makeResizeDragHandler(leftWidth, setLeftWidth, MIN_LEFT_PANEL_WIDTH, MAX_LEFT_PANEL_WIDTH)
 
   return (
     <Box style={{ display: 'flex', height: '100%' }}>

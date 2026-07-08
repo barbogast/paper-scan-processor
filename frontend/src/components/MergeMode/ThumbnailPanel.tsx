@@ -3,6 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box } from '@mantine/core'
 import * as pageCache from '../../lib/pageCache'
 import { PDFFile } from './usePDFFile'
+import { makeResizeDragHandler } from '../../lib/resizableWidth'
 import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
 
@@ -59,21 +60,7 @@ export default function MergeModeThumbnailPanel({
   const pageLabelA = bothLoaded ? makePageNumberLabel(aIsFirst, aIsFirst ? fileB.count : fileA.count) : undefined
   const pageLabelB = bothLoaded ? makePageNumberLabel(!aIsFirst, aIsFirst ? fileA.count : fileB.count) : undefined
 
-  const startDrag = (e: React.MouseEvent) => {
-    const startX = e.clientX
-    const startWidth = totalWidth
-    const clamp = (w: number) => Math.max(MIN_TOTAL_WIDTH, Math.min(MAX_TOTAL_WIDTH, w))
-
-    const onMove = (ev: MouseEvent) => onWidthChange(clamp(startWidth + ev.clientX - startX))
-    const onUp = (ev: MouseEvent) => {
-      onWidthChange(clamp(startWidth + ev.clientX - startX))
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-    }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-    e.preventDefault()
-  }
+  const startDrag = makeResizeDragHandler(totalWidth, onWidthChange, MIN_TOTAL_WIDTH, MAX_TOTAL_WIDTH)
 
   return (
     <Box style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
