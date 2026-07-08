@@ -27,3 +27,7 @@ Yeah. The preview can just be omitted for non-PDF files (at least for now), and 
 ---
 
 yes
+
+---
+
+commit before step 2
