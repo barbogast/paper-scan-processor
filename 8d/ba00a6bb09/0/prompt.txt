@@ -3,3 +3,7 @@ now address the duplication
 ---
 
 is useResizableWidth really a hook?
+
+---
+
+commit
