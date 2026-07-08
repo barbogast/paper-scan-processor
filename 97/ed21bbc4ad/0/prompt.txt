@@ -1,0 +1,17 @@
+increase the size of the badge containing the selected folder, and show a tooltip with the full path if it's too long for display
+
+---
+
+What's the reason not to use ClippedPath here?
+
+---
+
+yes
+
+---
+
+commit
+
+---
+
+yes
