@@ -22,6 +22,7 @@ export namespace main {
 	    path: string;
 	    name: string;
 	    sizeBytes: number;
+	    isPdf: boolean;
 	    pageCount: number;
 	    corrupt: boolean;
 	
@@ -34,6 +35,7 @@ export namespace main {
 	        this.path = source["path"];
 	        this.name = source["name"];
 	        this.sizeBytes = source["sizeBytes"];
+	        this.isPdf = source["isPdf"];
 	        this.pageCount = source["pageCount"];
 	        this.corrupt = source["corrupt"];
 	    }

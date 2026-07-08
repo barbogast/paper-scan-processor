@@ -25,7 +25,7 @@ func TestScanLocalRootFilesInRootAndSubfolder(t *testing.T) {
 	if tree.Name != "" {
 		t.Errorf("root name = %q, want \"\"", tree.Name)
 	}
-	if len(tree.Files) != 1 || tree.Files[0].Name != "misc.pdf" || tree.Files[0].PageCount != 2 {
+	if len(tree.Files) != 1 || tree.Files[0].Name != "misc.pdf" || !tree.Files[0].IsPDF || tree.Files[0].PageCount != 2 {
 		t.Errorf("root files = %+v", tree.Files)
 	}
 	if tree.Files[0].SizeBytes <= 0 {
@@ -97,10 +97,10 @@ func TestScanLocalRootFlagsCorruptPDF(t *testing.T) {
 	}
 }
 
-func TestScanLocalRootIgnoresNonPDFAndDotfiles(t *testing.T) {
+func TestScanLocalRootIncludesNonPDFFilesButIgnoresDotfiles(t *testing.T) {
 	root := t.TempDir()
 	writePDF(t, filepath.Join(root, "doc.pdf"), []string{"p1"})
-	if err := os.WriteFile(filepath.Join(root, "readme.txt"), []byte("hi"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "scan.jpg"), []byte("hi"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(root, ".DS_Store"), []byte("hi"), 0o644); err != nil {
@@ -115,8 +115,19 @@ func TestScanLocalRootIgnoresNonPDFAndDotfiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(tree.Files) != 1 || tree.Files[0].Name != "doc.pdf" {
-		t.Fatalf("expected only doc.pdf, got %+v", tree.Files)
+	if len(tree.Files) != 2 {
+		t.Fatalf("expected doc.pdf and scan.jpg, got %+v", tree.Files)
+	}
+	// alphabetical by filename
+	doc, img := tree.Files[0], tree.Files[1]
+	if doc.Name != "doc.pdf" || !doc.IsPDF || doc.Corrupt || doc.PageCount != 1 {
+		t.Errorf("doc.pdf = %+v, want IsPDF=true, Corrupt=false, PageCount=1", doc)
+	}
+	if img.Name != "scan.jpg" || img.IsPDF || img.Corrupt || img.PageCount != 0 {
+		t.Errorf("scan.jpg = %+v, want IsPDF=false, Corrupt=false, PageCount=0", img)
+	}
+	if img.SizeBytes <= 0 {
+		t.Errorf("scan.jpg size = %d, want > 0", img.SizeBytes)
 	}
 	if len(tree.Subgroups) != 0 {
 		t.Errorf("expected .hidden to be ignored, got subgroups %+v", tree.Subgroups)

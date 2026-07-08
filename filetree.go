@@ -6,13 +6,16 @@ import (
 	"strings"
 )
 
-// LocalFile describes one local PDF discovered by scanLocalRoot.
+// LocalFile describes one local file discovered by scanLocalRoot. Not every
+// file is a PDF — non-PDF files (e.g. image scans) are included too, with
+// IsPDF false and PageCount 0.
 type LocalFile struct {
 	Path      string `json:"path"`
 	Name      string `json:"name"` // filename including extension
 	SizeBytes int64  `json:"sizeBytes"`
-	PageCount int    `json:"pageCount"`
-	Corrupt   bool   `json:"corrupt"` // true if the file's page count could not be read
+	IsPDF     bool   `json:"isPdf"`
+	PageCount int    `json:"pageCount"` // only meaningful when IsPDF is true
+	Corrupt   bool   `json:"corrupt"`   // IsPDF true but its page count could not be read
 }
 
 // LocalFileGroup is one folder's worth of files, plus its nested
@@ -25,7 +28,7 @@ type LocalFileGroup struct {
 }
 
 // scanLocalRoot scans root recursively and returns it as a LocalFileGroup:
-// its own direct PDFs in Files, and every subdirectory (at any depth) as a
+// its own direct files in Files, and every subdirectory (at any depth) as a
 // nested Subgroups entry. Unlike a subfolder, the root is always returned
 // even if it's entirely empty, so the UI has something to render a "no
 // files" state from.
@@ -33,13 +36,13 @@ func scanLocalRoot(root string) (LocalFileGroup, error) {
 	return scanDirectory(root, "")
 }
 
-// scanDirectory scans dir's direct entries in a single pass: each PDF
+// scanDirectory scans dir's direct entries in a single pass: each file
 // becomes a LocalFile, each non-hidden subdirectory is scanned recursively
-// (skipping symlinks) and — if its subtree contains no PDFs at all — is
+// (skipping symlinks) and — if its subtree contains no files at all — is
 // omitted from Subgroups. name is used as the returned group's Name (pass ""
-// for the scan root). Files whose page count can't be read (corrupt or
-// non-PDF despite the extension) are still included, flagged via
-// LocalFile.Corrupt, rather than dropped from the scan.
+// for the scan root). PDFs whose page count can't be read are still
+// included, flagged via LocalFile.Corrupt, rather than dropped from the
+// scan; non-PDF files are never considered corrupt.
 //
 // Both slice fields are always initialized to non-nil (even when empty),
 // since a nil Go slice marshals to JSON `null` rather than `[]`, which
@@ -74,21 +77,26 @@ func scanDirectory(dir, name string) (LocalFileGroup, error) {
 			continue
 		}
 
-		if !strings.HasSuffix(strings.ToLower(entryName), ".pdf") {
-			continue
-		}
 		path := filepath.Join(dir, entryName)
 		info, err := os.Stat(path)
 		if err != nil {
 			continue
 		}
-		count, err := pdfPageCount(path)
+
+		isPDF := strings.HasSuffix(strings.ToLower(entryName), ".pdf")
+		var count int
+		var corrupt bool
+		if isPDF {
+			count, err = pdfPageCount(path)
+			corrupt = err != nil
+		}
 		files = append(files, LocalFile{
 			Path:      path,
 			Name:      entryName,
 			SizeBytes: info.Size(),
+			IsPDF:     isPDF,
 			PageCount: count,
-			Corrupt:   err != nil, // corrupt or non-PDF despite the extension
+			Corrupt:   corrupt,
 		})
 	}
 
