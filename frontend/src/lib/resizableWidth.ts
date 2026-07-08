@@ -5,7 +5,7 @@ export function makeResizeDragHandler(width: number, onWidthChange: (w: number) 
   return (e: React.MouseEvent) => {
     const startX = e.clientX
     const startWidth = width
-    const clamp = (w: number) => Math.max(min, Math.min(max, w))
+    const widthAt = (ev: MouseEvent) => Math.max(min, Math.min(max, startWidth + ev.clientX - startX))
     const stop = () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
@@ -15,10 +15,10 @@ export function makeResizeDragHandler(width: number, onWidthChange: (w: number) 
       // ev.buttons reports the current state regardless, so treat that as drag-end
       // instead of leaving the panel resizing on every later mouse movement.
       if (ev.buttons === 0) { stop(); return }
-      onWidthChange(clamp(startWidth + ev.clientX - startX))
+      onWidthChange(widthAt(ev))
     }
     const onUp = (ev: MouseEvent) => {
-      onWidthChange(clamp(startWidth + ev.clientX - startX))
+      onWidthChange(widthAt(ev))
       stop()
     }
     document.addEventListener('mousemove', onMove)
