@@ -20,14 +20,19 @@ export default function FileList({ files, assignments, inheritedAssignment, onPi
       {files.map(file => {
         const own = assignments.fileOverrides.get(file.path) ?? null
         const effective = own ?? inheritedAssignment
+        const previewable = file.isPdf && !file.corrupt
+        const detail = [
+          file.corrupt ? 'Unreadable' : file.isPdf ? `${file.pageCount} pages` : null,
+          formatFileSize(file.sizeBytes),
+        ].filter(Boolean).join(' · ')
         return (
           <Box
             key={file.path}
             pl={4}
             py={2}
-            onClick={() => !file.corrupt && onSelectFile(file)}
+            onClick={() => previewable && onSelectFile(file)}
             style={{
-              cursor: file.corrupt ? 'default' : 'pointer',
+              cursor: previewable ? 'pointer' : 'default',
               borderRadius: 4,
               background: selectedPath === file.path ? 'var(--mantine-color-blue-0)' : undefined,
             }}
@@ -52,7 +57,7 @@ export default function FileList({ files, assignments, inheritedAssignment, onPi
               />
             </Group>
             <Text size="xs" c="dimmed" mt={2}>
-              {file.corrupt ? 'Unreadable' : `${file.pageCount} pages`} · {formatFileSize(file.sizeBytes)}
+              {detail}
             </Text>
           </Box>
         )

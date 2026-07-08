@@ -5,6 +5,7 @@ export interface LocalFile {
   path: string
   name: string
   sizeBytes: number
+  isPdf: boolean
   pageCount: number
   corrupt: boolean
 }

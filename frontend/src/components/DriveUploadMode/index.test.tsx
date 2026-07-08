@@ -13,11 +13,14 @@ vi.mock('../../../wailsjs/go/main/App', () => ({
 
 const TREE = {
   name: '',
-  files: [{ path: '/root/misc.pdf', name: 'misc', sizeBytes: 100, pageCount: 1, corrupt: false }],
+  files: [
+    { path: '/root/misc.pdf', name: 'misc', sizeBytes: 100, isPdf: true, pageCount: 1, corrupt: false },
+    { path: '/root/scan.jpg', name: 'scan.jpg', sizeBytes: 50, isPdf: false, pageCount: 0, corrupt: false },
+  ],
   subgroups: [
     {
       name: 'invoices',
-      files: [{ path: '/root/invoices/a.pdf', name: 'a', sizeBytes: 200, pageCount: 2, corrupt: false }],
+      files: [{ path: '/root/invoices/a.pdf', name: 'a', sizeBytes: 200, isPdf: true, pageCount: 2, corrupt: false }],
       subgroups: [],
     },
   ],
@@ -106,6 +109,16 @@ describe('DriveUploadMode file preview', () => {
 
     expect(screen.queryByText('Select a file to preview')).toBeNull()
     expect(await screen.findByAltText('Page 1')).toBeTruthy() // detail view
+  })
+
+  it('a non-PDF file shows size only and cannot be previewed', async () => {
+    await setupWithTree()
+
+    const sizeText = screen.getByText(/50 B/)
+    expect(textOf(sizeText)).not.toContain('pages')
+
+    fireEvent.click(screen.getByText('📄 scan.jpg'))
+    expect(screen.getByText('Select a file to preview')).toBeTruthy()
   })
 
   it('selecting a different file resets to its first page', async () => {

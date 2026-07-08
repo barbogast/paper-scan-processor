@@ -63,7 +63,7 @@ export default function DriveUploadMode() {
           {loading && <Loader size="sm" />}
           {error && <Text size="sm" c="red">{error}</Text>}
           {!loading && !error && isEmpty && (
-            <Text size="sm" c="dimmed">No PDF files found under this folder.</Text>
+            <Text size="sm" c="dimmed">No files found under this folder.</Text>
           )}
           {!loading && !root && (
             <Button size="xs" onClick={pickRoot}>Choose Root Folder</Button>

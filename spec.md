@@ -165,14 +165,14 @@ TBD.
 
 ## Mode: Drive Upload
 
-For filing batches of local PDF files to Google Drive. Intended as the step after Split mode: once PDFs are exported to a local folder, the user switches to Drive Upload to route each file (or subfolder of files) to the correct place in Drive.
+For filing batches of local files (PDFs and other scans, e.g. images) to Google Drive. Intended as the step after Split mode: once PDFs are exported to a local folder, the user switches to Drive Upload to route each file (or subfolder of files) to the correct place in Drive.
 
 ### Workflow
 
 1. The user enters Drive Upload mode. If arriving via the Split mode export success modal, the root local folder is pre-set to the Split output folder; otherwise the user picks a root folder.
 2. The app scans the root folder recursively and displays all files grouped by subfolder. Files in the root folder itself appear as a top-level group.
 3. The user assigns a Google Drive destination folder to each subfolder group. The assignment propagates to all files within the group. Individual files can override the group's assignment.
-4. The user can select any file to preview it — the thumbnail strip and detail panel update to show that file's pages.
+4. The user can select any PDF file to preview it — the thumbnail strip and detail panel update to show that file's pages. Non-PDF files (e.g. images) can still be assigned and uploaded, just without a preview.
 5. The user clicks Upload. Before uploading, the app checks each Drive destination for filename conflicts. If any are found, conflicting files are flagged and the upload is aborted until resolved.
 6. Uploads proceed with per-file progress. If a file fails, it shows an inline error and a Retry button; other uploads continue unaffected.
 7. After all uploads complete, each subfolder group shows an "Open in Drive" link to its destination folder.
@@ -281,6 +281,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Step 1c: File upload** — upload a hardcoded local file to a hardcoded Drive folder
 - [x] **Step 2a: Filesystem scan backend** — `scanLocalRoot` + `ScanLocalRoot` RPC; scans root folder recursively, returning files grouped by subfolder (nested to match the folder structure) with size and page count; symlinked directories are not followed; files whose page count can't be read are included and flagged via `Corrupt` rather than dropped
 - [x] **Step 2b: File tree UI** — new Drive Upload tab; root folder picker; three-column layout shell; recursive, collapsible (default expanded) file tree wired to the scan, indented per nesting level, with file size and page count as secondary metadata; corrupt files shown with a warning icon
+- [x] **Step 2c: Non-PDF file support** — non-PDF files (e.g. image scans) are scanned and shown too, not just PDFs, since the local root folder may hold mixed scan output; `LocalFile.IsPDF` distinguishes them, `Corrupt` only applies to PDFs; non-PDF files show file size only (no page count) and can't be previewed but can still be assigned and uploaded
 - [x] **Step 3a: Drive folder browser backend** — `ListDriveFolder` App RPC, thin wrapper over the existing `DriveListFolder`
 - [x] **Step 3b: Folder browser modal UI** — lazy-loaded Drive tree browsing and folder selection; no recently-used list yet
 - [ ] **Step 3c: Recently used folders list** — persisted MRU list, shown in the modal
