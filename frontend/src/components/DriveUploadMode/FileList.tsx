@@ -1,4 +1,4 @@
-import { Box, Group, Stack, Text, Tooltip } from '@mantine/core'
+import { Badge, Box, Group, Stack, Text, Tooltip } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from './TruncatedText'
 import { LocalFile } from './useFileTree'
@@ -39,8 +39,13 @@ export default function FileList({ files, assignments, inheritedAssignment, onPi
           >
             <Group gap={8} wrap="nowrap" align="center">
               <Group gap={4} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+                {file.isPdf && (
+                  <Badge size="xs" variant="light" color="red" radius="sm" style={{ flexShrink: 0 }}>
+                    PDF
+                  </Badge>
+                )}
                 <TruncatedText label={file.name} size="sm" c={file.corrupt ? 'red' : undefined}>
-                  📄 {file.name}
+                  {file.isPdf ? '' : '📄 '}{file.name}
                 </TruncatedText>
                 {file.corrupt && (
                   <Tooltip label="Could not read this file — it may be corrupt or not a valid PDF">

@@ -105,7 +105,7 @@ describe('DriveUploadMode file preview', () => {
     await setupWithTree()
     expect(screen.getByText('Select a file to preview')).toBeTruthy()
 
-    fireEvent.click(screen.getByText('📄 a'))
+    fireEvent.click(screen.getByText('a'))
 
     expect(screen.queryByText('Select a file to preview')).toBeNull()
     expect(await screen.findByAltText('Page 1')).toBeTruthy() // detail view
@@ -124,13 +124,13 @@ describe('DriveUploadMode file preview', () => {
   it('selecting a different file resets to its first page', async () => {
     await setupWithTree()
 
-    fireEvent.click(screen.getByText('📄 a')) // file "a" has 2 pages
+    fireEvent.click(screen.getByText('a')) // file "a" has 2 pages
     await screen.findByAltText('Page 1')
 
     fireEvent.keyDown(window, { key: 'ArrowRight' })
     await screen.findByAltText('Page 2')
 
-    fireEvent.click(screen.getByText('📄 misc')) // "misc" only has 1 page
+    fireEvent.click(screen.getByText('misc')) // "misc" only has 1 page
     expect(await screen.findByAltText('Page 1')).toBeTruthy()
     expect(screen.queryByAltText('Page 2')).toBeNull()
   })
