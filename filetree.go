@@ -9,7 +9,7 @@ import (
 // LocalFile describes one local PDF discovered by scanLocalRoot.
 type LocalFile struct {
 	Path      string `json:"path"`
-	Name      string `json:"name"` // filename without extension; display-only for now
+	Name      string `json:"name"` // filename including extension
 	SizeBytes int64  `json:"sizeBytes"`
 	PageCount int    `json:"pageCount"`
 	Corrupt   bool   `json:"corrupt"` // true if the file's page count could not be read
@@ -85,7 +85,7 @@ func scanDirectory(dir, name string) (LocalFileGroup, error) {
 		count, err := pdfPageCount(path)
 		files = append(files, LocalFile{
 			Path:      path,
-			Name:      strings.TrimSuffix(entryName, filepath.Ext(entryName)),
+			Name:      entryName,
 			SizeBytes: info.Size(),
 			PageCount: count,
 			Corrupt:   err != nil, // corrupt or non-PDF despite the extension

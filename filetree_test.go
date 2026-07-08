@@ -25,7 +25,7 @@ func TestScanLocalRootFilesInRootAndSubfolder(t *testing.T) {
 	if tree.Name != "" {
 		t.Errorf("root name = %q, want \"\"", tree.Name)
 	}
-	if len(tree.Files) != 1 || tree.Files[0].Name != "misc" || tree.Files[0].PageCount != 2 {
+	if len(tree.Files) != 1 || tree.Files[0].Name != "misc.pdf" || tree.Files[0].PageCount != 2 {
 		t.Errorf("root files = %+v", tree.Files)
 	}
 	if tree.Files[0].SizeBytes <= 0 {
@@ -43,7 +43,7 @@ func TestScanLocalRootFilesInRootAndSubfolder(t *testing.T) {
 		t.Fatalf("got %d files in invoices, want 2: %+v", len(sub.Files), sub.Files)
 	}
 	// alphabetical by filename
-	if sub.Files[0].Name != "a" || sub.Files[1].Name != "b" {
+	if sub.Files[0].Name != "a.pdf" || sub.Files[1].Name != "b.pdf" {
 		t.Errorf("invoices files not sorted: %+v", sub.Files)
 	}
 	if sub.Files[0].PageCount != 3 || sub.Files[1].PageCount != 1 {
@@ -65,7 +65,7 @@ func TestScanLocalRootEmptySubfolderOmitted(t *testing.T) {
 	if len(tree.Subgroups) != 0 {
 		t.Fatalf("expected the empty subfolder to be omitted, got %+v", tree.Subgroups)
 	}
-	if len(tree.Files) != 1 || tree.Files[0].Name != "top" {
+	if len(tree.Files) != 1 || tree.Files[0].Name != "top.pdf" {
 		t.Errorf("root files = %+v", tree.Files)
 	}
 }
@@ -86,13 +86,13 @@ func TestScanLocalRootFlagsCorruptPDF(t *testing.T) {
 	}
 
 	files := tree.Files
-	if files[0].Name != "bad" || !files[0].Corrupt || files[0].PageCount != 0 {
+	if files[0].Name != "bad.pdf" || !files[0].Corrupt || files[0].PageCount != 0 {
 		t.Errorf("bad.pdf = %+v, want Corrupt=true, PageCount=0", files[0])
 	}
 	if files[0].SizeBytes <= 0 {
 		t.Errorf("bad.pdf size = %d, want > 0", files[0].SizeBytes)
 	}
-	if files[1].Name != "good" || files[1].Corrupt || files[1].PageCount != 1 {
+	if files[1].Name != "good.pdf" || files[1].Corrupt || files[1].PageCount != 1 {
 		t.Errorf("good.pdf = %+v, want Corrupt=false, PageCount=1", files[1])
 	}
 }
@@ -115,7 +115,7 @@ func TestScanLocalRootIgnoresNonPDFAndDotfiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(tree.Files) != 1 || tree.Files[0].Name != "doc" {
+	if len(tree.Files) != 1 || tree.Files[0].Name != "doc.pdf" {
 		t.Fatalf("expected only doc.pdf, got %+v", tree.Files)
 	}
 	if len(tree.Subgroups) != 0 {
@@ -144,7 +144,7 @@ func TestScanLocalRootRecursesMultipleLevels(t *testing.T) {
 	}
 
 	a := tree.Subgroups[0]
-	if len(a.Files) != 1 || a.Files[0].Name != "shallow" {
+	if len(a.Files) != 1 || a.Files[0].Name != "shallow.pdf" {
 		t.Errorf("a's direct files = %+v, want just shallow.pdf", a.Files)
 	}
 	if len(a.Subgroups) != 1 || a.Subgroups[0].Name != "b" {
@@ -152,7 +152,7 @@ func TestScanLocalRootRecursesMultipleLevels(t *testing.T) {
 	}
 
 	b := a.Subgroups[0]
-	if len(b.Files) != 1 || b.Files[0].Name != "deep" {
+	if len(b.Files) != 1 || b.Files[0].Name != "deep.pdf" {
 		t.Errorf("b's files = %+v, want just deep.pdf", b.Files)
 	}
 	if len(b.Subgroups) != 0 {
