@@ -3,3 +3,11 @@ increase the size of the badge containing the selected folder, and show a toolti
 ---
 
 What's the reason not to use ClippedPath here?
+
+---
+
+yes
+
+---
+
+commit
