@@ -14,5 +14,6 @@ Don't run `wails dev`/`wails build` or try to screenshot the app — the user te
 
 - Don't hand-edit `frontend/wailsjs/` bindings; Wails regenerates them from Go RPCs.
 - Break checklist work into small, independently reviewable steps (1a/1b/1c-style) unless a step is trivial.
+- Before implementing any non-trivial request — whether from a `spec.md` checklist item or an ad-hoc chat message — flag if it looks like it'll produce a large/churned diff, and propose splitting it into smaller reviewable steps before writing code.
 - Point out unrelated cleanups rather than folding them into feature commits; commit them separately.
 - Never `git commit` without an explicit go-ahead in the same turn — an earlier approval doesn't carry forward.
