@@ -1,0 +1,13 @@
+For step 3, I'm not happy with the icon choice, since non-pdf files might also be non-images
+
+---
+
+The current icon seems a good choice for non-pdf files. Do you have a alternative for the pdf files>
+
+---
+
+Non of them fit
+
+---
+
+a small pdf badge?
