@@ -1,0 +1,7 @@
+Is it possible for you to:
+- warn me if the requested feature / change results in much churned code and should rather be split into separate implementation steps?
+- the context window is getting too full?
+
+---
+
+Yes, with one addition: This doesn't only apply to checklist items in spec.md but also messages in the chat.
