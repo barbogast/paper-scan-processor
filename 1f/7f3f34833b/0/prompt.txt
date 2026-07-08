@@ -1,0 +1,69 @@
+Right now there is a top level Drive folder called "My Drive", occuring in the selection modal and in the badge in the file list. Is there a reason to have this folder? Or could we ommit it to save space?
+
+---
+
+<task-notification>
+<task-id>a9466b79932783e45</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a9466b79932783e45.output</output-file>
+<status>completed</status>
+<summary>Agent "Find My Drive top-level folder usage" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Investigation complete.
+
+**(a) "My Drive" label origin**
+`frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx:11`
+```ts
+const ROOT: DriveFolder = { id: 'root', name: 'My Drive' }
+```
+This constant is the sole source of the string in the frontend — it's a hardcoded root node, not fetched from Drive. It's used as the tree root (line 122-128) and its `path` (`ROOT.name`, i.e. `"My Drive"`) seeds the path string that gets propagated down through child paths (`${path} / ${child.name}`, line 89), which is why selections show as `"My Drive / Finance"` etc.
+
+**(b) Badge rendering**
+`frontend/src/components/DriveUploadMode/DriveAssignmentField.tsx:30`
+```tsx
+📁 {assignment ? assignment.path : 'Not assigned'}
+```
+The badge just prints whatever `path` string came from the picker's `onSelect` (built in `DriveFolderPickerModal.tsx:115`, `path: selected.path`). It has no independent knowledge of "My Drive" — it inherits it from the picker.
+
+**(c) Root/backend handling**
+`drive_folders.go:51-75` (`DriveListFolder`) takes a `folderID` and queries `'&lt;folderID&gt;' in parents`. `id: 'root'` is not a synthetic/local concept — it's the literal string Google Drive's API reserves as an alias for the authenticated user's actual My Drive root folder (comment at `drive_folders.go:28` confirms: `Use "root" for the Drive root`). `app.go:132-135` exposes this as `ListDriveFolder` to the frontend unchanged. So calling `ListDriveFolder('root')` returns real children of the user's actual Drive root — it is a real, functional node, not a dummy/placeholder.
+
+**(d) Assessment**
+"My Drive" is a real, live folder node (backed by Drive's `root` alias) with real children — not a purely decorative pseudo-node. It is, however, a frontend-only label choice (Drive's API never returns a folder literally named "My Drive"; Google's own web UI uses this exact label for the root, so this mirrors that convention).
+
+Removing it would have functional consequences: it's the only entry point in the picker tree for selecting the true Drive root as a destination, and the only root of the folder tree shown in the modal (`defaultExpanded` is set only on this node, `DriveFolderPickerModal.tsx:127`). Without it, there'd be no way to (1) navigate into top-level Drive folders at all, since the tree needs a root to render from, or (2) select the Drive root itself as an upload destination — there's no other affordance for that. So it should not be removed outright; at most it's a naming/label question (e.g., renaming the constant or its display text), not a "delete the node" question. If the goal is deduplicating the label between the badge and picker, note they already share the same source of truth (the badge just echoes `assignment.path`, which originates in the picker's `ROOT.name`), so no redundant hardcoding exists between those two — only the single `ROOT` constant defines it.</result>
+<usage><subagent_tokens>25527</subagent_tokens><tool_uses>6</tool_uses><duration_ms>33141</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a726f187ccc8be674</task-id>
+<tool-use-id>toolu_01KyiQH3ot8KsT9sEG5Qw63c</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a726f187ccc8be674.output</output-file>
+<status>completed</status>
+<summary>Agent "Find other usages of assignment.path" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Findings (all within `frontend/src/components/DriveUploadMode` unless noted):
+
+- **useDriveAssignments.ts:4** — defines `DriveAssignment.path`.
+- **useDriveAssignments.ts:8** — `PickerTarget` file variant carries a filesystem `path` (unrelated field, same name, don't conflate).
+- **DriveFolderPickerModal.tsx:115** — produces the assignment: `onSelect({ driveFolderId: selected.id, path: selected.path })`.
+- **DriveFolderPickerModal.test.tsx:71** — asserts the above shape, `path: 'My Drive / Finance'`.
+- **index.tsx:30** — `pickerTarget.path` is the *file* picker-target path (filesystem), not `DriveAssignment.path` — not a consumer of the Drive path.
+- **DriveAssignmentField.tsx:30** — displays it: `assignment ? assignment.path : 'Not assigned'`.
+- **GroupNode.tsx:16, FileList.tsx:11** — pass `DriveAssignment | null` through as `inheritedAssignment` (typed pass-through, no direct `.path` read).
+
+No other reads of `assignment.path` exist anywhere in `frontend/src` — GroupNode/FileList only forward the whole object to `DriveAssignmentField`.
+
+Go backend: grepped `drive_upload.go`/`drive_folders.go` for `Path`/`FolderPath`/`driveFolderId` — only `driveFolderID string` (the ID) is passed to `DriveUploadFile` (drive_upload.go:15); no folder-path string is sent to or used by Go at all. The human-readable `path` is purely a frontend display string, never transmitted to the backend.</result>
+<usage><subagent_tokens>22859</subagent_tokens><tool_uses>5</tool_uses><duration_ms>21818</duration_ms></usage>
+</task-notification>
+
+---
+
+yes
+
+---
+
+How about all paths start with "/", and if the root is selected, just "/" is displayed?
