@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "09a2bc22f550",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/FileList.tsx",
+    "frontend/src/components/DriveUploadMode/index.test.tsx",
+    "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/DriveUploadMode/useFileTree.ts",
+    "spec.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/09/a2bc22f550/0/metadata.json",
+      "transcript": "/09/a2bc22f550/0/full.jsonl",
+      "content_hash": "/09/a2bc22f550/0/content_hash.txt",
+      "prompt": "/09/a2bc22f550/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5597,
+    "cache_creation_tokens": 96478,
+    "cache_read_tokens": 8503586,
+    "output_tokens": 39027,
+    "api_call_count": 116
+  }
+}

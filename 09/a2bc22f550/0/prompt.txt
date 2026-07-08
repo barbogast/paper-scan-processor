@@ -1,0 +1,37 @@
+Show the ".pdf" file ending in the FileList
+
+---
+
+Why does the backend strip the ending?
+
+---
+
+But doesn't it then make sense to leave the extension in in the backend?
+
+---
+
+yes
+
+---
+
+commit
+
+---
+
+Now I'm wondering: What if the user has non-pdf files in the folder that's being processed for Drive upload? Scans could be stored as image files, or something else entirely. And he might want to upload those as well. Therefore, isn't it risky to only show PDF files?
+
+---
+
+Yeah. The preview can just be omitted for non-PDF files (at least for now), and the impact of actually loosing data is way too high.
+
+---
+
+yes
+
+---
+
+commit before step 2
+
+---
+
+yes
