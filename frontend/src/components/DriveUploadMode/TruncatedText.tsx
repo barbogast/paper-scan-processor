@@ -1,5 +1,6 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Text, TextProps, Tooltip } from '@mantine/core'
+import { useIsTruncated } from '../../lib/useIsTruncated'
 
 interface Props extends Omit<TextProps, 'children' | 'truncate'> {
   children: React.ReactNode
@@ -12,13 +13,7 @@ interface Props extends Omit<TextProps, 'children' | 'truncate'> {
 // prefix (e.g. an icon) that shouldn't appear in the tooltip.
 export default function TruncatedText({ children, label, ...textProps }: Props) {
   const ref = useRef<HTMLParagraphElement>(null)
-  const [truncated, setTruncated] = useState(false)
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    setTruncated(el.scrollWidth > el.clientWidth)
-  }, [label])
+  const truncated = useIsTruncated(ref, label)
 
   const text = (
     <Text ref={ref} truncate="end" {...textProps}>

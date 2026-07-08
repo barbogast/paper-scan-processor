@@ -1,5 +1,6 @@
-import { useRef, useLayoutEffect, useState } from 'react'
+import { useRef } from 'react'
 import { Tooltip } from '@mantine/core'
+import { useIsTruncated } from '../lib/useIsTruncated'
 
 interface Props {
   path: string | null
@@ -11,16 +12,7 @@ interface Props {
 // Uses scrollLeft (rather than direction:rtl) to avoid Unicode BiDi issues with the leading slash.
 export default function ClippedPath({ path, onClick, placeholder = 'Choose folder…' }: Props) {
   const ref = useRef<HTMLButtonElement>(null)
-  const [clipped, setClipped] = useState(false)
-
-  // Runs before paint to avoid a flash of the unscrolled (left-anchored) path.
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const overflows = el.scrollWidth > el.clientWidth
-    setClipped(overflows)
-    if (overflows) el.scrollLeft = el.scrollWidth
-  }, [path])
+  const clipped = useIsTruncated(ref, path, { scrollToEnd: true })
 
   const inner = (
     <div style={{ position: 'relative' }}>

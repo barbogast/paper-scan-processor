@@ -1,6 +1,7 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Badge, Box, Tooltip } from '@mantine/core'
 import { DriveAssignment } from './useDriveAssignments'
+import { useIsTruncated } from '../../lib/useIsTruncated'
 
 interface Props {
   label: string
@@ -15,16 +16,8 @@ interface Props {
 // depth - scannable as a column rather than a per-row detail.
 export default function DriveAssignmentField({ label, assignment, isOwn, onPick, onClear }: Props) {
   const textRef = useRef<HTMLSpanElement>(null)
-  const [truncated, setTruncated] = useState(false)
   const displayPath = assignment ? assignment.path : 'Not assigned'
-
-  // Same truncation-detection technique as TruncatedText.tsx / ClippedPath.tsx,
-  // adapted here since the text lives inside a Badge's label rather than a Text.
-  useLayoutEffect(() => {
-    const el = textRef.current
-    if (!el) return
-    setTruncated(el.scrollWidth > el.clientWidth)
-  }, [displayPath])
+  const truncated = useIsTruncated(textRef, displayPath)
 
   const badge = (
     <Badge
