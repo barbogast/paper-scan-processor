@@ -1,0 +1,21 @@
+now address the duplication
+
+---
+
+is useResizableWidth really a hook?
+
+---
+
+commit
+
+---
+
+In future, I'd like to see the commit message before you commit
+
+---
+
+Would it make sense to not only share the makeResizeDragHandler() function but the whole ResizablePanel component? Or are the panels different enough that sharing the code would introduce too many configuration props?
+
+---
+
+No. Adress the next review finding instead
