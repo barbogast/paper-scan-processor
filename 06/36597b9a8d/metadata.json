@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0636597b9a8d",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "frontend/src/lib/resizableWidth.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/06/36597b9a8d/0/metadata.json",
+      "transcript": "/06/36597b9a8d/0/full.jsonl",
+      "content_hash": "/06/36597b9a8d/0/content_hash.txt",
+      "prompt": "/06/36597b9a8d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 143,
+    "cache_creation_tokens": 2785,
+    "cache_read_tokens": 1048710,
+    "output_tokens": 1838,
+    "api_call_count": 7
+  }
+}
