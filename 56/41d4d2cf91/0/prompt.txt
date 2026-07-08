@@ -23,3 +23,7 @@ Now I'd like the badges to start on the same vertical lin
 ---
 
 Do step 5: PDF preview
+
+---
+
+yes
