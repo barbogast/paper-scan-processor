@@ -57,15 +57,15 @@ describe('DriveUploadMode assignment fields', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Select "Finance"' }))
 
     expect(textOf(await screen.findByRole('button', { name: 'Set Drive folder for invoices' })))
-      .toContain('My Drive / Finance')
+      .toContain('/Finance')
     expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' })))
-      .toContain('My Drive / Finance')
+      .toContain('/Finance')
 
     fireEvent.click(screen.getByRole('button', { name: 'Set Drive folder for a' }))
     fireEvent.click(await screen.findByRole('button', { name: '📁 Finance' }))
     fireEvent.click(screen.getByRole('button', { name: 'Select "Finance"' }))
 
-    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('My Drive / Finance')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('/Finance')
     expect(screen.getByRole('button', { name: 'Clear Drive folder for a' })).toBeTruthy()
   })
 
@@ -75,7 +75,7 @@ describe('DriveUploadMode assignment fields', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Set Drive folder for invoices' }))
     fireEvent.click(await screen.findByRole('button', { name: '📁 Finance' }))
     fireEvent.click(screen.getByRole('button', { name: 'Select "Finance"' }))
-    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('My Drive / Finance')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('/Finance')
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear Drive folder for invoices' }))
 

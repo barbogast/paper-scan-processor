@@ -68,7 +68,7 @@ describe('DriveFolderPickerModal', () => {
     const selectButton = screen.getByRole('button', { name: 'Select "Finance"' })
     fireEvent.click(selectButton)
 
-    expect(onSelect).toHaveBeenCalledWith({ driveFolderId: 'f1', path: 'My Drive / Finance' })
+    expect(onSelect).toHaveBeenCalledWith({ driveFolderId: 'f1', path: '/Finance' })
     expect(onClose).toHaveBeenCalled()
   })
 
@@ -87,6 +87,6 @@ describe('DriveFolderPickerModal', () => {
     setup()
 
     expect(await screen.findByText(/boom/)).toBeTruthy()
-    expect(screen.getByText(/My Drive/)).toBeTruthy()
+    expect(screen.getByText('📁 /')).toBeTruthy()
   })
 })

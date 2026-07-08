@@ -8,7 +8,7 @@ interface DriveFolder {
   name: string
 }
 
-const ROOT: DriveFolder = { id: 'root', name: 'My Drive' }
+const ROOT: DriveFolder = { id: 'root', name: '/' }
 const INDENT_PER_LEVEL = 16
 
 interface DriveTreeNodeProps {
@@ -86,7 +86,7 @@ function DriveTreeNode({ item, path, selectedId, onSelect, defaultExpanded }: Dr
                 <DriveTreeNode
                   key={child.id}
                   item={child}
-                  path={`${path} / ${child.name}`}
+                  path={path.endsWith('/') ? `${path}${child.name}` : `${path}/${child.name}`}
                   selectedId={selectedId}
                   onSelect={onSelect}
                 />
