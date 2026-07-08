@@ -6,8 +6,11 @@ import GroupNode from './GroupNode'
 import FileList from './FileList'
 import { useFileTree } from './useFileTree'
 import { useDriveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
+import { DRAG_HANDLE_WIDTH } from '../../constants'
 
-const LEFT_PANEL_WIDTH = 300
+const DEFAULT_LEFT_PANEL_WIDTH = 300
+const MIN_LEFT_PANEL_WIDTH = 180
+const MAX_LEFT_PANEL_WIDTH = 600
 
 export default function DriveUploadMode() {
   const { root, tree, loading, error, pickRoot } = useFileTree()
@@ -32,15 +35,30 @@ export default function DriveUploadMode() {
     setPickerTarget(null)
   }
 
+  const [leftWidth, setLeftWidth] = useState(DEFAULT_LEFT_PANEL_WIDTH)
+  const startDrag = (e: React.MouseEvent) => {
+    const startX = e.clientX
+    const startWidth = leftWidth
+    const clamp = (w: number) => Math.max(MIN_LEFT_PANEL_WIDTH, Math.min(MAX_LEFT_PANEL_WIDTH, w))
+    const onMove = (ev: MouseEvent) => setLeftWidth(clamp(startWidth + ev.clientX - startX))
+    const onUp = (ev: MouseEvent) => {
+      setLeftWidth(clamp(startWidth + ev.clientX - startX))
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    e.preventDefault()
+  }
+
   return (
     <Box style={{ display: 'flex', height: '100%' }}>
       <Box
         style={{
-          width: LEFT_PANEL_WIDTH,
+          width: leftWidth,
           flexShrink: 0,
           height: '100%',
           overflowY: 'auto',
-          borderRight: '1px solid var(--mantine-color-gray-3)',
           padding: 12,
         }}
       >
@@ -81,6 +99,17 @@ export default function DriveUploadMode() {
           </Stack>
         )}
       </Box>
+
+      <Box
+        onMouseDown={startDrag}
+        style={{
+          width: DRAG_HANDLE_WIDTH,
+          height: '100%',
+          cursor: 'col-resize',
+          flexShrink: 0,
+          background: 'var(--mantine-color-gray-3)',
+        }}
+      />
 
       <Box
         style={{
