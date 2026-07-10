@@ -1,0 +1,9 @@
+The error message appear everytime I try to get the Drive listing, so lets fix it now.
+
+---
+
+I don't get the comment "A refresh may have replaced ...". What's a "refresh"
+
+---
+
+Yes. Also, couldn't you compare `fresh` with `token` to decide whether to persist? That would be more explicit, right?
