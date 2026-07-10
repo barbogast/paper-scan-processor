@@ -1,0 +1,5 @@
+make a summary of what I worked on today. be somewhat brief
+
+---
+
+After leaving the programm open for a day or two I'm getting the following error message when querying the Drive content: "oauth2: "invalid_grant" "Token has been expired or revoked." Add a checklist item to debug and fix this error.
