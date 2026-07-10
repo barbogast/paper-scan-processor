@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -17,6 +18,12 @@ import (
 
 const driveOAuthPort = "8765"
 const driveOAuthCallbackPath = "/oauth/callback"
+
+// driveClientMu serializes driveClient calls. Without it, two concurrent
+// callers needing a token refresh or a fresh OAuth flow would each try to
+// bind driveOAuthPort for the callback server, and the loser would fail with
+// "address already in use" even though the winner's call succeeds.
+var driveClientMu sync.Mutex
 
 // driveConfigDir returns (and creates) ~/Library/Application Support/paper-scan-processor.
 func driveConfigDir() (string, error) {
@@ -53,6 +60,9 @@ func driveOAuthConfig() (*oauth2.Config, error) {
 // revoked, it opens the system default browser to perform the OAuth flow and
 // saves the resulting token for reuse in future sessions.
 func driveClient(ctx context.Context) (*http.Client, error) {
+	driveClientMu.Lock()
+	defer driveClientMu.Unlock()
+
 	cfg, err := driveOAuthConfig()
 	if err != nil {
 		return nil, err
