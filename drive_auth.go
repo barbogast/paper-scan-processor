@@ -80,12 +80,15 @@ func driveClient(ctx context.Context) (*http.Client, error) {
 	return driveClientWithConfig(ctx, cfg, filepath.Join(dir, "drive_token.json"), driveRunOAuthFlow)
 }
 
+// reauthFunc performs a full OAuth flow, returning a fresh token pair.
+// driveRunOAuthFlow is the production implementation; tests substitute a stub.
+type reauthFunc func(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, error)
+
 // driveClientWithConfig holds driveClient's refresh/reauth decision logic,
 // parameterized over cfg, tokenPath, and the reauth function so tests can
 // supply a fake token endpoint (via cfg.Endpoint.TokenURL) and a stubbed
 // reauth instead of hitting Google or opening a real browser.
-func driveClientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath string,
-	reauth func(context.Context, *oauth2.Config) (*oauth2.Token, error)) (*http.Client, error) {
+func driveClientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath string, reauth reauthFunc) (*http.Client, error) {
 	// storedToken bundles both the short-lived access token and the
 	// long-lived refresh token last persisted to disk.
 	if storedToken, err := driveLoadToken(tokenPath); err == nil {
@@ -122,6 +125,8 @@ func driveClientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath st
 	}
 	return cfg.Client(ctx, newToken), nil
 }
+
+var _ reauthFunc = driveRunOAuthFlow // driveRunOAuthFlow must match reauthFunc's signature
 
 func driveRunOAuthFlow(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, error) {
 	codeCh := make(chan string, 1)
