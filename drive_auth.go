@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -48,8 +49,9 @@ func driveOAuthConfig() (*oauth2.Config, error) {
 }
 
 // driveClient returns an authenticated HTTP client for the Google Drive API.
-// On first call it opens the system default browser to perform the OAuth flow
-// and saves the resulting token for reuse in future sessions.
+// On first call, or whenever the stored refresh token has expired or been
+// revoked, it opens the system default browser to perform the OAuth flow and
+// saves the resulting token for reuse in future sessions.
 func driveClient(ctx context.Context) (*http.Client, error) {
 	cfg, err := driveOAuthConfig()
 	if err != nil {
@@ -63,7 +65,25 @@ func driveClient(ctx context.Context) (*http.Client, error) {
 	tokenPath := filepath.Join(dir, "drive_token.json")
 
 	if token, err := driveLoadToken(tokenPath); err == nil {
-		return cfg.Client(ctx, token), nil
+		src := cfg.TokenSource(ctx, token)
+		fresh, err := src.Token()
+		if err == nil {
+			if fresh.AccessToken != token.AccessToken {
+				// The access token on disk had expired, so Token() used the
+				// refresh token to obtain a new one from Google. Persist it
+				// so future calls reuse it instead of refreshing again.
+				if err := driveSaveToken(tokenPath, fresh); err != nil {
+					return nil, fmt.Errorf("save refreshed token: %w", err)
+				}
+			}
+			return oauth2.NewClient(ctx, oauth2.StaticTokenSource(fresh)), nil
+		}
+		var retrieveErr *oauth2.RetrieveError
+		if !errors.As(err, &retrieveErr) || retrieveErr.ErrorCode != "invalid_grant" {
+			return nil, fmt.Errorf("refresh token: %w", err)
+		}
+		// Refresh token is dead (expired or revoked) — fall through to
+		// re-authenticate from scratch.
 	}
 
 	token, err := driveRunOAuthFlow(ctx, cfg)
