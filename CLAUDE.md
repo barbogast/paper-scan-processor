@@ -17,3 +17,4 @@ Don't run `wails dev`/`wails build` or try to screenshot the app — the user te
 - Before implementing any non-trivial request — whether from a `spec.md` checklist item or an ad-hoc chat message — flag if it looks like it'll produce a large/churned diff, and propose splitting it into smaller reviewable steps before writing code.
 - Point out unrelated cleanups rather than folding them into feature commits; commit them separately.
 - Never `git commit` without an explicit go-ahead in the same turn — an earlier approval doesn't carry forward.
+- In commit messages, only include a body paragraph if it says something not already obvious from the diff itself, or the diff is non-trivial. Don't restate what the changed lines already show.
