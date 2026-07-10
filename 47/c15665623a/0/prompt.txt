@@ -1,0 +1,13 @@
+Okay, back to the backend / auth flow: The auth flow already contains several cases: invalid access token, invalid refresh token, valid access token. And various error paths (some of which are uninteresting, like if a file couldn't be written). How could those cases be tested automatically? Or at least semi-automatically?
+
+---
+
+yes
+
+---
+
+yes
+
+---
+
+Does that mean Go has no proper way of mocking functions?
