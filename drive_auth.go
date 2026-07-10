@@ -64,36 +64,41 @@ func driveClient(ctx context.Context) (*http.Client, error) {
 	}
 	tokenPath := filepath.Join(dir, "drive_token.json")
 
-	if token, err := driveLoadToken(tokenPath); err == nil {
-		src := cfg.TokenSource(ctx, token)
-		fresh, err := src.Token()
+	// storedToken bundles both the short-lived access token and the
+	// long-lived refresh token last persisted to disk.
+	if storedToken, err := driveLoadToken(tokenPath); err == nil {
+		src := cfg.TokenSource(ctx, storedToken)
+		refreshedToken, err := src.Token()
 		if err == nil {
-			if fresh.AccessToken != token.AccessToken {
-				// The access token on disk had expired, so Token() used the
-				// refresh token to obtain a new one from Google. Persist it
-				// so future calls reuse it instead of refreshing again.
-				if err := driveSaveToken(tokenPath, fresh); err != nil {
+			if refreshedToken.AccessToken != storedToken.AccessToken {
+				// storedToken.AccessToken had expired, so Token() used
+				// storedToken.RefreshToken to obtain a new access token from
+				// Google. Persist the pair so future calls reuse it instead
+				// of refreshing again.
+				if err := driveSaveToken(tokenPath, refreshedToken); err != nil {
 					return nil, fmt.Errorf("save refreshed token: %w", err)
 				}
 			}
-			return oauth2.NewClient(ctx, oauth2.StaticTokenSource(fresh)), nil
+			return oauth2.NewClient(ctx, oauth2.StaticTokenSource(refreshedToken)), nil
 		}
 		var retrieveErr *oauth2.RetrieveError
 		if !errors.As(err, &retrieveErr) || retrieveErr.ErrorCode != "invalid_grant" {
 			return nil, fmt.Errorf("refresh token: %w", err)
 		}
-		// Refresh token is dead (expired or revoked) — fall through to
-		// re-authenticate from scratch.
+		// storedToken.RefreshToken is dead (expired or revoked) — fall
+		// through to re-authenticate from scratch.
 	}
 
-	token, err := driveRunOAuthFlow(ctx, cfg)
+	// newToken is a freshly issued access token/refresh token pair from a
+	// full browser-based OAuth exchange.
+	newToken, err := driveRunOAuthFlow(ctx, cfg)
 	if err != nil {
 		return nil, err
 	}
-	if err := driveSaveToken(tokenPath, token); err != nil {
+	if err := driveSaveToken(tokenPath, newToken); err != nil {
 		return nil, fmt.Errorf("save token: %w", err)
 	}
-	return cfg.Client(ctx, token), nil
+	return cfg.Client(ctx, newToken), nil
 }
 
 func driveRunOAuthFlow(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, error) {
