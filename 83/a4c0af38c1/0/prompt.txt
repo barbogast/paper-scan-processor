@@ -1,0 +1,13 @@
+I guess you've got a sense which preferences should be memories and which should go to claude.md. Whenever you record a memory that you think belongs to claude.md, suggest to move it to claude.md.
+
+---
+
+Do as suggested
+
+---
+
+I feel like some of those shouldn't be in claude.md, because they are just personal preferences / workflows, rather than project-wide rules. Or rather, they are about _how_ code should go into the repo (which is personal), rather than _what_ should go into the repo (which is project-wide). Do you agree?
+
+---
+
+I agree, it's bordeline. To be pragmatic, let's move it to claude.md, since most devs will face this issue.
