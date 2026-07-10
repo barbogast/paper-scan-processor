@@ -1,0 +1,1 @@
+Concerning the second paragraph (not the top-most line) of commit messages: you sometimes repeat content that is trivially appearent from the diff. Dont' do that. Only write a second paragraph if the info is not apparent from the diff, or the diff is non-trivial. Write this into claude.md
