@@ -313,6 +313,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
   - [ ] in MergeMode navigation is implemented in index.ts, in SplitMode it's implemented in ThumbnailPanel.tsx. That's inconsistent
   - [ ] Change going to previous / next page to up / down arrows
   - [ ] Make MergeMode previous / next action to follow the order of the target PDF; meaning to go back and forth between file A and B
+- [ ] Prevent buttons that trigger an async action (Merge & Save, Split & Export, Drive folder assignment/browsing, Drive upload, root folder pickers, etc.) from being pressed again while the previous invocation from that same button is still in flight; also generalize error handling for those async actions instead of each call site catching (or failing to catch) errors ad hoc
 
 
 ## Code review findings
