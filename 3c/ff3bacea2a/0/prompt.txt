@@ -1,0 +1,21 @@
+How come you constanctly stumble upon apostrophes when committing? Can't you properly escape the commit message so that you can use apostrophes?
+
+---
+
+Can you also show me the commit message before you actually commit? Then yes.
+
+---
+
+Is there a better way for you to do commits? One that doesn't require you to use `git status` and `git add`?
+
+---
+
+yes
+
+---
+
+Add a new checklist item: Prevent the user from pressing buttons which trigger async actions while a previous action is still running
+
+---
+
+Add a new checklist item: Prevent the user from pressing buttons which trigger async function while the function from a previous click is still running. Also, generalize catching errors from those async functions.
