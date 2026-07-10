@@ -1,0 +1,5 @@
+Is there a way in Go to write a type which is used for the reauth-parameter _and_ the reauth function? Right now it's not clear that driveRunOAuthFlow is supposed to be passed as reauth.
+
+---
+
+yes
