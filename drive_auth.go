@@ -25,6 +25,11 @@ const driveOAuthCallbackPath = "/oauth/callback"
 // "address already in use" even though the winner's call succeeds.
 var driveClientMu sync.Mutex
 
+// openBrowser launches url in the system default browser. Overridden in
+// tests to simulate the user completing the consent flow, instead of
+// actually opening a browser.
+var openBrowser = func(url string) error { return exec.Command("open", url).Run() }
+
 // driveConfigDir returns (and creates) ~/Library/Application Support/paper-scan-processor.
 func driveConfigDir() (string, error) {
 	base, err := os.UserConfigDir()
@@ -72,8 +77,15 @@ func driveClient(ctx context.Context) (*http.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	tokenPath := filepath.Join(dir, "drive_token.json")
+	return driveClientWithConfig(ctx, cfg, filepath.Join(dir, "drive_token.json"), driveRunOAuthFlow)
+}
 
+// driveClientWithConfig holds driveClient's refresh/reauth decision logic,
+// parameterized over cfg, tokenPath, and the reauth function so tests can
+// supply a fake token endpoint (via cfg.Endpoint.TokenURL) and a stubbed
+// reauth instead of hitting Google or opening a real browser.
+func driveClientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath string,
+	reauth func(context.Context, *oauth2.Config) (*oauth2.Token, error)) (*http.Client, error) {
 	// storedToken bundles both the short-lived access token and the
 	// long-lived refresh token last persisted to disk.
 	if storedToken, err := driveLoadToken(tokenPath); err == nil {
@@ -101,7 +113,7 @@ func driveClient(ctx context.Context) (*http.Client, error) {
 
 	// newToken is a freshly issued access token/refresh token pair from a
 	// full browser-based OAuth exchange.
-	newToken, err := driveRunOAuthFlow(ctx, cfg)
+	newToken, err := reauth(ctx, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +149,7 @@ func driveRunOAuthFlow(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, 
 	defer srv.Shutdown(context.Background()) //nolint:errcheck
 
 	authURL := cfg.AuthCodeURL("", oauth2.AccessTypeOffline)
-	if err := exec.Command("open", authURL).Run(); err != nil {
+	if err := openBrowser(authURL); err != nil {
 		return nil, fmt.Errorf("open browser: %w", err)
 	}
 
