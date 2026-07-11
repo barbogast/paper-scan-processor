@@ -1,4 +1,4 @@
-package main
+package filetree
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"paper-scan-processor/backend/pdf"
 )
 
-// LocalFile describes one local file discovered by scanLocalRoot. Not every
+// LocalFile describes one local file discovered by ScanLocalRoot. Not every
 // file is a PDF — non-PDF files (e.g. image scans) are included too, with
 // IsPDF false and PageCount 0.
 type LocalFile struct {
@@ -22,19 +22,19 @@ type LocalFile struct {
 
 // LocalFileGroup is one folder's worth of files, plus its nested
 // subfolders. Name is "" only for the root LocalFileGroup returned by
-// scanLocalRoot; every subgroup has a real folder name.
+// ScanLocalRoot; every subgroup has a real folder name.
 type LocalFileGroup struct {
 	Name      string           `json:"name"`
 	Files     []LocalFile      `json:"files"`
 	Subgroups []LocalFileGroup `json:"subgroups"`
 }
 
-// scanLocalRoot scans root recursively and returns it as a LocalFileGroup:
+// ScanLocalRoot scans root recursively and returns it as a LocalFileGroup:
 // its own direct files in Files, and every subdirectory (at any depth) as a
 // nested Subgroups entry. Unlike a subfolder, the root is always returned
 // even if it's entirely empty, so the UI has something to render a "no
 // files" state from.
-func scanLocalRoot(root string) (LocalFileGroup, error) {
+func ScanLocalRoot(root string) (LocalFileGroup, error) {
 	return scanDirectory(root, "")
 }
 

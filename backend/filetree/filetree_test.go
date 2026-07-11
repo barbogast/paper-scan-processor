@@ -1,4 +1,4 @@
-package main
+package filetree
 
 import (
 	"encoding/json"
@@ -19,7 +19,7 @@ func TestScanLocalRootFilesInRootAndSubfolder(t *testing.T) {
 	pdftest.WritePDF(t, filepath.Join(root, "invoices", "b.pdf"), []string{"p1"})
 	pdftest.WritePDF(t, filepath.Join(root, "invoices", "a.pdf"), []string{"p1", "p2", "p3"})
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestScanLocalRootEmptySubfolderOmitted(t *testing.T) {
 	}
 	pdftest.WritePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func TestScanLocalRootFlagsCorruptPDF(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestScanLocalRootIncludesNonPDFFilesButIgnoresDotfiles(t *testing.T) {
 	}
 	pdftest.WritePDF(t, filepath.Join(root, ".hidden", "sneaky.pdf"), []string{"p1"})
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +145,7 @@ func TestScanLocalRootRecursesMultipleLevels(t *testing.T) {
 	pdftest.WritePDF(t, filepath.Join(nested, "deep.pdf"), []string{"p1"})
 	pdftest.WritePDF(t, filepath.Join(root, "a", "shallow.pdf"), []string{"p1"})
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +181,7 @@ func TestScanLocalRootOmitsSubtreeWithNoPDFsAtAnyDepth(t *testing.T) {
 	}
 	pdftest.WritePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,7 +203,7 @@ func TestScanLocalRootDoesNotFollowSymlinkedDirectories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -222,7 +222,7 @@ func TestScanLocalRootSubfoldersSortedAlphabetically(t *testing.T) {
 		pdftest.WritePDF(t, filepath.Join(dir, "f.pdf"), []string{"p1"})
 	}
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -242,7 +242,7 @@ func TestScanLocalRootSubfoldersSortedAlphabetically(t *testing.T) {
 func TestScanLocalRootReturnsEmptyTreeForEmptyFolder(t *testing.T) {
 	root := t.TempDir()
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -264,7 +264,7 @@ func TestScanLocalRootJSONNeverUsesNullForSlices(t *testing.T) {
 	}
 	pdftest.WritePDF(t, filepath.Join(root, "childless", "doc.pdf"), []string{"p1"})
 
-	tree, err := scanLocalRoot(root)
+	tree, err := ScanLocalRoot(root)
 	if err != nil {
 		t.Fatal(err)
 	}

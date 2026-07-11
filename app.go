@@ -12,6 +12,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
+	"paper-scan-processor/backend/filetree"
 	"paper-scan-processor/backend/pdf"
 )
 
@@ -127,8 +128,8 @@ func (a *App) PickFolder(title string) (string, error) {
 // ScanLocalRoot recursively scans root and returns it as a LocalFileGroup
 // tree (nested to match the folder structure), with size and page count
 // metadata for each file.
-func (a *App) ScanLocalRoot(root string) (LocalFileGroup, error) {
-	return scanLocalRoot(root)
+func (a *App) ScanLocalRoot(root string) (filetree.LocalFileGroup, error) {
+	return filetree.ScanLocalRoot(root)
 }
 
 // ListDriveFolder returns the direct children of the Drive folder with the

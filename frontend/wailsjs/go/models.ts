@@ -1,23 +1,5 @@
-export namespace main {
+export namespace filetree {
 	
-	export class DriveItem {
-	    id: string;
-	    name: string;
-	    isFolder: boolean;
-	    size: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new DriveItem(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.name = source["name"];
-	        this.isFolder = source["isFolder"];
-	        this.size = source["size"];
-	    }
-	}
 	export class LocalFile {
 	    path: string;
 	    name: string;
@@ -73,6 +55,29 @@ export namespace main {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace main {
+	
+	export class DriveItem {
+	    id: string;
+	    name: string;
+	    isFolder: boolean;
+	    size: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new DriveItem(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.isFolder = source["isFolder"];
+	        this.size = source["size"];
+	    }
 	}
 
 }
