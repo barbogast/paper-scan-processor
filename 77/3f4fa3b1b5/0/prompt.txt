@@ -1,0 +1,57 @@
+I noticed an issue for Drive Mode: Drive mode helps the user with uploading scanned files by only needing to choose the drive folder, rather than navigating Drive in-browser and dropping the respective files. This has the downside that the user doesn't notice potential duplicates that occur when the user accidentally scans the same document twice. Can you think of a way to detect duplicates automically or help the user see them before uploading?
+
+---
+
+<task-notification>
+<task-id>a4556fd4a7a18d653</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/79cec24d-8205-413d-a2ac-27d5e8894623/tasks/a4556fd4a7a18d653.output</output-file>
+<status>completed</status>
+<summary>Agent "Find Drive Mode upload code" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Now I have the full picture. Here's the report.
+
+## Drive Mode / Drive Upload feature
+
+### 1. Backend (Go) — upload/list/auth functions
+
+- **`/Users/ben/git/paper-scan-processor/drive_auth.go`**
+  - `driveService(ctx) (*drive.Service, error)` (line 68) — returns an authenticated Drive API client; runs OAuth flow if needed. Note: re-reads/parses the token from disk on *every* call (no in-memory client cache — noted as a known issue in spec.md).
+  - `driveRunOAuthFlow` (136), `driveClientWithConfig` (96), `driveLoadToken`/`driveSaveToken` (176/186) — OAuth token lifecycle (browser-based flow, refresh, persistence to `~/Library/Application Support/paper-scan-processor/drive_token.json`).
+
+- **`/Users/ben/git/paper-scan-processor/drive_folders.go`**
+  - `DriveFindFolder(ctx, parentID, name) (string, error)` (line 18) — looks up a folder by name/parent; only fetches `id, name` fields and returns `Files[0]` unconditionally (doesn't handle duplicate-named folders).
+  - `DriveListFolder(ctx, folderID) ([]DriveItem, error)` (line 40) — lists direct children of a Drive folder. Query fields fetched: `id, name, mimeType, size` only. **No pagination** (capped at ~100 items) and **no `md5Checksum`/`modifiedTime` fetched**.
+  - `DriveItem` struct (line 9): `ID`, `Name`, `IsFolder`, `Size` (bytes).
+
+- **`/Users/ben/git/paper-scan-processor/drive_upload.go`**
+  - `DriveUploadFile(ctx, localPath, driveFolderID) (string, error)` (line 15) — uploads one local file via `svc.Files.Create(...).Media(f).Fields("id, name, size").Do()`. Uses `filepath.Base(localPath)` as the Drive filename. Returns only the created file's ID (name/size fetched from the API response but not surfaced to the caller). No hash comparison, no pre-check for existing files with the same name.
+
+- **`/Users/ben/git/paper-scan-processor/app.go`** — Wails RPC wrappers exposed to frontend: `ScanLocalRoot` (line 128, wraps `scanLocalRoot` in `filetree.go`), `ListDriveFolder` (line 135, wraps `DriveListFolder`). There is **no RPC wrapper for `DriveUploadFile` yet** and no RPC for `DriveFindFolder` — upload isn't wired to the UI at all yet (confirmed by spec.md: Step 6 "Upload queue" is unchecked).
+
+### 2. Metadata available
+
+- **Local files** (`/Users/ben/git/paper-scan-processor/filetree.go`, `LocalFile` struct, line 12): `Path`, `Name`, `SizeBytes`, `IsPDF`, `PageCount`, `Corrupt`. No content hash and no mtime/timestamp captured (`os.Stat` is called but only `.Size()` is used).
+- **Drive files** (`DriveItem`, `drive_folders.go` line 9): `ID`, `Name`, `IsFolder`, `Size`. The Drive API `Files.List` call only requests `Fields("files(id, name, mimeType, size)")` — **no `md5Checksum`, `modifiedTime`, or `createdTime`** are requested, though Drive API supports all of these natively.
+- No hash/checksum code exists anywhere in the repo (`grep` for md5/checksum returned nothing outside this investigation).
+
+### 3. Frontend flow
+
+- **`/Users/ben/git/paper-scan-processor/frontend/src/components/DriveUploadMode/index.tsx`** — top-level mode component. Root folder picked via `pickRoot()` → `useFileTree` (calls `ScanLocalRoot`); Drive folder assignment via `useDriveAssignments` + `DriveFolderPickerModal` (opens `ListDriveFolder`-backed tree browser). Currently **there is no Upload button / confirm-upload action** — the UI stops at assignment; upload queue (Step 6) and conflict detection (Step 9) are unimplemented per spec.md's checklist.
+- Supporting components: `GroupNode.tsx`/`FileList.tsx` (render tree + per-item Drive assignment), `DriveAssignmentField.tsx`, `DriveFolderPickerModal.tsx`, `useDriveAssignments.ts` (assignment/inheritance logic), `useFileTree.ts` (local scan state, `LocalFile`/`LocalFileGroup` types).
+
+### 4. spec.md notes on duplicate detection
+
+`/Users/ben/git/paper-scan-processor/spec.md` line 176: "the app checks each Drive destination for filename conflicts. If any are found, conflicting files are flagged and the upload is aborted until resolved." Roadmap line 296: `[ ] Step 9: Conflict detection — check Drive for filename conflicts before uploading; flag conflicting files`. This is **filename-only** — no mention of content-hash/checksum-based duplicate detection anywhere in spec. Line 367 also flags that there's no reusable "resolved Drive destination" helper yet, which both the upload queue (Step 6) and conflict detection (Step 9) will need.
+
+**Summary — what's available vs. needs fetching for duplicate detection:** filename comparison is nearly free (Drive already returns `name` in `DriveListFolder`); size comparison is also already available on both sides (`LocalFile.SizeBytes` and `DriveItem.Size`). Content-hash comparison would require adding `md5Checksum` to the `Fields(...)` request in `DriveListFolder` (drive_folders.go:48) and computing a local MD5/hash of each file before/at upload time (not currently done anywhere) — a moderate addition, not a large one, since the Drive API already computes and exposes `md5Checksum` per file for free.</result>
+<usage><subagent_tokens>29617</subagent_tokens><tool_uses>16</tool_uses><duration_ms>45803</duration_ms></usage>
+</task-notification>
+
+---
+
+I don't like it: I'm neither interested in same-name-different-hash nor in same-hash-different-name. I'm concerned about similar-name-different-hash, so there is no simple heuristic to detect this. I was rather thinking that the user has to check this manually by having a quick look at the files already existing in Drive.
+
+---
+
+can you sketch out the UI? I don't see where the existing files would fit.
