@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "58f0f0159991",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "drive_auth.go",
+    "drive_auth_test.go",
+    "drive_folders.go",
+    "spec.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/58/f0f0159991/0/metadata.json",
+      "transcript": "/58/f0f0159991/0/full.jsonl",
+      "content_hash": "/58/f0f0159991/0/content_hash.txt",
+      "prompt": "/58/f0f0159991/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 439,
+    "cache_creation_tokens": 19237,
+    "cache_read_tokens": 6532680,
+    "output_tokens": 11706,
+    "api_call_count": 26
+  }
+}
