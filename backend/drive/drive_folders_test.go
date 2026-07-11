@@ -1,4 +1,4 @@
-package main
+package drive
 
 // Run: go test -v -run TestDriveListFolders -timeout 120s
 

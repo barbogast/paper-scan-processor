@@ -1,4 +1,4 @@
-package main
+package drive
 
 // Run: go test -v -run TestDriveUploadFile -timeout 120s
 
