@@ -1,0 +1,25 @@
+Now let's write the tests
+
+---
+
+What's the reason to stub openBrowser whereas pass reauth as an argument?
+
+---
+
+No. After committing the new tests, remind me that I wanted to have a look at the driveClient and the driveService functions: I suspect that they should be merged. Also, driveService should probably be moved to drive_auth.go.
+
+---
+
+what's the reason to use atomic.Bool in the tests?
+
+---
+
+Is there a way to see the issue of the separate goroutines just by reading the code? Or do I just have to _know_ it?
+
+---
+
+Change the reauthCalled variable to a plain bool to make it explicit that it is no necessary here. Also, is a comment necessary explaining why tokenEndpointHit is atomic.Bool, or is this kind of knowledge expected from a Go developer?
+
+---
+
+TestDriveClientWithConfigValidTokenSkipsRefresh detection of whether reauth was called is done with a variable, whereas in TestDriveClientWithConfigRefreshesExpiredToken the reauth stub just returns an error. What's the reason for this difference?
