@@ -1,0 +1,9 @@
+Is there a way to move the *.go files (besides app.go) to a subfolder?
+
+---
+
+Is 'internal' the right name? Not sure what "internal" means in this context. How about 'backend' similar to 'frontend'? Or is 'internal' a wails standard?
+
+---
+
+yes

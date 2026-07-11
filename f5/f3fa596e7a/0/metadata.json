@@ -1,0 +1,57 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f5f3fa596e7a",
+  "session_id": "70f9d2ee-b9af-46a1-9c73-19083476aaed",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-11T11:53:59.791915Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "backend/pdf/pdf.go",
+    "backend/pdftest/pdftest.go",
+    "backend/pdf/pdf_test.go",
+    "app.go",
+    "filetree.go",
+    "app_test.go",
+    "filetree_test.go"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "6b182c818d4a",
+  "checkpoint_transcript_start": 88,
+  "transcript_lines_at_start": 88,
+  "token_usage": {
+    "input_tokens": 854,
+    "cache_creation_tokens": 85493,
+    "cache_read_tokens": 4769233,
+    "output_tokens": 36938,
+    "api_call_count": 40
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-11T11:53:59.775802Z",
+    "agent_lines": 790,
+    "agent_removed": 42,
+    "human_added": 8,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 798,
+    "total_lines_changed": 1569,
+    "agent_percentage": 53.02740599107712,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 22,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 22
+      }
+    }
+  ]
+}
