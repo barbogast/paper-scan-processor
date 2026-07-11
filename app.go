@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+
+	"paper-scan-processor/backend/pdf"
 )
 
 // App struct
@@ -43,7 +45,7 @@ func (a *App) OpenPDF() (string, error) {
 
 // PageCount returns the number of pages in the PDF at path.
 func (a *App) PageCount(path string) (int, error) {
-	return pdfPageCount(path)
+	return pdf.PageCount(path)
 }
 
 // RenderPage renders a single page of the PDF at path as a PNG and returns it
@@ -111,7 +113,7 @@ func (a *App) DeleteFile(path string) error {
 
 // MergePDFs interleaves pages from pathA and pathB and writes the result to outPath.
 func (a *App) MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) error {
-	return mergePDFs(pathA, pathB, outPath, firstPageInA, reverseB, skipA, skipB, rotationsA, rotationsB)
+	return pdf.MergePDFs(pathA, pathB, outPath, firstPageInA, reverseB, skipA, skipB, rotationsA, rotationsB)
 }
 
 // PickFolder shows a folder-select dialog with the given title and returns
@@ -136,15 +138,8 @@ func (a *App) ListDriveFolder(folderID string) ([]DriveItem, error) {
 	return DriveListFolder(a.ctx, folderID)
 }
 
-// OutputFileSpec describes one output file for ExportSplit.
-type OutputFileSpec struct {
-	Pages  []int  `json:"pages"`  // ordered 1-indexed original page numbers (skip already filtered by caller)
-	Name   string `json:"name"`   // filename without extension; falls back to "output-N" if empty
-	OutDir string `json:"outDir"` // destination directory
-}
-
-// outputFileDest returns the destination path for the i-th OutputFileSpec.
-func outputFileDest(files []OutputFileSpec, i int) string {
+// outputFileDest returns the destination path for the i-th pdf.OutputFileSpec.
+func outputFileDest(files []pdf.OutputFileSpec, i int) string {
 	name := strings.TrimSpace(files[i].Name)
 	if name == "" {
 		name = fmt.Sprintf("output-%d", i+1)
@@ -156,7 +151,7 @@ func outputFileDest(files []OutputFileSpec, i int) string {
 }
 
 // CheckConflicts returns the destination paths that already exist on disk.
-func (a *App) CheckConflicts(files []OutputFileSpec) ([]string, error) {
+func (a *App) CheckConflicts(files []pdf.OutputFileSpec) ([]string, error) {
 	conflicts := []string{}
 	for i := range files {
 		dest := outputFileDest(files, i)
@@ -172,20 +167,20 @@ func (a *App) CheckConflicts(files []OutputFileSpec) ([]string, error) {
 // Each file's Pages lists the original (1-indexed) page numbers in display
 // order; skip filtering and reordering have already been applied by the caller.
 // rotations maps 1-indexed page numbers to clockwise degrees (90, 180, 270).
-func (a *App) ExportSplit(inPath string, files []OutputFileSpec, rotations map[int]int) error {
+func (a *App) ExportSplit(inPath string, files []pdf.OutputFileSpec, rotations map[int]int) error {
 	tmpDir, err := os.MkdirTemp("", "psp-split-*")
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(tmpDir)
 
-	paths, err := splitPDF(inPath, files, rotations, tmpDir)
+	paths, err := pdf.SplitPDF(inPath, files, rotations, tmpDir)
 	if err != nil {
 		return err
 	}
 
 	for i, src := range paths {
-		if err := copyFile(src, outputFileDest(files, i)); err != nil {
+		if err := pdf.CopyFile(src, outputFileDest(files, i)); err != nil {
 			return err
 		}
 	}

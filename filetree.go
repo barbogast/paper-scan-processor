@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"paper-scan-processor/backend/pdf"
 )
 
 // LocalFile describes one local file discovered by scanLocalRoot. Not every
@@ -87,7 +89,7 @@ func scanDirectory(dir, name string) (LocalFileGroup, error) {
 		var count int
 		var corrupt bool
 		if isPDF {
-			count, err = pdfPageCount(path)
+			count, err = pdf.PageCount(path)
 			corrupt = err != nil
 		}
 		files = append(files, LocalFile{

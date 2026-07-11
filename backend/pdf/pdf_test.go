@@ -1,99 +1,15 @@
-package main
+package pdf
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 	"testing"
 
 	"github.com/pdfcpu/pdfcpu/pkg/api"
+	"paper-scan-processor/backend/pdftest"
 )
-
-// minimalPDF returns the bytes of a valid minimal PDF where each page has an
-// uncompressed content stream containing a comment with the given label.
-// Labels appear literally in the raw bytes and survive pdfcpu merge/split.
-func minimalPDF(labels []string) []byte {
-	pageCount := len(labels)
-	var buf bytes.Buffer
-	// Objects: 1=Catalog, 2=Pages, then per page: (page obj, content obj)
-	numObjs := 2 + 2*pageCount
-	offsets := make([]int, numObjs)
-
-	w := func(s string) { buf.WriteString(s) }
-	wf := func(format string, args ...any) { fmt.Fprintf(&buf, format, args...) }
-	startObj := func(n int) {
-		offsets[n-1] = buf.Len()
-		wf("%d 0 obj\n", n)
-	}
-	endObj := func() { w("endobj\n") }
-
-	w("%PDF-1.4\n")
-
-	startObj(1)
-	w("<< /Type /Catalog /Pages 2 0 R >>\n")
-	endObj()
-
-	// Page objects are at 3, 5, 7, ... (odd); content streams at 4, 6, 8, ... (even)
-	var kids strings.Builder
-	for i := range pageCount {
-		if i > 0 {
-			kids.WriteByte(' ')
-		}
-		fmt.Fprintf(&kids, "%d 0 R", 3+i*2)
-	}
-	startObj(2)
-	wf("<< /Type /Pages /Kids [%s] /Count %d >>\n", kids.String(), pageCount)
-	endObj()
-
-	for i, label := range labels {
-		pageObjN := 3 + i*2
-		contObjN := 4 + i*2
-		stream := fmt.Sprintf("%% %s\n", label) // PDF comment; appears literally in raw bytes
-
-		startObj(pageObjN)
-		wf("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents %d 0 R >>\n", contObjN)
-		endObj()
-
-		startObj(contObjN)
-		wf("<< /Length %d >>\n", len(stream))
-		w("stream\n")
-		w(stream)
-		w("endstream\n")
-		endObj()
-	}
-
-	xrefOff := buf.Len()
-	xrefCount := numObjs + 1 // +1 for free object 0
-	wf("xref\n0 %d\n", xrefCount)
-	wf("0000000000 65535 f\r\n")
-	for _, off := range offsets {
-		wf("%010d 00000 n\r\n", off)
-	}
-	wf("trailer\n<< /Size %d /Root 1 0 R >>\n", xrefCount)
-	wf("startxref\n%d\n", xrefOff)
-	w("%%EOF\n")
-
-	return buf.Bytes()
-}
-
-func writePDF(t *testing.T, path string, labels []string) {
-	t.Helper()
-	if err := os.WriteFile(path, minimalPDF(labels), 0o644); err != nil {
-		t.Fatal(err)
-	}
-}
-
-// labelPositions returns the byte offset of each label in data, or -1 if absent.
-func labelPositions(data []byte, labels []string) []int {
-	pos := make([]int, len(labels))
-	for i, l := range labels {
-		pos[i] = bytes.Index(data, []byte(l))
-	}
-	return pos
-}
 
 // pdfPageRotation returns the rotation (in degrees) of the given 1-indexed page.
 func pdfPageRotation(t *testing.T, path string, pageNum int) int {
@@ -107,23 +23,6 @@ func pdfPageRotation(t *testing.T, path string, pageNum int) int {
 		t.Fatalf("reading page dict %d of %s: %v", pageNum, path, err)
 	}
 	return inhAttrs.Rotate
-}
-
-// assertOrder checks that the given labels appear in data in the given order.
-func assertOrder(t *testing.T, data []byte, ordered []string) {
-	t.Helper()
-	pos := labelPositions(data, ordered)
-	for i, p := range pos {
-		if p == -1 {
-			t.Errorf("label %q not found in output", ordered[i])
-		}
-	}
-	for i := 1; i < len(pos); i++ {
-		if pos[i-1] >= pos[i] {
-			t.Errorf("label %q (pos %d) should appear before %q (pos %d)",
-				ordered[i-1], pos[i-1], ordered[i], pos[i])
-		}
-	}
 }
 
 // --- interleave unit tests ---
@@ -175,14 +74,14 @@ func TestMergePDFs(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, fileA, []string{"A1", "A2", "A3"})
-	writePDF(t, fileB, []string{"B1", "B2", "B3"})
+	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil, nil, nil); err != nil {
+	if err := MergePDFs(fileA, fileB, out, true, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
-	if count, err := pdfPageCount(out); err != nil {
+	if count, err := PageCount(out); err != nil {
 		t.Fatal(err)
 	} else if count != 6 {
 		t.Errorf("got %d pages, want 6", count)
@@ -192,7 +91,7 @@ func TestMergePDFs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
+	pdftest.AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
 }
 
 func TestMergePDFsFirstPageInB(t *testing.T) {
@@ -201,10 +100,10 @@ func TestMergePDFsFirstPageInB(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, fileA, []string{"A1", "A2", "A3"})
-	writePDF(t, fileB, []string{"B1", "B2", "B3"})
+	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(fileA, fileB, out, false, false, nil, nil, nil, nil); err != nil {
+	if err := MergePDFs(fileA, fileB, out, false, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
@@ -212,7 +111,7 @@ func TestMergePDFsFirstPageInB(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"B1", "A1", "B2", "A2", "B3", "A3"})
+	pdftest.AssertOrder(t, data, []string{"B1", "A1", "B2", "A2", "B3", "A3"})
 }
 
 func TestMergePDFsReverseB(t *testing.T) {
@@ -221,14 +120,14 @@ func TestMergePDFsReverseB(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, fileA, []string{"A1", "A2", "A3"})
-	writePDF(t, fileB, []string{"B1", "B2", "B3"})
+	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(fileA, fileB, out, true, true, nil, nil, nil, nil); err != nil {
+	if err := MergePDFs(fileA, fileB, out, true, true, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
-	if count, err := pdfPageCount(out); err != nil {
+	if count, err := PageCount(out); err != nil {
 		t.Fatal(err)
 	} else if count != 6 {
 		t.Errorf("got %d pages, want 6", count)
@@ -239,7 +138,7 @@ func TestMergePDFsReverseB(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"A1", "B3", "A2", "B2", "A3", "B1"})
+	pdftest.AssertOrder(t, data, []string{"A1", "B3", "A2", "B2", "A3", "B1"})
 }
 
 func TestMergePDFsUnequalCounts(t *testing.T) {
@@ -248,15 +147,15 @@ func TestMergePDFsUnequalCounts(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, fileA, []string{"A1", "A2", "A3", "A4"})
-	writePDF(t, fileB, []string{"B1", "B2", "B3"})
+	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3", "A4"})
+	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
-	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil, nil, nil); err != nil {
+	if err := MergePDFs(fileA, fileB, out, true, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
 	// 3 interleaved pairs + 1 extra A page = 7
-	if count, err := pdfPageCount(out); err != nil {
+	if count, err := PageCount(out); err != nil {
 		t.Fatal(err)
 	} else if count != 7 {
 		t.Errorf("got %d pages, want 7", count)
@@ -266,7 +165,7 @@ func TestMergePDFsUnequalCounts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3", "A4"})
+	pdftest.AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3", "A4"})
 }
 
 func TestMergePDFsSkip(t *testing.T) {
@@ -275,15 +174,15 @@ func TestMergePDFsSkip(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, fileA, []string{"A1", "A2", "A3"})
-	writePDF(t, fileB, []string{"B1", "B2", "B3"})
+	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	// Skip A page 2 and B page 1 → A=[A1,A3], B=[B2,B3] → interleaved: A1,B2, A3,B3
-	if err := mergePDFs(fileA, fileB, out, true, false, []int{2}, []int{1}, nil, nil); err != nil {
+	if err := MergePDFs(fileA, fileB, out, true, false, []int{2}, []int{1}, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 
-	if count, err := pdfPageCount(out); err != nil {
+	if count, err := PageCount(out); err != nil {
 		t.Fatal(err)
 	} else if count != 4 {
 		t.Errorf("got %d pages, want 4", count)
@@ -293,7 +192,7 @@ func TestMergePDFsSkip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"A1", "B2", "A3", "B3"})
+	pdftest.AssertOrder(t, data, []string{"A1", "B2", "A3", "B3"})
 	if bytes.Contains(data, []byte("% A2")) {
 		t.Error("skipped page A2 found in output")
 	}
@@ -308,18 +207,18 @@ func TestMergePDFsRotate(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	writePDF(t, fileA, []string{"A1", "A2", "A3"})
-	writePDF(t, fileB, []string{"B1", "B2", "B3"})
+	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	// Rotate A page 2 by 90° and B page 1 by 180°
 	rotA := map[int]int{2: 90}
 	rotB := map[int]int{1: 180}
 
-	if err := mergePDFs(fileA, fileB, out, true, false, nil, nil, rotA, rotB); err != nil {
+	if err := MergePDFs(fileA, fileB, out, true, false, nil, nil, rotA, rotB); err != nil {
 		t.Fatal(err)
 	}
 
-	if count, err := pdfPageCount(out); err != nil {
+	if count, err := PageCount(out); err != nil {
 		t.Fatal(err)
 	} else if count != 6 {
 		t.Errorf("got %d pages, want 6", count)
@@ -330,7 +229,7 @@ func TestMergePDFsRotate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
+	pdftest.AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
 
 	// Verify rotation per output page via pdfcpu context API.
 	// Interleaved order: page1=A1(0°), page2=B1(180°), page3=A2(90°), page4=B2(0°), page5=A3(0°), page6=B3(0°)
@@ -352,9 +251,9 @@ func TestSplitPDF(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	writePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
+	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
 
-	parts, err := splitPDF(in, []OutputFileSpec{
+	parts, err := SplitPDF(in, []OutputFileSpec{
 		{Pages: []int{1, 2}},
 		{Pages: []int{3, 4}},
 		{Pages: []int{5, 6}},
@@ -368,7 +267,7 @@ func TestSplitPDF(t *testing.T) {
 	}
 
 	for i, want := range []int{2, 2, 2} {
-		if got, err := pdfPageCount(parts[i]); err != nil {
+		if got, err := PageCount(parts[i]); err != nil {
 			t.Fatalf("part %d: %v", i, err)
 		} else if got != want {
 			t.Errorf("part %d: got %d pages, want %d", i, got, want)
@@ -380,7 +279,7 @@ func TestSplitPDF(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		assertOrder(t, data, labels)
+		pdftest.AssertOrder(t, data, labels)
 	}
 }
 
@@ -392,9 +291,9 @@ func TestSplitPDFSingleOutput(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	writePDF(t, in, []string{"P1", "P2", "P3", "P4"})
+	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
 
-	parts, err := splitPDF(in, []OutputFileSpec{
+	parts, err := SplitPDF(in, []OutputFileSpec{
 		{Pages: []int{1, 2, 3, 4}},
 	}, nil, outDir)
 	if err != nil {
@@ -405,7 +304,7 @@ func TestSplitPDFSingleOutput(t *testing.T) {
 		t.Fatalf("got %d parts, want 1", len(parts))
 	}
 
-	if got, err := pdfPageCount(parts[0]); err != nil {
+	if got, err := PageCount(parts[0]); err != nil {
 		t.Fatal(err)
 	} else if got != 4 {
 		t.Errorf("got %d pages, want 4", got)
@@ -420,10 +319,10 @@ func TestSplitPDFSkip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	writePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
+	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
 
 	// Page 3 already filtered by caller; segment 2 gets only page 4.
-	parts, err := splitPDF(in, []OutputFileSpec{
+	parts, err := SplitPDF(in, []OutputFileSpec{
 		{Pages: []int{1, 2}},
 		{Pages: []int{4}},
 		{Pages: []int{5, 6}},
@@ -438,7 +337,7 @@ func TestSplitPDFSkip(t *testing.T) {
 
 	wantCounts := []int{2, 1, 2}
 	for i, want := range wantCounts {
-		if got, err := pdfPageCount(parts[i]); err != nil {
+		if got, err := PageCount(parts[i]); err != nil {
 			t.Fatalf("part %d: %v", i, err)
 		} else if got != want {
 			t.Errorf("part %d: got %d pages, want %d", i, got, want)
@@ -452,7 +351,7 @@ func TestSplitPDFSkip(t *testing.T) {
 	if bytes.Contains(data1, []byte("% P3")) {
 		t.Error("skipped page P3 found in segment 2")
 	}
-	assertOrder(t, data1, []string{"P4"})
+	pdftest.AssertOrder(t, data1, []string{"P4"})
 }
 
 func TestSplitPDFReorder(t *testing.T) {
@@ -463,10 +362,10 @@ func TestSplitPDFReorder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	writePDF(t, in, []string{"P1", "P2", "P3", "P4"})
+	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
 
 	// Reverse order within one segment, and swap pages across segments.
-	parts, err := splitPDF(in, []OutputFileSpec{
+	parts, err := SplitPDF(in, []OutputFileSpec{
 		{Pages: []int{3, 1}},
 		{Pages: []int{4, 2}},
 	}, nil, outDir)
@@ -486,6 +385,6 @@ func TestSplitPDFReorder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data0, []string{"P3", "P1"})
-	assertOrder(t, data1, []string{"P4", "P2"})
+	pdftest.AssertOrder(t, data0, []string{"P3", "P1"})
+	pdftest.AssertOrder(t, data1, []string{"P4", "P2"})
 }

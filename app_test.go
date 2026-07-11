@@ -4,6 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"paper-scan-processor/backend/pdf"
+	"paper-scan-processor/backend/pdftest"
 )
 
 func TestExportSplitSingleFile(t *testing.T) {
@@ -14,10 +17,10 @@ func TestExportSplitSingleFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	writePDF(t, in, []string{"P1", "P2", "P3"})
+	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3"})
 
 	app := &App{}
-	if err := app.ExportSplit(in, []OutputFileSpec{
+	if err := app.ExportSplit(in, []pdf.OutputFileSpec{
 		{Pages: []int{1, 2, 3}, Name: "invoice", OutDir: outDir},
 	}, nil); err != nil {
 		t.Fatal(err)
@@ -27,7 +30,7 @@ func TestExportSplitSingleFile(t *testing.T) {
 	if _, err := os.Stat(out); err != nil {
 		t.Fatalf("expected output file %s: %v", out, err)
 	}
-	if got, err := pdfPageCount(out); err != nil {
+	if got, err := pdf.PageCount(out); err != nil {
 		t.Fatal(err)
 	} else if got != 3 {
 		t.Errorf("got %d pages, want 3", got)
@@ -36,7 +39,7 @@ func TestExportSplitSingleFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertOrder(t, data, []string{"P1", "P2", "P3"})
+	pdftest.AssertOrder(t, data, []string{"P1", "P2", "P3"})
 }
 
 func TestExportSplitMultipleFiles(t *testing.T) {
@@ -50,10 +53,10 @@ func TestExportSplitMultipleFiles(t *testing.T) {
 		}
 	}
 
-	writePDF(t, in, []string{"P1", "P2", "P3", "P4"})
+	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
 
 	app := &App{}
-	if err := app.ExportSplit(in, []OutputFileSpec{
+	if err := app.ExportSplit(in, []pdf.OutputFileSpec{
 		{Pages: []int{1, 2}, Name: "first", OutDir: dirA},
 		{Pages: []int{3, 4}, Name: "second", OutDir: dirB},
 	}, nil); err != nil {
@@ -63,12 +66,12 @@ func TestExportSplitMultipleFiles(t *testing.T) {
 	outA := filepath.Join(dirA, "first.pdf")
 	outB := filepath.Join(dirB, "second.pdf")
 
-	if got, err := pdfPageCount(outA); err != nil {
+	if got, err := pdf.PageCount(outA); err != nil {
 		t.Fatal(err)
 	} else if got != 2 {
 		t.Errorf("first.pdf: got %d pages, want 2", got)
 	}
-	if got, err := pdfPageCount(outB); err != nil {
+	if got, err := pdf.PageCount(outB); err != nil {
 		t.Fatal(err)
 	} else if got != 2 {
 		t.Errorf("second.pdf: got %d pages, want 2", got)
@@ -76,8 +79,8 @@ func TestExportSplitMultipleFiles(t *testing.T) {
 
 	dataA, _ := os.ReadFile(outA)
 	dataB, _ := os.ReadFile(outB)
-	assertOrder(t, dataA, []string{"P1", "P2"})
-	assertOrder(t, dataB, []string{"P3", "P4"})
+	pdftest.AssertOrder(t, dataA, []string{"P1", "P2"})
+	pdftest.AssertOrder(t, dataB, []string{"P3", "P4"})
 }
 
 func TestExportSplitEmptyNameFallback(t *testing.T) {
@@ -88,10 +91,10 @@ func TestExportSplitEmptyNameFallback(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	writePDF(t, in, []string{"P1", "P2"})
+	pdftest.WritePDF(t, in, []string{"P1", "P2"})
 
 	app := &App{}
-	if err := app.ExportSplit(in, []OutputFileSpec{
+	if err := app.ExportSplit(in, []pdf.OutputFileSpec{
 		{Pages: []int{1}, Name: "", OutDir: outDir},
 		{Pages: []int{2}, Name: "", OutDir: outDir},
 	}, nil); err != nil {

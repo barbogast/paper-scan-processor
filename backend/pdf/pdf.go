@@ -1,4 +1,4 @@
-package main
+package pdf
 
 import (
 	"fmt"
@@ -12,13 +12,20 @@ import (
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
-// mergePDFs interleaves pages from pathA and pathB into outPath.
+// OutputFileSpec describes one output file for SplitPDF.
+type OutputFileSpec struct {
+	Pages  []int  `json:"pages"`  // ordered 1-indexed original page numbers (skip already filtered by caller)
+	Name   string `json:"name"`   // filename without extension; falls back to "output-N" if empty
+	OutDir string `json:"outDir"` // destination directory
+}
+
+// MergePDFs interleaves pages from pathA and pathB into outPath.
 // If firstPageInA is true, file A contributes the odd-numbered output pages (1, 3, 5, …);
 // otherwise file B does. If reverseB is true, file B's pages are reversed before interleaving,
 // which is the typical case when the paper stack was flipped between scans.
 // If the page counts differ, the extra pages from the longer file are
 // appended in order after the interleaved section.
-func mergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) error {
+func MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) error {
 	tmpDir, err := os.MkdirTemp("", "psp-merge-*")
 	if err != nil {
 		return err
@@ -109,11 +116,11 @@ func applyRotations(pages []string, rotations map[int]int) error {
 	return nil
 }
 
-// splitPDF assembles each output file by extracting pages from inPath in the
+// SplitPDF assembles each output file by extracting pages from inPath in the
 // order specified by each spec's Pages slice, applying rotations, and writing
 // the results to outDir. Pages are 1-indexed original page numbers; skip
 // filtering and reordering have already been applied by the caller.
-func splitPDF(inPath string, files []OutputFileSpec, rotations map[int]int, outDir string) ([]string, error) {
+func SplitPDF(inPath string, files []OutputFileSpec, rotations map[int]int, outDir string) ([]string, error) {
 	tmpDir, err := os.MkdirTemp("", "psp-split-pages-*")
 	if err != nil {
 		return nil, err
@@ -153,8 +160,8 @@ func splitPDF(inPath string, files []OutputFileSpec, rotations map[int]int, outD
 	return outPaths, nil
 }
 
-// pdfPageCount returns the number of pages in the PDF at path.
-func pdfPageCount(path string) (int, error) {
+// PageCount returns the number of pages in the PDF at path.
+func PageCount(path string) (int, error) {
 	return api.PageCountFile(path)
 }
 
@@ -205,7 +212,8 @@ func interleave[T any](a, b []T) []T {
 	return out
 }
 
-func copyFile(src, dst string) error {
+// CopyFile copies the file at src to dst.
+func CopyFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
 		return err

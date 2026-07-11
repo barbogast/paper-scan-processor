@@ -74,6 +74,11 @@ export namespace main {
 		    return a;
 		}
 	}
+
+}
+
+export namespace pdf {
+	
 	export class OutputFileSpec {
 	    pages: number[];
 	    name: string;
