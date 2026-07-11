@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 )
 
 // DriveItem represents a file or folder in Google Drive.
@@ -14,14 +11,6 @@ type DriveItem struct {
 	Name     string `json:"name"`
 	IsFolder bool   `json:"isFolder"`
 	Size     int64  `json:"size"` // bytes; 0 for folders
-}
-
-func driveService(ctx context.Context) (*drive.Service, error) {
-	client, err := driveClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return drive.NewService(ctx, option.WithHTTPClient(client))
 }
 
 // DriveFindFolder returns the ID of the first folder named name within parentID.

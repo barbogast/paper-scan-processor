@@ -24,22 +24,15 @@ import (
 	"time"
 
 	"golang.org/x/oauth2"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 )
 
 func TestDriveAuthenticate(t *testing.T) {
 	skipUnlessDriveEnabled(t)
 	ctx := context.Background()
 
-	client, err := driveClient(ctx)
+	svc, err := driveService(ctx)
 	if err != nil {
-		t.Fatalf("driveClient: %v", err)
-	}
-
-	svc, err := drive.NewService(ctx, option.WithHTTPClient(client))
-	if err != nil {
-		t.Fatalf("drive.NewService: %v", err)
+		t.Fatalf("driveService: %v", err)
 	}
 
 	about, err := svc.About.Get().Fields("user").Do()

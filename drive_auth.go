@@ -14,12 +14,13 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 const driveOAuthPort = "8765"
 const driveOAuthCallbackPath = "/oauth/callback"
 
-// driveClientMu serializes driveClient calls. Without it, two concurrent
+// driveClientMu serializes driveService calls. Without it, two concurrent
 // callers needing a token refresh or a fresh OAuth flow would each try to
 // bind driveOAuthPort for the callback server, and the loser would fail with
 // "address already in use" even though the winner's call succeeds.
@@ -60,11 +61,11 @@ func driveOAuthConfig() (*oauth2.Config, error) {
 	return cfg, nil
 }
 
-// driveClient returns an authenticated HTTP client for the Google Drive API.
+// driveService returns an authenticated client for the Google Drive API.
 // On first call, or whenever the stored refresh token has expired or been
 // revoked, it opens the system default browser to perform the OAuth flow and
 // saves the resulting token for reuse in future sessions.
-func driveClient(ctx context.Context) (*http.Client, error) {
+func driveService(ctx context.Context) (*drive.Service, error) {
 	driveClientMu.Lock()
 	defer driveClientMu.Unlock()
 
@@ -77,14 +78,18 @@ func driveClient(ctx context.Context) (*http.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return driveClientWithConfig(ctx, cfg, filepath.Join(dir, "drive_token.json"), driveRunOAuthFlow)
+	client, err := driveClientWithConfig(ctx, cfg, filepath.Join(dir, "drive_token.json"), driveRunOAuthFlow)
+	if err != nil {
+		return nil, err
+	}
+	return drive.NewService(ctx, option.WithHTTPClient(client))
 }
 
 // reauthFunc performs a full OAuth flow, returning a fresh token pair.
 // driveRunOAuthFlow is the production implementation; tests substitute a stub.
 type reauthFunc func(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, error)
 
-// driveClientWithConfig holds driveClient's refresh/reauth decision logic,
+// driveClientWithConfig holds driveService's refresh/reauth decision logic,
 // parameterized over cfg, tokenPath, and the reauth function so tests can
 // supply a fake token endpoint (via cfg.Endpoint.TokenURL) and a stubbed
 // reauth instead of hitting Google or opening a real browser.
