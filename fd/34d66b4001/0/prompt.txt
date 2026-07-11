@@ -1,0 +1,5 @@
+There are many more files changed that you haven't staged yet
+
+---
+
+Files in backend/filetree have been changed (in addition to the changes already staged). Don't those changes also belong into this commit?
