@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a0e15f7b7c7f",
+  "session_id": "70f9d2ee-b9af-46a1-9c73-19083476aaed",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-13T09:08:24.114798Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "backend/drive/auth.go",
+    "backend/drive/folders.go",
+    "backend/drive/upload.go",
+    "backend/drive/testutils_test.go",
+    "backend/drive/auth_test.go",
+    "backend/drive/folders_test.go",
+    "backend/drive/upload_test.go",
+    "app.go"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "fd5746f53b11",
+  "checkpoint_transcript_start": 408,
+  "transcript_lines_at_start": 408,
+  "token_usage": {
+    "input_tokens": 568,
+    "cache_creation_tokens": 41289,
+    "cache_read_tokens": 5149462,
+    "output_tokens": 19726,
+    "api_call_count": 26
+  },
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-13T09:08:24.090807Z",
+    "agent_lines": 704,
+    "agent_removed": 6,
+    "human_added": 3,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 707,
+    "total_lines_changed": 1414,
+    "agent_percentage": 50.21216407355021,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 22,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 22
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a0e15f7b7c7f",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app.go",
+    "backend/drive/auth.go",
+    "backend/drive/auth_test.go",
+    "backend/drive/folders.go",
+    "backend/drive/folders_test.go",
+    "backend/drive/testutils_test.go",
+    "backend/drive/upload.go",
+    "backend/drive/upload_test.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a0/e15f7b7c7f/0/metadata.json",
+      "transcript": "/a0/e15f7b7c7f/0/full.jsonl",
+      "content_hash": "/a0/e15f7b7c7f/0/content_hash.txt",
+      "prompt": "/a0/e15f7b7c7f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 568,
+    "cache_creation_tokens": 41289,
+    "cache_read_tokens": 5149462,
+    "output_tokens": 19726,
+    "api_call_count": 26
+  }
+}
