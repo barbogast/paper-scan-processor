@@ -5,18 +5,18 @@ import (
 	"fmt"
 )
 
-// DriveItem represents a file or folder in Google Drive.
-type DriveItem struct {
+// Item represents a file or folder in Google Drive.
+type Item struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
 	IsFolder bool   `json:"isFolder"`
 	Size     int64  `json:"size"` // bytes; 0 for folders
 }
 
-// DriveFindFolder returns the ID of the first folder named name within parentID.
+// FindFolder returns the ID of the first folder named name within parentID.
 // Use "root" for the Drive root. Folder names with single quotes are not supported.
-func DriveFindFolder(ctx context.Context, parentID, name string) (string, error) {
-	svc, err := driveService(ctx)
+func FindFolder(ctx context.Context, parentID, name string) (string, error) {
+	svc, err := service(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -34,11 +34,11 @@ func DriveFindFolder(ctx context.Context, parentID, name string) (string, error)
 	return result.Files[0].Id, nil
 }
 
-// DriveListFolder returns the direct children of the folder with the given ID,
+// ListFolder returns the direct children of the folder with the given ID,
 // folders first then files, both sorted by name.
 // Note: results are capped at 100 items (Drive API default page size).
-func DriveListFolder(ctx context.Context, folderID string) ([]DriveItem, error) {
-	svc, err := driveService(ctx)
+func ListFolder(ctx context.Context, folderID string) ([]Item, error) {
+	svc, err := service(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +51,9 @@ func DriveListFolder(ctx context.Context, folderID string) ([]DriveItem, error) 
 	if err != nil {
 		return nil, fmt.Errorf("list folder %q: %w", folderID, err)
 	}
-	items := make([]DriveItem, len(result.Files))
+	items := make([]Item, len(result.Files))
 	for i, f := range result.Files {
-		items[i] = DriveItem{
+		items[i] = Item{
 			ID:       f.Id,
 			Name:     f.Name,
 			IsFolder: f.MimeType == "application/vnd.google-apps.folder",

@@ -17,22 +17,22 @@ import (
 	"google.golang.org/api/option"
 )
 
-const driveOAuthPort = "8765"
-const driveOAuthCallbackPath = "/oauth/callback"
+const oauthPort = "8765"
+const oauthCallbackPath = "/oauth/callback"
 
-// driveClientMu serializes driveService calls. Without it, two concurrent
+// clientMu serializes service calls. Without it, two concurrent
 // callers needing a token refresh or a fresh OAuth flow would each try to
-// bind driveOAuthPort for the callback server, and the loser would fail with
+// bind oauthPort for the callback server, and the loser would fail with
 // "address already in use" even though the winner's call succeeds.
-var driveClientMu sync.Mutex
+var clientMu sync.Mutex
 
 // openBrowser launches url in the system default browser. Overridden in
 // tests to simulate the user completing the consent flow, instead of
 // actually opening a browser.
 var openBrowser = func(url string) error { return exec.Command("open", url).Run() }
 
-// driveConfigDir returns (and creates) ~/Library/Application Support/paper-scan-processor.
-func driveConfigDir() (string, error) {
+// configDir returns (and creates) ~/Library/Application Support/paper-scan-processor.
+func configDir() (string, error) {
 	base, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
@@ -41,8 +41,8 @@ func driveConfigDir() (string, error) {
 	return dir, os.MkdirAll(dir, 0o700)
 }
 
-func driveOAuthConfig() (*oauth2.Config, error) {
-	dir, err := driveConfigDir()
+func oauthConfig() (*oauth2.Config, error) {
+	dir, err := configDir()
 	if err != nil {
 		return nil, err
 	}
@@ -57,28 +57,28 @@ func driveOAuthConfig() (*oauth2.Config, error) {
 	}
 	// Override to match our local callback server.
 	// In Google Cloud Console, register http://localhost as an authorized redirect URI.
-	cfg.RedirectURL = "http://localhost:" + driveOAuthPort + driveOAuthCallbackPath
+	cfg.RedirectURL = "http://localhost:" + oauthPort + oauthCallbackPath
 	return cfg, nil
 }
 
-// driveService returns an authenticated client for the Google Drive API.
+// service returns an authenticated client for the Google Drive API.
 // On first call, or whenever the stored refresh token has expired or been
 // revoked, it opens the system default browser to perform the OAuth flow and
 // saves the resulting token for reuse in future sessions.
-func driveService(ctx context.Context) (*drive.Service, error) {
-	driveClientMu.Lock()
-	defer driveClientMu.Unlock()
+func service(ctx context.Context) (*drive.Service, error) {
+	clientMu.Lock()
+	defer clientMu.Unlock()
 
-	cfg, err := driveOAuthConfig()
+	cfg, err := oauthConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	dir, err := driveConfigDir()
+	dir, err := configDir()
 	if err != nil {
 		return nil, err
 	}
-	client, err := driveClientWithConfig(ctx, cfg, filepath.Join(dir, "drive_token.json"), driveRunOAuthFlow)
+	client, err := clientWithConfig(ctx, cfg, filepath.Join(dir, "drive_token.json"), runOAuthFlow)
 	if err != nil {
 		return nil, err
 	}
@@ -86,17 +86,17 @@ func driveService(ctx context.Context) (*drive.Service, error) {
 }
 
 // reauthFunc performs a full OAuth flow, returning a fresh token pair.
-// driveRunOAuthFlow is the production implementation; tests substitute a stub.
+// runOAuthFlow is the production implementation; tests substitute a stub.
 type reauthFunc func(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, error)
 
-// driveClientWithConfig holds driveService's refresh/reauth decision logic,
+// clientWithConfig holds service's refresh/reauth decision logic,
 // parameterized over cfg, tokenPath, and the reauth function so tests can
 // supply a fake token endpoint (via cfg.Endpoint.TokenURL) and a stubbed
 // reauth instead of hitting Google or opening a real browser.
-func driveClientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath string, reauth reauthFunc) (*http.Client, error) {
+func clientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath string, reauth reauthFunc) (*http.Client, error) {
 	// storedToken bundles both the short-lived access token and the
 	// long-lived refresh token last persisted to disk.
-	if storedToken, err := driveLoadToken(tokenPath); err == nil {
+	if storedToken, err := loadToken(tokenPath); err == nil {
 		src := cfg.TokenSource(ctx, storedToken)
 		refreshedToken, err := src.Token()
 		if err == nil {
@@ -105,7 +105,7 @@ func driveClientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath st
 				// storedToken.RefreshToken to obtain a new access token from
 				// Google. Persist the pair so future calls reuse it instead
 				// of refreshing again.
-				if err := driveSaveToken(tokenPath, refreshedToken); err != nil {
+				if err := saveToken(tokenPath, refreshedToken); err != nil {
 					return nil, fmt.Errorf("save refreshed token: %w", err)
 				}
 			}
@@ -125,22 +125,22 @@ func driveClientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath st
 	if err != nil {
 		return nil, err
 	}
-	if err := driveSaveToken(tokenPath, newToken); err != nil {
+	if err := saveToken(tokenPath, newToken); err != nil {
 		return nil, fmt.Errorf("save token: %w", err)
 	}
 	return cfg.Client(ctx, newToken), nil
 }
 
-var _ reauthFunc = driveRunOAuthFlow // driveRunOAuthFlow must match reauthFunc's signature
+var _ reauthFunc = runOAuthFlow // runOAuthFlow must match reauthFunc's signature
 
-func driveRunOAuthFlow(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, error) {
+func runOAuthFlow(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, error) {
 	codeCh := make(chan string, 1)
 	errCh := make(chan error, 1)
 
 	mux := http.NewServeMux()
-	srv := &http.Server{Addr: ":" + driveOAuthPort, Handler: mux}
+	srv := &http.Server{Addr: ":" + oauthPort, Handler: mux}
 
-	mux.HandleFunc(driveOAuthCallbackPath, func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc(oauthCallbackPath, func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
 		if code == "" {
 			http.Error(w, "missing code", http.StatusBadRequest)
@@ -173,7 +173,7 @@ func driveRunOAuthFlow(ctx context.Context, cfg *oauth2.Config) (*oauth2.Token, 
 	}
 }
 
-func driveLoadToken(path string) (*oauth2.Token, error) {
+func loadToken(path string) (*oauth2.Token, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func driveLoadToken(path string) (*oauth2.Token, error) {
 	return &t, json.NewDecoder(f).Decode(&t)
 }
 
-func driveSaveToken(path string, token *oauth2.Token) error {
+func saveToken(path string, token *oauth2.Token) error {
 	f, err := os.Create(path)
 	if err != nil {
 		return err

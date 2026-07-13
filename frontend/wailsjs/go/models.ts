@@ -1,13 +1,13 @@
 export namespace drive {
 	
-	export class DriveItem {
+	export class Item {
 	    id: string;
 	    name: string;
 	    isFolder: boolean;
 	    size: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new DriveItem(source);
+	        return new Item(source);
 	    }
 	
 	    constructor(source: any = {}) {

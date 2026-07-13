@@ -136,8 +136,8 @@ func (a *App) ScanLocalRoot(root string) (filetree.LocalFileGroup, error) {
 // ListDriveFolder returns the direct children of the Drive folder with the
 // given ID ("root" for the top level of My Drive), folders first then
 // files. Triggers the OAuth flow on first use if no token is cached yet.
-func (a *App) ListDriveFolder(folderID string) ([]drive.DriveItem, error) {
-	return drive.DriveListFolder(a.ctx, folderID)
+func (a *App) ListDriveFolder(folderID string) ([]drive.Item, error) {
+	return drive.ListFolder(a.ctx, folderID)
 }
 
 // outputFileDest returns the destination path for the i-th pdf.OutputFileSpec.

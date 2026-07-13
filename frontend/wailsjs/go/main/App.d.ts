@@ -10,7 +10,7 @@ export function DeleteFile(arg1:string):Promise<void>;
 
 export function ExportSplit(arg1:string,arg2:Array<pdf.OutputFileSpec>,arg3:Record<number, number>):Promise<void>;
 
-export function ListDriveFolder(arg1:string):Promise<Array<drive.DriveItem>>;
+export function ListDriveFolder(arg1:string):Promise<Array<drive.Item>>;
 
 export function MergePDFs(arg1:string,arg2:string,arg3:string,arg4:boolean,arg5:boolean,arg6:Array<number>,arg7:Array<number>,arg8:Record<number, number>,arg9:Record<number, number>):Promise<void>;
 

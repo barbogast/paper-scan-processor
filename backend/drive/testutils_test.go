@@ -6,17 +6,17 @@ import (
 	"testing"
 )
 
-// skipUnlessDriveEnabled skips the test unless DRIVE_TESTS=1 is set and
+// skipUnlessEnabled skips the test unless DRIVE_TESTS=1 is set and
 // drive_credentials.json is in place. This prevents Drive integration tests
 // from running (and modifying Drive) during normal go test invocations.
 //
-// To run Drive tests: DRIVE_TESTS=1 go test -v -run TestDriveXxx -timeout 120s
-func skipUnlessDriveEnabled(t *testing.T) {
+// To run Drive tests: DRIVE_TESTS=1 go test -v -run TestXxx -timeout 120s
+func skipUnlessEnabled(t *testing.T) {
 	t.Helper()
 	if os.Getenv("DRIVE_TESTS") != "1" {
 		t.Skip("set DRIVE_TESTS=1 to run Drive integration tests")
 	}
-	dir, err := driveConfigDir()
+	dir, err := configDir()
 	if err != nil {
 		t.Skipf("cannot determine config dir: %v", err)
 	}
