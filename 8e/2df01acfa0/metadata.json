@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8e2df01acfa0",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".gitignore",
+    "build/windows/installer/wails_tools.nsh",
+    "frontend/wailsjs/go/main/App.d.ts",
+    "frontend/wailsjs/go/main/App.js",
+    "frontend/wailsjs/go/models.ts",
+    "frontend/wailsjs/runtime/package.json",
+    "frontend/wailsjs/runtime/runtime.d.ts",
+    "frontend/wailsjs/runtime/runtime.js"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8e/2df01acfa0/0/metadata.json",
+      "transcript": "/8e/2df01acfa0/0/full.jsonl",
+      "content_hash": "/8e/2df01acfa0/0/content_hash.txt",
+      "prompt": "/8e/2df01acfa0/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 3539,
+    "cache_creation_tokens": 16581,
+    "cache_read_tokens": 328862,
+    "output_tokens": 4189,
+    "api_call_count": 10
+  }
+}
