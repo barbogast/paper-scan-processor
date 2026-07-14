@@ -1,5 +1,7 @@
 build/bin
 node_modules
 frontend/dist
+frontend/wailsjs
+build/windows/installer/wails_tools.nsh
 .DS_Store
 /paper-scan-processor
