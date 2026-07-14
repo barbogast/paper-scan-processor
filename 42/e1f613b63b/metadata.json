@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "42e1f613b63b",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "app_test.go",
+    "backend/filetree/filetree_test.go",
+    "backend/pdf/pdf_test.go",
+    "backend/pdf/testutils.go",
+    "backend/pdftest/pdftest.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/42/e1f613b63b/0/metadata.json",
+      "transcript": "/42/e1f613b63b/0/full.jsonl",
+      "content_hash": "/42/e1f613b63b/0/content_hash.txt",
+      "prompt": "/42/e1f613b63b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 15593,
+    "cache_creation_tokens": 89743,
+    "cache_read_tokens": 4070564,
+    "output_tokens": 27429,
+    "api_call_count": 64
+  }
+}

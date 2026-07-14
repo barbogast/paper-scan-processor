@@ -1,0 +1,13 @@
+How about moveing pdftest/* and testutils_test.go into a new testutils package?
+
+---
+
+I've removed the 2 offending lines
+
+---
+
+I don't like duplicating configDir() since it contains an important folder name. How about moving it to a utils.go file in the drive folder?
+
+---
+
+That's way too much hassle for such a tiny change. How about abandoning a shared testutils package and instead having a testutils.go file in the drive and the pdf folder?
