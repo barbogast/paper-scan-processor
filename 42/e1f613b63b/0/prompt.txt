@@ -11,3 +11,7 @@ I don't like duplicating configDir() since it contains an important folder name.
 ---
 
 That's way too much hassle for such a tiny change. How about abandoning a shared testutils package and instead having a testutils.go file in the drive and the pdf folder?
+
+---
+
+commit
