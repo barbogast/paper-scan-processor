@@ -3,6 +3,7 @@ import { Box, Button, Divider, Group, Modal, Stack, Text, TextInput } from '@man
 import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
+import Toolbar from '../Toolbar'
 import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit, CheckConflicts, DeleteFile } from '../../../wailsjs/go/main/App'
 import { ellipsisPath } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
@@ -170,37 +171,26 @@ export default function SplitMode({ initialPath }: Props) {
           </div>
         </Stack>
       </Modal>
-      <Box
-        style={{
-          flexShrink: 0,
-          borderBottom: '1px solid var(--mantine-color-gray-3)',
-          display: 'flex',
-          alignItems: 'center',
-          paddingInline: 12,
-          height: 44,
-        }}
-      >
-        <Group gap={8} style={{ width: '100%' }}>
-          <Button size="xs" variant="default" onClick={handleOpen}>
-            Open PDF
-          </Button>
-          <TextInput
-            size="xs"
-            placeholder={DEFAULT_TEMPLATE}
-            value={template}
-            onChange={(e) => setTemplate(e.currentTarget.value)}
-            leftSection={<span style={{ fontSize: 11, whiteSpace: 'nowrap', color: 'var(--mantine-color-dimmed)' }}>Template</span>}
-            leftSectionWidth={60}
-            style={{ flex: 1 }}
-          />
-          <Button size="xs" variant="default" onClick={handlePickOutputFolder}>
-            {outputFolder ? ellipsisPath(outputFolder) : 'Output folder…'}
-          </Button>
-          <Button size="xs" disabled={!pdfPath || !outputFolder || outputFiles.duplicateFirstPages.size > 0} loading={exporting} onClick={handleExport}>
-            Export
-          </Button>
-        </Group>
-      </Box>
+      <Toolbar>
+        <Button size="xs" variant="default" onClick={handleOpen}>
+          Open PDF
+        </Button>
+        <TextInput
+          size="xs"
+          placeholder={DEFAULT_TEMPLATE}
+          value={template}
+          onChange={(e) => setTemplate(e.currentTarget.value)}
+          leftSection={<span style={{ fontSize: 11, whiteSpace: 'nowrap', color: 'var(--mantine-color-dimmed)' }}>Template</span>}
+          leftSectionWidth={60}
+          style={{ flex: 1 }}
+        />
+        <Button size="xs" variant="default" onClick={handlePickOutputFolder}>
+          {outputFolder ? ellipsisPath(outputFolder) : 'Output folder…'}
+        </Button>
+        <Button size="xs" disabled={!pdfPath || !outputFolder || outputFiles.duplicateFirstPages.size > 0} loading={exporting} onClick={handleExport}>
+          Export
+        </Button>
+      </Toolbar>
 
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
         {pdfPath ? (

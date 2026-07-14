@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Group, Loader, Stack, Text } from '@mantine/core'
+import { Box, Button, Loader, Stack, Text } from '@mantine/core'
 import DetailPanel from '../DetailPanel'
+import Toolbar from '../Toolbar'
 import DriveFolderPickerModal from './DriveFolderPickerModal'
 import DriveThumbnailPanel from './ThumbnailPanel'
 import GroupNode from './GroupNode'
@@ -48,22 +49,11 @@ export default function DriveUploadMode() {
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box
-        style={{
-          flexShrink: 0,
-          borderBottom: '1px solid var(--mantine-color-gray-3)',
-          display: 'flex',
-          alignItems: 'center',
-          paddingInline: 12,
-          height: 44,
-        }}
-      >
-        <Group gap={8} style={{ width: '100%' }}>
-          <Button size="xs" variant="default" onClick={pickRoot}>
-            {root ? ellipsisPath(root) : 'Choose root folder…'}
-          </Button>
-        </Group>
-      </Box>
+      <Toolbar>
+        <Button size="xs" variant="default" onClick={pickRoot}>
+          {root ? ellipsisPath(root) : 'Choose root folder…'}
+        </Button>
+      </Toolbar>
 
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
         <ResizableLeftPanel
