@@ -1,0 +1,75 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "92c667e778ef",
+  "session_id": "9fbbc352-3e08-4651-91c5-7f58267f5887",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-14T19:41:48.390263Z",
+  "branch": "step-6a-upload-queue-opus",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "app.go",
+    "backend/drive/upload.go",
+    "backend/drive/upload_test.go",
+    "frontend/src/components/DriveUploadMode/flattenFiles.test.ts",
+    "frontend/src/components/DriveUploadMode/flattenFiles.ts",
+    "frontend/src/components/DriveUploadMode/uploadQueue.test.ts",
+    "frontend/src/components/DriveUploadMode/uploadQueue.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "be7774b1c7ed",
+  "token_usage": {
+    "input_tokens": 91,
+    "cache_creation_tokens": 102853,
+    "cache_read_tokens": 2049637,
+    "output_tokens": 29797,
+    "api_call_count": 46
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-14T19:41:48.382582Z",
+    "agent_lines": 330,
+    "agent_removed": 5,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 330,
+    "total_lines_changed": 335,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 28,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 28
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 28,
+      "user_lines_removed": 0,
+      "agent_lines_added": 327,
+      "agent_lines_removed": 5,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 28
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 28,
+      "user_lines_removed": 0,
+      "agent_lines_added": 330,
+      "agent_lines_removed": 5,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 28
+      }
+    }
+  ]
+}

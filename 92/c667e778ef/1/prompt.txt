@@ -1,0 +1,9 @@
+switch to opus
+
+---
+
+Start executing plan in spec-drive-upload-step6.md but skip the prerequisite (Toolbar layout)
+
+---
+
+Rewrite the hook similar to how the pageCache is built
