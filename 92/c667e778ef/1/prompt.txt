@@ -7,3 +7,7 @@ Start executing plan in spec-drive-upload-step6.md but skip the prerequisite (To
 ---
 
 Rewrite the hook similar to how the pageCache is built
+
+---
+
+create new branch step-6a-upload-queue-opus and commit
