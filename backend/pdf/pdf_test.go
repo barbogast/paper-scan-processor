@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/pdfcpu/pdfcpu/pkg/api"
-	"paper-scan-processor/backend/pdftest"
 )
 
 // pdfPageRotation returns the rotation (in degrees) of the given 1-indexed page.
@@ -74,8 +73,8 @@ func TestMergePDFs(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
-	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
+	WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	if err := MergePDFs(fileA, fileB, out, true, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
@@ -91,7 +90,7 @@ func TestMergePDFs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdftest.AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
+	AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
 }
 
 func TestMergePDFsFirstPageInB(t *testing.T) {
@@ -100,8 +99,8 @@ func TestMergePDFsFirstPageInB(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
-	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
+	WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	if err := MergePDFs(fileA, fileB, out, false, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
@@ -111,7 +110,7 @@ func TestMergePDFsFirstPageInB(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdftest.AssertOrder(t, data, []string{"B1", "A1", "B2", "A2", "B3", "A3"})
+	AssertOrder(t, data, []string{"B1", "A1", "B2", "A2", "B3", "A3"})
 }
 
 func TestMergePDFsReverseB(t *testing.T) {
@@ -120,8 +119,8 @@ func TestMergePDFsReverseB(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
-	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
+	WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	if err := MergePDFs(fileA, fileB, out, true, true, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
@@ -138,7 +137,7 @@ func TestMergePDFsReverseB(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdftest.AssertOrder(t, data, []string{"A1", "B3", "A2", "B2", "A3", "B1"})
+	AssertOrder(t, data, []string{"A1", "B3", "A2", "B2", "A3", "B1"})
 }
 
 func TestMergePDFsUnequalCounts(t *testing.T) {
@@ -147,8 +146,8 @@ func TestMergePDFsUnequalCounts(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3", "A4"})
-	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
+	WritePDF(t, fileA, []string{"A1", "A2", "A3", "A4"})
+	WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	if err := MergePDFs(fileA, fileB, out, true, false, nil, nil, nil, nil); err != nil {
 		t.Fatal(err)
@@ -165,7 +164,7 @@ func TestMergePDFsUnequalCounts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdftest.AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3", "A4"})
+	AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3", "A4"})
 }
 
 func TestMergePDFsSkip(t *testing.T) {
@@ -174,8 +173,8 @@ func TestMergePDFsSkip(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
-	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
+	WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	// Skip A page 2 and B page 1 → A=[A1,A3], B=[B2,B3] → interleaved: A1,B2, A3,B3
 	if err := MergePDFs(fileA, fileB, out, true, false, []int{2}, []int{1}, nil, nil); err != nil {
@@ -192,7 +191,7 @@ func TestMergePDFsSkip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdftest.AssertOrder(t, data, []string{"A1", "B2", "A3", "B3"})
+	AssertOrder(t, data, []string{"A1", "B2", "A3", "B3"})
 	if bytes.Contains(data, []byte("% A2")) {
 		t.Error("skipped page A2 found in output")
 	}
@@ -207,8 +206,8 @@ func TestMergePDFsRotate(t *testing.T) {
 	fileB := filepath.Join(tmp, "b.pdf")
 	out := filepath.Join(tmp, "merged.pdf")
 
-	pdftest.WritePDF(t, fileA, []string{"A1", "A2", "A3"})
-	pdftest.WritePDF(t, fileB, []string{"B1", "B2", "B3"})
+	WritePDF(t, fileA, []string{"A1", "A2", "A3"})
+	WritePDF(t, fileB, []string{"B1", "B2", "B3"})
 
 	// Rotate A page 2 by 90° and B page 1 by 180°
 	rotA := map[int]int{2: 90}
@@ -229,7 +228,7 @@ func TestMergePDFsRotate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdftest.AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
+	AssertOrder(t, data, []string{"A1", "B1", "A2", "B2", "A3", "B3"})
 
 	// Verify rotation per output page via pdfcpu context API.
 	// Interleaved order: page1=A1(0°), page2=B1(180°), page3=A2(90°), page4=B2(0°), page5=A3(0°), page6=B3(0°)
@@ -251,7 +250,7 @@ func TestSplitPDF(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
+	WritePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
 
 	parts, err := SplitPDF(in, []OutputFileSpec{
 		{Pages: []int{1, 2}},
@@ -279,7 +278,7 @@ func TestSplitPDF(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		pdftest.AssertOrder(t, data, labels)
+		AssertOrder(t, data, labels)
 	}
 }
 
@@ -291,7 +290,7 @@ func TestSplitPDFSingleOutput(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
+	WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
 
 	parts, err := SplitPDF(in, []OutputFileSpec{
 		{Pages: []int{1, 2, 3, 4}},
@@ -319,7 +318,7 @@ func TestSplitPDFSkip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
+	WritePDF(t, in, []string{"P1", "P2", "P3", "P4", "P5", "P6"})
 
 	// Page 3 already filtered by caller; segment 2 gets only page 4.
 	parts, err := SplitPDF(in, []OutputFileSpec{
@@ -351,7 +350,7 @@ func TestSplitPDFSkip(t *testing.T) {
 	if bytes.Contains(data1, []byte("% P3")) {
 		t.Error("skipped page P3 found in segment 2")
 	}
-	pdftest.AssertOrder(t, data1, []string{"P4"})
+	AssertOrder(t, data1, []string{"P4"})
 }
 
 func TestSplitPDFReorder(t *testing.T) {
@@ -362,7 +361,7 @@ func TestSplitPDFReorder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
+	WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
 
 	// Reverse order within one segment, and swap pages across segments.
 	parts, err := SplitPDF(in, []OutputFileSpec{
@@ -385,6 +384,6 @@ func TestSplitPDFReorder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdftest.AssertOrder(t, data0, []string{"P3", "P1"})
-	pdftest.AssertOrder(t, data1, []string{"P4", "P2"})
+	AssertOrder(t, data0, []string{"P3", "P1"})
+	AssertOrder(t, data1, []string{"P4", "P2"})
 }

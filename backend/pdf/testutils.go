@@ -1,6 +1,4 @@
-// Package pdftest provides shared PDF test fixtures used across the backend
-// packages' test files.
-package pdftest
+package pdf
 
 import (
 	"bytes"

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"paper-scan-processor/backend/pdf"
-	"paper-scan-processor/backend/pdftest"
 )
 
 func TestExportSplitSingleFile(t *testing.T) {
@@ -17,7 +16,7 @@ func TestExportSplitSingleFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3"})
+	pdf.WritePDF(t, in, []string{"P1", "P2", "P3"})
 
 	app := &App{}
 	if err := app.ExportSplit(in, []pdf.OutputFileSpec{
@@ -39,7 +38,7 @@ func TestExportSplitSingleFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pdftest.AssertOrder(t, data, []string{"P1", "P2", "P3"})
+	pdf.AssertOrder(t, data, []string{"P1", "P2", "P3"})
 }
 
 func TestExportSplitMultipleFiles(t *testing.T) {
@@ -53,7 +52,7 @@ func TestExportSplitMultipleFiles(t *testing.T) {
 		}
 	}
 
-	pdftest.WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
+	pdf.WritePDF(t, in, []string{"P1", "P2", "P3", "P4"})
 
 	app := &App{}
 	if err := app.ExportSplit(in, []pdf.OutputFileSpec{
@@ -79,8 +78,8 @@ func TestExportSplitMultipleFiles(t *testing.T) {
 
 	dataA, _ := os.ReadFile(outA)
 	dataB, _ := os.ReadFile(outB)
-	pdftest.AssertOrder(t, dataA, []string{"P1", "P2"})
-	pdftest.AssertOrder(t, dataB, []string{"P3", "P4"})
+	pdf.AssertOrder(t, dataA, []string{"P1", "P2"})
+	pdf.AssertOrder(t, dataB, []string{"P3", "P4"})
 }
 
 func TestExportSplitEmptyNameFallback(t *testing.T) {
@@ -91,7 +90,7 @@ func TestExportSplitEmptyNameFallback(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pdftest.WritePDF(t, in, []string{"P1", "P2"})
+	pdf.WritePDF(t, in, []string{"P1", "P2"})
 
 	app := &App{}
 	if err := app.ExportSplit(in, []pdf.OutputFileSpec{

@@ -7,17 +7,17 @@ import (
 	"strings"
 	"testing"
 
-	"paper-scan-processor/backend/pdftest"
+	"paper-scan-processor/backend/pdf"
 )
 
 func TestScanLocalRootFilesInRootAndSubfolder(t *testing.T) {
 	root := t.TempDir()
-	pdftest.WritePDF(t, filepath.Join(root, "misc.pdf"), []string{"p1", "p2"})
+	pdf.WritePDF(t, filepath.Join(root, "misc.pdf"), []string{"p1", "p2"})
 	if err := os.Mkdir(filepath.Join(root, "invoices"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	pdftest.WritePDF(t, filepath.Join(root, "invoices", "b.pdf"), []string{"p1"})
-	pdftest.WritePDF(t, filepath.Join(root, "invoices", "a.pdf"), []string{"p1", "p2", "p3"})
+	pdf.WritePDF(t, filepath.Join(root, "invoices", "b.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, "invoices", "a.pdf"), []string{"p1", "p2", "p3"})
 
 	tree, err := ScanLocalRoot(root)
 	if err != nil {
@@ -58,7 +58,7 @@ func TestScanLocalRootEmptySubfolderOmitted(t *testing.T) {
 	if err := os.Mkdir(filepath.Join(root, "empty"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	pdftest.WritePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
 
 	tree, err := ScanLocalRoot(root)
 	if err != nil {
@@ -74,7 +74,7 @@ func TestScanLocalRootEmptySubfolderOmitted(t *testing.T) {
 
 func TestScanLocalRootFlagsCorruptPDF(t *testing.T) {
 	root := t.TempDir()
-	pdftest.WritePDF(t, filepath.Join(root, "good.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, "good.pdf"), []string{"p1"})
 	if err := os.WriteFile(filepath.Join(root, "bad.pdf"), []byte("not a pdf"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func TestScanLocalRootFlagsCorruptPDF(t *testing.T) {
 
 func TestScanLocalRootIncludesNonPDFFilesButIgnoresDotfiles(t *testing.T) {
 	root := t.TempDir()
-	pdftest.WritePDF(t, filepath.Join(root, "doc.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, "doc.pdf"), []string{"p1"})
 	if err := os.WriteFile(filepath.Join(root, "scan.jpg"), []byte("hi"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func TestScanLocalRootIncludesNonPDFFilesButIgnoresDotfiles(t *testing.T) {
 	if err := os.Mkdir(filepath.Join(root, ".hidden"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	pdftest.WritePDF(t, filepath.Join(root, ".hidden", "sneaky.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, ".hidden", "sneaky.pdf"), []string{"p1"})
 
 	tree, err := ScanLocalRoot(root)
 	if err != nil {
@@ -142,8 +142,8 @@ func TestScanLocalRootRecursesMultipleLevels(t *testing.T) {
 	if err := os.MkdirAll(nested, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	pdftest.WritePDF(t, filepath.Join(nested, "deep.pdf"), []string{"p1"})
-	pdftest.WritePDF(t, filepath.Join(root, "a", "shallow.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(nested, "deep.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, "a", "shallow.pdf"), []string{"p1"})
 
 	tree, err := ScanLocalRoot(root)
 	if err != nil {
@@ -179,7 +179,7 @@ func TestScanLocalRootOmitsSubtreeWithNoPDFsAtAnyDepth(t *testing.T) {
 	if err := os.MkdirAll(emptyNested, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	pdftest.WritePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, "top.pdf"), []string{"p1"})
 
 	tree, err := ScanLocalRoot(root)
 	if err != nil {
@@ -196,7 +196,7 @@ func TestScanLocalRootDoesNotFollowSymlinkedDirectories(t *testing.T) {
 	if err := os.Mkdir(real, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	pdftest.WritePDF(t, filepath.Join(real, "doc.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(real, "doc.pdf"), []string{"p1"})
 
 	// A symlink back to an ancestor would form an infinite loop if followed.
 	if err := os.Symlink(root, filepath.Join(real, "loop")); err != nil {
@@ -219,7 +219,7 @@ func TestScanLocalRootSubfoldersSortedAlphabetically(t *testing.T) {
 		if err := os.Mkdir(dir, 0o755); err != nil {
 			t.Fatal(err)
 		}
-		pdftest.WritePDF(t, filepath.Join(dir, "f.pdf"), []string{"p1"})
+		pdf.WritePDF(t, filepath.Join(dir, "f.pdf"), []string{"p1"})
 	}
 
 	tree, err := ScanLocalRoot(root)
@@ -258,11 +258,11 @@ func TestScanLocalRootReturnsEmptyTreeForEmptyFolder(t *testing.T) {
 // slice.
 func TestScanLocalRootJSONNeverUsesNullForSlices(t *testing.T) {
 	root := t.TempDir()
-	pdftest.WritePDF(t, filepath.Join(root, "leaf.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, "leaf.pdf"), []string{"p1"})
 	if err := os.Mkdir(filepath.Join(root, "childless"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	pdftest.WritePDF(t, filepath.Join(root, "childless", "doc.pdf"), []string{"p1"})
+	pdf.WritePDF(t, filepath.Join(root, "childless", "doc.pdf"), []string{"p1"})
 
 	tree, err := ScanLocalRoot(root)
 	if err != nil {
