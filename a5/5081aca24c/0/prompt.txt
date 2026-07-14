@@ -91,3 +91,7 @@ commit changes to a new git branch
 ---
 
 UploadFile() in the backend falls back to the original filename if an empty string is passed. The frontend is always supposed to pass a filename, so this fallback is prone to hide errors. Remove it and return an error instead.
+
+---
+
+commit changes to a new git branch
