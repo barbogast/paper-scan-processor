@@ -140,6 +140,13 @@ func (a *App) ListDriveFolder(folderID string) ([]drive.Item, error) {
 	return drive.ListFolder(a.ctx, folderID)
 }
 
+// UploadFile uploads the local file at localPath to the Drive folder with
+// the given ID, naming it name on Drive. Returns the ID of the created
+// Drive file.
+func (a *App) UploadFile(localPath, folderID, name string) (string, error) {
+	return drive.UploadFile(a.ctx, localPath, folderID, name)
+}
+
 // outputFileDest returns the destination path for the i-th pdf.OutputFileSpec.
 func outputFileDest(files []pdf.OutputFileSpec, i int) string {
 	name := strings.TrimSpace(files[i].Name)

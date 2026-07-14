@@ -19,7 +19,7 @@ func TestUploadFile(t *testing.T) {
 		t.Fatalf("FindFolder: %v", err)
 	}
 
-	fileID, err := UploadFile(ctx, uploadLocalPath, folderID)
+	fileID, err := UploadFile(ctx, uploadLocalPath, folderID, "backs.pdf")
 	if err != nil {
 		t.Fatalf("UploadFile: %v", err)
 	}

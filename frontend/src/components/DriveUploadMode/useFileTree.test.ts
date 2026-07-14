@@ -1,12 +1,42 @@
 import { describe, it, expect, vi } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { useFileTree } from './useFileTree'
+import { useFileTree, flattenFiles, LocalFileGroup } from './useFileTree'
 import { PickFolder, ScanLocalRoot } from '../../../wailsjs/go/main/App'
 
 vi.mock('../../../wailsjs/go/main/App', () => ({
   PickFolder: vi.fn(),
   ScanLocalRoot: vi.fn(),
 }))
+
+function file(path: string) {
+  return { path, name: path, sizeBytes: 0, isPdf: true, pageCount: 1, corrupt: false }
+}
+
+describe('flattenFiles', () => {
+  it("lists a group's own files before its subgroups, recursively", () => {
+    const tree: LocalFileGroup = {
+      name: '',
+      files: [file('/root/misc.pdf')],
+      subgroups: [
+        {
+          name: 'invoices',
+          files: [file('/root/invoices/a.pdf')],
+          subgroups: [
+            { name: 'nested', files: [file('/root/invoices/nested/c.pdf')], subgroups: [] },
+          ],
+        },
+        { name: 'receipts', files: [file('/root/receipts/b.pdf')], subgroups: [] },
+      ],
+    }
+
+    expect(flattenFiles(tree).map(f => f.path)).toEqual([
+      '/root/misc.pdf',
+      '/root/invoices/a.pdf',
+      '/root/invoices/nested/c.pdf',
+      '/root/receipts/b.pdf',
+    ])
+  })
+})
 
 describe('useFileTree', () => {
   it('starts with no root and no tree', () => {
