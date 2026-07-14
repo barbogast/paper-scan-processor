@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Loader, Stack, Text } from '@mantine/core'
-import ClippedPath from '../ClippedPath'
+import { Box, Button, Group, Loader, Stack, Text } from '@mantine/core'
 import DetailPanel from '../DetailPanel'
 import DriveFolderPickerModal from './DriveFolderPickerModal'
 import DriveThumbnailPanel from './ThumbnailPanel'
@@ -10,6 +9,7 @@ import ResizableLeftPanel from './ResizableLeftPanel'
 import { useFileTree, LocalFile } from './useFileTree'
 import { useDriveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
 import * as pageCache from '../../lib/pageCache'
+import { ellipsisPath } from '../../utils'
 
 export default function DriveUploadMode() {
   const { root, tree, loading, error, pickRoot } = useFileTree()
@@ -47,67 +47,81 @@ export default function DriveUploadMode() {
   }
 
   return (
-    <ResizableLeftPanel
-      left={
-        <>
-          <Box mb="sm">
-            <ClippedPath path={root} onClick={pickRoot} placeholder="Choose root folder…" />
-          </Box>
+    <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box
+        style={{
+          flexShrink: 0,
+          borderBottom: '1px solid var(--mantine-color-gray-3)',
+          display: 'flex',
+          alignItems: 'center',
+          paddingInline: 12,
+          height: 44,
+        }}
+      >
+        <Group gap={8} style={{ width: '100%' }}>
+          <Button size="xs" variant="default" onClick={pickRoot}>
+            {root ? ellipsisPath(root) : 'Choose root folder…'}
+          </Button>
+        </Group>
+      </Box>
 
-          <DriveFolderPickerModal
-            opened={pickerTarget !== null}
-            onClose={() => setPickerTarget(null)}
-            onSelect={handlePicked}
+      <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
+        <ResizableLeftPanel
+          left={
+            <>
+              <DriveFolderPickerModal
+                opened={pickerTarget !== null}
+                onClose={() => setPickerTarget(null)}
+                onSelect={handlePicked}
+              />
+
+              {loading && <Loader size="sm" />}
+              {error && <Text size="sm" c="red">{error}</Text>}
+              {!loading && !error && isEmpty && (
+                <Text size="sm" c="dimmed">No files found under this folder.</Text>
+              )}
+
+              {tree && (
+                <Stack gap="md">
+                  {tree.subgroups.map(group => (
+                    <GroupNode
+                      key={group.name}
+                      group={group}
+                      groupKey={group.name}
+                      collapsedGroups={collapsedGroups}
+                      onToggle={toggleGroup}
+                      assignments={assignments}
+                      inheritedAssignment={null}
+                      onPick={setPickerTarget}
+                      selectedPath={selectedFile?.path ?? null}
+                      onSelectFile={handleSelectFile}
+                    />
+                  ))}
+                  <FileList
+                    files={tree.files}
+                    assignments={assignments}
+                    inheritedAssignment={null}
+                    onPick={setPickerTarget}
+                    selectedPath={selectedFile?.path ?? null}
+                    onSelectFile={handleSelectFile}
+                  />
+                </Stack>
+              )}
+            </>
+          }
+        >
+          <DriveThumbnailPanel
+            pdfPath={selectedFile?.path ?? null}
+            pageCount={selectedFile?.pageCount ?? 0}
+            selectedPage={selectedPage}
+            onSelectPage={setSelectedPage}
           />
 
-          {loading && <Loader size="sm" />}
-          {error && <Text size="sm" c="red">{error}</Text>}
-          {!loading && !error && isEmpty && (
-            <Text size="sm" c="dimmed">No files found under this folder.</Text>
-          )}
-          {!loading && !root && (
-            <Button size="xs" onClick={pickRoot}>Choose Root Folder</Button>
-          )}
-
-          {tree && (
-            <Stack gap="md" mt="sm">
-              {tree.subgroups.map(group => (
-                <GroupNode
-                  key={group.name}
-                  group={group}
-                  groupKey={group.name}
-                  collapsedGroups={collapsedGroups}
-                  onToggle={toggleGroup}
-                  assignments={assignments}
-                  inheritedAssignment={null}
-                  onPick={setPickerTarget}
-                  selectedPath={selectedFile?.path ?? null}
-                  onSelectFile={handleSelectFile}
-                />
-              ))}
-              <FileList
-                files={tree.files}
-                assignments={assignments}
-                inheritedAssignment={null}
-                onPick={setPickerTarget}
-                selectedPath={selectedFile?.path ?? null}
-                onSelectFile={handleSelectFile}
-              />
-            </Stack>
-          )}
-        </>
-      }
-    >
-      <DriveThumbnailPanel
-        pdfPath={selectedFile?.path ?? null}
-        pageCount={selectedFile?.pageCount ?? 0}
-        selectedPage={selectedPage}
-        onSelectPage={setSelectedPage}
-      />
-
-      {selectedFile
-        ? <DetailPanel pdfPath={selectedFile.path} pageNum={selectedPage} pageCount={selectedFile.pageCount} />
-        : <Box style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />}
-    </ResizableLeftPanel>
+          {selectedFile
+            ? <DetailPanel pdfPath={selectedFile.path} pageNum={selectedPage} pageCount={selectedFile.pageCount} />
+            : <Box style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />}
+        </ResizableLeftPanel>
+      </Box>
+    </Box>
   )
 }

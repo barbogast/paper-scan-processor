@@ -42,7 +42,7 @@ async function setupWithTree() {
       <DriveUploadMode />
     </MantineProvider>
   )
-  fireEvent.click(screen.getByRole('button', { name: 'Choose Root Folder' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Choose root folder…' }))
   await screen.findByText(/invoices/)
 }
 

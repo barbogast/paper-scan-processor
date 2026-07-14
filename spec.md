@@ -291,7 +291,10 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [ ] **Step 3f: Create new Drive folder** — from within the folder browser modal, allow creating a new folder inside the currently browsed location and selecting it as the destination
 - [ ] **Step 4: Inline renaming** — inline editable name for each subfolder and file (controls the Drive upload name, not the local filename); once Step 6 exists, renaming must also become disabled once an upload run has been triggered, alongside Drive folder assignment (see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md))
 - [x] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
-- [ ] **Step 6: Upload queue** — per-file upload with progress; inline error + Retry on failure; "Open in Drive" link per group after completion; see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md) for the UI/UX plan
+- [x] **Step 6 prerequisite: Toolbar layout** — full-width toolbar strip above the three-column layout, matching the `Box` + `Group` toolbar pattern in `SplitMode`/`MergeMode`; root-folder picker moved into it (left-aligned); pure layout move, no behavior change
+- [ ] **Step 6a: Upload queue state model** — `useUploadQueue` hook tracking per-file status (idle/queued/uploading/done/error); sequential (concurrency=1) worker; shared `flattenFiles(group)` tree-traversal utility; `UploadFile` App RPC wrapper around `drive.UploadFile`; no UI yet
+- [ ] **Step 6b: Upload modal** — dedicated modal with read-only tree rendering, per-file/per-group status, inline Retry, "Cancel remaining", blocking close behavior; see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md) for the UI/UX plan
+- [ ] **Step 6c: Post-run residual state** — terminal ✓/⚠ badges, "Open in Drive" links, Upload All button state machine, read-only lock on the file tree once a run starts
 - [ ] **Step 7: Remembered folder mappings** — auto-fill Drive destination from saved subfolder-name→Drive-folder mapping; persisted across sessions
 - [ ] **Step 8: Post-upload cleanup** — prompt to delete or archive source files; archive moves files to a user-specified local archive folder
 - [ ] **Step 9: Conflict detection** — check Drive for filename conflicts before uploading; flag conflicting files
