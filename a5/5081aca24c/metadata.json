@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a55081aca24c",
+  "strategy": "manual-commit",
+  "branch": "step-6a-upload-queue",
+  "checkpoints_count": 23,
+  "files_touched": [
+    "app.go",
+    "backend/drive/upload.go",
+    "backend/drive/upload_test.go",
+    "frontend/src/components/DriveUploadMode/uploadQueue.test.ts",
+    "frontend/src/components/DriveUploadMode/uploadQueue.ts",
+    "frontend/src/components/DriveUploadMode/useFileTree.test.ts",
+    "frontend/src/components/DriveUploadMode/useFileTree.ts",
+    "spec.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a5/5081aca24c/0/metadata.json",
+      "transcript": "/a5/5081aca24c/0/full.jsonl",
+      "content_hash": "/a5/5081aca24c/0/content_hash.txt",
+      "prompt": "/a5/5081aca24c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6207,
+    "cache_creation_tokens": 336164,
+    "cache_read_tokens": 29155680,
+    "output_tokens": 131858,
+    "api_call_count": 148
+  }
+}
