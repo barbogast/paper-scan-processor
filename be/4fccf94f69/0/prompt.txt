@@ -1,0 +1,7 @@
+Start executing plan in spec-drive-upload-step6.md
+
+---
+
+2 comments:
+- Both Split and Merge mode use proper buttons to pick the root folder
+- There still is an additional "Choose Root folder" in the file tree panel
