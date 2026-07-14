@@ -174,10 +174,9 @@ For filing batches of local files (PDFs and other scans, e.g. images) to Google 
 3. The user assigns a Google Drive destination folder to each subfolder group. The assignment propagates to all files within the group. Individual files can override the group's assignment.
 4. The user can select any PDF file to preview it — the thumbnail strip and detail panel update to show that file's pages. Non-PDF files (e.g. images) can still be assigned and uploaded, just without a preview.
 5. The user clicks Upload. Before uploading, the app checks each Drive destination for filename conflicts. If any are found, conflicting files are flagged and the upload is aborted until resolved.
-6. The app shows a review screen: for each Drive destination folder, the files about to be uploaded are listed next to the files already present in that folder, so the user can visually spot likely duplicate scans (e.g. the same document scanned twice under different names) before committing. The user confirms or cancels.
-7. Uploads proceed with per-file progress. If a file fails, it shows an inline error and a Retry button; other uploads continue unaffected.
-8. After all uploads complete, each subfolder group shows an "Open in Drive" link to its destination folder.
-9. The user is prompted to delete or move to a local archive folder the source files that uploaded successfully.
+6. Uploads proceed with per-file progress. If a file fails, it shows an inline error and a Retry button; other uploads continue unaffected.
+7. After all uploads complete, each subfolder group shows an "Open in Drive" link to its destination folder.
+8. The user is prompted to delete or move to a local archive folder the source files that uploaded successfully.
 
 ### Layout
 
@@ -222,10 +221,6 @@ Clicking a subfolder header selects all files in that group. Clicking a file sel
 ### Remembered folder mappings
 
 The app remembers Drive folder assignments keyed on local subfolder name. When a subfolder with a previously seen name is loaded, the app auto-fills its Drive destination. The user can change it before uploading. Mappings persist across sessions.
-
-### Pre-upload review
-
-Before uploads start, the app shows a review screen grouped by Drive destination folder. Each group lists the local files queued for upload next to the files already present in that Drive folder (name and size, fetched via the same folder-listing call used by the folder browser). This is a manual check, not automated duplicate detection — two scans of the same document can end up with different names and different bytes, so there's no reliable way to flag them automatically; the review screen just gives the user a quick side-by-side to catch it themselves. The user can go back to change assignments or confirm to proceed.
 
 ### Post-upload cleanup
 
@@ -295,8 +290,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [ ] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select
 - [ ] **Step 4: Inline renaming** — inline editable name for each subfolder and file (controls the Drive upload name, not the local filename)
 - [x] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
-- [ ] **Step 6a: Pre-upload review screen** — grouped by Drive destination folder, lists queued local files next to files already in that folder (via `ListDriveFolder`); Cancel / Confirm Upload
-- [ ] **Step 6b: Upload queue** — per-file upload with progress; inline error + Retry on failure; "Open in Drive" link per group after completion
+- [ ] **Step 6: Upload queue** — per-file upload with progress; inline error + Retry on failure; "Open in Drive" link per group after completion
 - [ ] **Step 7: Remembered folder mappings** — auto-fill Drive destination from saved subfolder-name→Drive-folder mapping; persisted across sessions
 - [ ] **Step 8: Post-upload cleanup** — prompt to delete or archive source files; archive moves files to a user-specified local archive folder
 - [ ] **Step 9: Conflict detection** — check Drive for filename conflicts before uploading; flag conflicting files
@@ -378,3 +372,4 @@ Reuse / simplification / efficiency (lower priority, not yet actioned):
 - **Insert pages from another PDF**: allow the user to pull pages from a second PDF into the current document before splitting. Planned for v2.
 - **Scanning integration**: trigger a scan from within the app using OS or device APIs. Not currently planned but under consideration.
 - **Page reordering**: drag thumbnails to reorder pages before export or merge. No clear use case identified for the current workflow; omitted from v1.
+- **Pre-upload duplicate-scan review**: a review screen before upload, grouping queued files by Drive destination folder and showing them alongside files already present there, so the user could visually catch the same document scanned twice under different names/bytes. Descoped — accidental duplicate uploads are expected to be rare enough that the UI isn't worth building. If revisited, the design work landed on: gate the upload action until every file has an effective (own-or-inherited) Drive destination assignment; present the review as a modal, consistent with the existing Drive folder picker; group by *resolved* Drive destination folder id (merging local subfolders that resolve to the same Drive folder); and, since a destination folder can hold hundreds of existing files, avoid a full side-by-side dump by merging queued (highlighted) and existing files into one alphabetically-sorted list, showing only existing entries within ±1 position of a queued entry (likely-duplicate names sort near each other) and collapsing the rest into an expandable "⋯ N more files ⋯".
