@@ -1,0 +1,9 @@
+Make a plan for step 6a of the drive upload mode
+
+---
+
+I'm concerned that this features isn't actually helpful: I've got folders in my drive which contain quite some files. This means that the list would become pretty long. The new files would need to be in a sorted list with the existing files, but highlighted. Still, the overall list would be too long.
+
+---
+
+I think the cost/benefit ratio of this features is doubtful, since it will be rare that I accidentally upload the same document twice. Let's move this feature to the "Out of scope" section. Document the key decisions from this chat, though.
