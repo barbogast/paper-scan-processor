@@ -1,0 +1,65 @@
+Make a plan for step 6 of the Drive upload mode. I'm only interested in the UI / UX part right now
+
+---
+
+I'm not sure that integrating the upload-progress in the Drive Upload main tab is the right choice: 
+
+During the upload all other actions need to be disabled: Assigning output folders, changing the root folder (not yet implemented), renaming files, and switching to a different mode/tab. Did you consider this?
+
+---
+
+Regarding the last paragraph: Yeah, sounds reasonable.
+
+Also, what does "stays available for a fresh run" mean for the "Upload all" button?
+
+---
+
+No, starting the upload should disable the Drive folder assignment badges.
+
+---
+
+Write the entire plan into a fresh spec file
+
+---
+
+Regarding the "Upload All" button: For Split and Merge Mode the buttons starting the processing are in the upper right corner.
+
+---
+
+Let's move the root-folder picker into a toolbar as a prerequisite step.
+
+---
+
+Regarding the state machine for the "Upload all" button: Does it make sense to have the "Run in progress" state? The button is unreachable / hidden by the modal during the upload, right?
+
+---
+
+You mixed the conversation here into the spec file - don't.
+
+---
+
+Regarding "## Drive folder assignment locking": The entire filelist needs to become read-only. Not only folder assignment but also file renaming (once it's implemented)
+
+---
+
+Add a note for "Inline renaming" to not forget to disable renaming once the upload was triggered
+
+---
+
+And rename the new spec file so it starts with `spec-...`
+
+---
+
+Link the new spec file in spec.md
+
+---
+
+Is there anything particularly interesting about the implementation? Does it make sense to plan it in detail?
+
+---
+
+Yes, write it down, since I'll start a new context for the implementation. Or should I just use this context?
+
+---
+
+commit changes

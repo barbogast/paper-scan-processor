@@ -3,8 +3,9 @@
   "checkpoint_id": "4e54ba089eb8",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 16,
   "files_touched": [
+    "spec-drive-upload-step6.md",
     "spec.md"
   ],
   "sessions": [
@@ -13,13 +14,19 @@
       "transcript": "/4e/54ba089eb8/0/full.jsonl",
       "content_hash": "/4e/54ba089eb8/0/content_hash.txt",
       "prompt": "/4e/54ba089eb8/0/prompt.txt"
+    },
+    {
+      "metadata": "/4e/54ba089eb8/1/metadata.json",
+      "transcript": "/4e/54ba089eb8/1/full.jsonl",
+      "content_hash": "/4e/54ba089eb8/1/content_hash.txt",
+      "prompt": "/4e/54ba089eb8/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 155,
-    "cache_creation_tokens": 6643,
-    "cache_read_tokens": 493223,
-    "output_tokens": 2574,
-    "api_call_count": 5
+    "input_tokens": 7500,
+    "cache_creation_tokens": 126610,
+    "cache_read_tokens": 4468687,
+    "output_tokens": 37577,
+    "api_call_count": 62
   }
 }
