@@ -1,0 +1,5 @@
+Would it make sense to use a shared component for the toolbar?
+
+---
+
+yes
