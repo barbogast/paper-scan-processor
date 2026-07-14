@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "92c667e778ef",
+  "strategy": "manual-commit",
+  "branch": "step-6a-upload-queue-opus",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/92/c667e778ef/0/metadata.json",
+      "transcript": "/92/c667e778ef/0/full.jsonl",
+      "content_hash": "/92/c667e778ef/0/content_hash.txt",
+      "prompt": "/92/c667e778ef/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 19109,
+    "cache_creation_tokens": 487208,
+    "cache_read_tokens": 35712385,
+    "output_tokens": 159387,
+    "api_call_count": 219
+  }
+}

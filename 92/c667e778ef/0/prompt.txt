@@ -1,0 +1,101 @@
+go ahead
+
+---
+
+go ahead
+
+---
+
+The frontend will always pass a file name for the upload, even if it wasn't renamed, right?
+
+---
+
+what's the reason for all those useRef`s in useUploadQueue?
+
+---
+
+Would it make sense to use useEffectEvent() instead of refs? Don't touch the code,just answer.
+
+---
+
+The queue is basically a singleton, right? Doesn't it make sense to have an actual singleton, rather than trying to squeeze it into Reacts hook-logic?
+
+---
+
+Not sure you understood what I meant: I mean to implement the upload queue as moulde-level variables. Something similar to the pageCache
+
+---
+
+yes
+
+---
+
+Right now for both statuses and jobs it's not clear from the definition which value the key is, only that its type is `string`
+
+---
+
+Line 63 says: `if (!job) continue`. When does it happen that job is empty?
+
+---
+
+yes
+
+---
+
+`const skipped = pendingPaths.splice(0, pendingPaths.length)` clears the array, right? Wouldn't it be easier to just do `const skipped = []`? Same for all the other similar cases.
+
+---
+
+In cancelRemaining() you could first loop through pending and reset it afterward. What's the reason to reset all these variables in place? Why not just assign a new value? I'm asking because for Array.splice() and [].length = 0 it's not immediately clear what the purpose is, at least not compared to a simple assignment.
+
+---
+
+What's the reason to assign `skipped = pending` instead of looping directly over `pending`?
+
+---
+
+How about merging UploadFileState and UploadJob?
+
+---
+
+yes
+
+---
+
+Now merge the actual types
+
+---
+
+No, go back to the previous version
+
+---
+
+Shouldn't retry() remove the .error property of the FileEntry?
+
+---
+
+Yeah, let's clear `running`
+
+---
+
+I also wonder whether reset() should set `cancelled` to `true`. Shouldn't it rather be `false`, to mimick the initial state?
+
+---
+
+Create a list of all the issues and improvements I flagged since the initial implementation.
+
+---
+
+commit changes to a new git branch
+
+---
+
+UploadFile() in the backend falls back to the original filename if an empty string is passed. The frontend is always supposed to pass a filename, so this fallback is prone to hide errors. Remove it and return an error instead.
+
+---
+
+commit changes to a new git branch
+
+---
+
+commit the drive-upload-step6-plan.md onto the main branch and afterwards rebase this branch onto main
