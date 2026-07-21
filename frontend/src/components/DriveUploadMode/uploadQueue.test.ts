@@ -139,4 +139,30 @@ describe('uploadQueue', () => {
     uploadQueue.start([jobB])
     expect(uploadQueue.getStatus(jobB.path)?.status).toBe('uploading')
   })
+
+  describe('hasSettled', () => {
+    it('is true for paths with no status at all', () => {
+      expect(uploadQueue.hasSettled([jobA.path, jobB.path])).toBe(true)
+    })
+
+    it('is false while any given path is queued or uploading', async () => {
+      const first = deferred<string>()
+      vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
+      uploadQueue.start([jobA, jobB])
+
+      expect(uploadQueue.hasSettled([jobA.path, jobB.path])).toBe(false)
+
+      first.resolve('id-a')
+      await waitFor(() => expect(uploadQueue.getStatus(jobA.path)?.status).toBe('done'))
+      expect(uploadQueue.hasSettled([jobA.path, jobB.path])).toBe(true)
+    })
+
+    it('only considers the given paths, ignoring other in-flight uploads', () => {
+      const first = deferred<string>()
+      vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
+      uploadQueue.start([jobA]) // jobA now uploading
+
+      expect(uploadQueue.hasSettled(['/root/unrelated.pdf'])).toBe(true)
+    })
+  })
 })

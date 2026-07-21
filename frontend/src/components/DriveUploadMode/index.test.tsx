@@ -1,13 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
 import DriveUploadMode from './index'
-import { PickFolder, ScanLocalRoot, ListDriveFolder } from '../../../wailsjs/go/main/App'
+import { PickFolder, ScanLocalRoot, ListDriveFolder, UploadFile } from '../../../wailsjs/go/main/App'
+import * as uploadQueue from './uploadQueue'
 
 vi.mock('../../../wailsjs/go/main/App', () => ({
   PickFolder: vi.fn(),
   ScanLocalRoot: vi.fn(),
   ListDriveFolder: vi.fn(),
+  UploadFile: vi.fn(),
   RenderPage: vi.fn().mockResolvedValue(''),
 }))
 
@@ -44,6 +46,23 @@ async function setupWithTree() {
   )
   fireEvent.click(screen.getByRole('button', { name: 'Choose root folder…' }))
   await screen.findByText(/invoices/)
+}
+
+// Assigns the "Finance" Drive folder to the group/file whose badge is
+// labelled `label` (i.e. the target of "Set Drive folder for {label}").
+async function assign(label: string) {
+  fireEvent.click(screen.getByRole('button', { name: `Set Drive folder for ${label}` }))
+  fireEvent.click(await screen.findByRole('button', { name: '📁 Finance' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Select "Finance"' }))
+}
+
+// TREE has three files that each need their own assignment to resolve
+// (misc.pdf and scan.jpg are root-level with no group to inherit from);
+// assigning "invoices" covers a.pdf for all of them.
+async function assignAllFolders() {
+  await assign('invoices')
+  await assign('misc')
+  await assign('scan.jpg')
 }
 
 describe('DriveUploadMode assignment fields', () => {
@@ -133,5 +152,82 @@ describe('DriveUploadMode file preview', () => {
     fireEvent.click(screen.getByText('misc')) // "misc" only has 1 page
     expect(await screen.findByAltText('Page 1')).toBeTruthy()
     expect(screen.queryByAltText('Page 2')).toBeNull()
+  })
+})
+
+describe('DriveUploadMode upload run', () => {
+  beforeEach(() => {
+    vi.mocked(PickFolder).mockReset()
+    vi.mocked(ScanLocalRoot).mockReset()
+    vi.mocked(ListDriveFolder).mockReset()
+    vi.mocked(UploadFile).mockReset()
+    uploadQueue.reset()
+  })
+
+  afterEach(() => {
+    uploadQueue.reset()
+  })
+
+  function isDisabled(name: string) {
+    return (screen.getByRole('button', { name }) as HTMLButtonElement).disabled
+  }
+
+  it('Upload All stays disabled until every file resolves to a Drive folder', async () => {
+    await setupWithTree()
+    expect(isDisabled('Upload All')).toBe(true)
+
+    await assignAllFolders()
+
+    expect(isDisabled('Upload All')).toBe(false)
+  })
+
+  it('clicking Upload All runs every file and shows terminal status in the modal', async () => {
+    await setupWithTree()
+    await assignAllFolders()
+    vi.mocked(UploadFile).mockResolvedValue('drive-id')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
+
+    expect(await screen.findByText('Uploading to Drive')).toBeTruthy()
+
+    await waitFor(() => expect(UploadFile).toHaveBeenCalledTimes(3))
+    await waitFor(() => expect(screen.getAllByText('✓ Uploaded').length).toBe(3))
+    expect(isDisabled('Close')).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    await waitFor(() => expect(screen.queryByText('Uploading to Drive')).toBeNull())
+  })
+
+  it('a failed file shows an inline Retry that re-queues just that file', async () => {
+    await setupWithTree()
+    await assignAllFolders()
+    vi.mocked(UploadFile).mockRejectedValueOnce(new Error('quota exceeded')).mockResolvedValue('drive-id')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
+
+    await waitFor(() => expect(screen.getByText(/quota exceeded/)).toBeTruthy())
+    await waitFor(() => expect(screen.getAllByText('✓ Uploaded').length).toBe(2))
+    expect(isDisabled('Close')).toBe(false) // run reached a terminal rest state, even with a failure showing
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+    await waitFor(() => expect(screen.getAllByText('✓ Uploaded').length).toBe(3))
+    expect(screen.queryByText(/quota exceeded/)).toBeNull()
+  })
+
+  it('Cancel remaining reverts queued files without touching the one already in flight', async () => {
+    await setupWithTree()
+    await assignAllFolders()
+    let resolveFirst: (v: string) => void = () => {}
+    vi.mocked(UploadFile).mockImplementation(() => new Promise<string>(res => { resolveFirst = res }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
+    await waitFor(() => expect(UploadFile).toHaveBeenCalledTimes(1))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel remaining' }))
+    expect(screen.getAllByText('Not uploaded').length).toBe(2)
+    expect(isDisabled('Close')).toBe(true) // the in-flight file hasn't resolved yet
+
+    resolveFirst('drive-id')
+    await waitFor(() => expect(isDisabled('Close')).toBe(false))
   })
 })

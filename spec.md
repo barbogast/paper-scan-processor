@@ -293,7 +293,7 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
 - [x] **Step 6 prerequisite: Toolbar layout** — full-width toolbar strip above the three-column layout, matching the `Box` + `Group` toolbar pattern in `SplitMode`/`MergeMode`; root-folder picker moved into it (left-aligned); pure layout move, no behavior change
 - [x] **Step 6a: Upload queue state model** — `uploadQueue` module-level singleton (matching `lib/pageCache`'s pattern) tracking per-file status (idle/queued/uploading/done/error); sequential (concurrency=1) worker; shared `flattenFiles(group)` tree-traversal utility; `UploadFile` App RPC wrapper around `drive.UploadFile`; no UI yet
-- [ ] **Step 6b: Upload modal** — dedicated modal with read-only tree rendering, per-file/per-group status, inline Retry, "Cancel remaining", blocking close behavior; see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md) for the UI/UX plan
+- [x] **Step 6b: Upload modal** — dedicated modal with read-only tree rendering, per-file/per-group status, inline Retry, "Cancel remaining", blocking close behavior; see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md) for the UI/UX plan
 - [ ] **Step 6c: Post-run residual state** — terminal ✓/⚠ badges, "Open in Drive" links, Upload All button state machine, read-only lock on the file tree once a run starts
 - [ ] **Step 7: Remembered folder mappings** — auto-fill Drive destination from saved subfolder-name→Drive-folder mapping; persisted across sessions
 - [ ] **Step 8: Post-upload cleanup** — prompt to delete or archive source files; archive moves files to a user-specified local archive folder
@@ -311,6 +311,15 @@ If a file upload fails, the error is shown inline next to that file in the left 
 - [x] **Name the magic pixel offsets in `MergeMode/index.tsx`** — `totalWidth - 22` and `colWidth + 26` are two different values for what comments describe as "scrollbar + gap"; name them as constants and reconcile
 - [x] **Add `out.Sync()` in `pdf.go:copyFile`** — without a sync before close, a crash between write completion and OS flush can silently corrupt the output PDF
 - [x] **Wrap `ThumbColumn` return in a Fragment** — currently returns a raw `JSX.Element[]` array; wrapping in `<>...</>` is more conventional and clarifies intent
+
+### Styling cleanup
+
+Low-hanging fruit from a review of how styling is done across the frontend (all inline `style={{}}`, no CSS modules/styled-components; Mantine tokens are already used consistently for color where a token exists).
+
+- [ ] **Extract shared `ResizeHandle` component** — the vertical resize-drag handle (`width: DRAG_HANDLE_WIDTH, height: '100%', cursor: 'col-resize', flexShrink: 0, background: 'var(--mantine-color-gray-3)'`, paired with `onMouseDown={startDrag}` from `makeResizeDragHandler`) is duplicated identically in `SplitMode/ThumbnailPanel.tsx`, `DriveUploadMode/ResizableLeftPanel.tsx`, `DriveUploadMode/ThumbnailPanel.tsx`, and `MergeMode/ThumbnailPanel.tsx`
+- [ ] **Move `TruncatedText` out of `DriveUploadMode/`** — it's a generic label+tooltip-on-truncation component built on the shared `useIsTruncated` hook, nothing Drive-specific about it; relocate next to `ClippedPath` in `components/` so it's discoverable for reuse elsewhere
+- [ ] **Migrate inline `style={{}}` objects to goober** — adopt `goober` (small styled-components-like CSS-in-JS, no build plugin needed) and convert inline `style={{}}` objects to `styled` components, colocated in the same `.tsx` file
+- [ ] **Replace JS-driven hover state with CSS `:hover`** — once goober is in place, remove the `isHovered`/`hoveredPage`/`hoveredGap` state and `onMouseEnter`/`onMouseLeave` wiring in `PageThumbnail`, `SplitMode/ThumbnailPanel`, `MergeMode/ThumbnailPanel`'s `ThumbColumn`, and `GapZone`, replacing it with real `:hover` styles; the existing accessibility gap (thumbnail controls not keyboard-reachable, tracked in Code review findings) means these should pair with `:focus-within` rather than `:hover` alone if addressed at the same time
 
 ## Various
 - Fixes for keyboard naviation:
@@ -368,7 +377,7 @@ Reuse / simplification / efficiency (lower priority, not yet actioned):
 - [ ] **No memoization anywhere in the Drive Upload tree** — `collapsedGroups`/`assignments` are replaced wholesale (new `Set`/`Map`) on every single toggle or assignment and passed through un-memoized `GroupNode`/`FileList`, so React re-renders the entire tree on any one change instead of just the affected node.
 - [ ] **`scanDirectory` scans fully sequentially** — every file's `os.Stat` + `pdfPageCount` call happens one at a time with no concurrency, for a tool whose whole purpose is scanning batches of scanned documents.
 - [ ] **Drive folder picker discards fetched state on every close** — Mantine's `Modal` (no `keepMounted`) unmounts `DriveTreeNode` on close, so reopening the picker re-fetches the whole tree from scratch, including previously-expanded paths, instead of reusing a cache.
-- [ ] **No reusable "resolved Drive destination for file X" function** — the inheritance-resolution logic lives only inline in component render code; Step 6 (upload queue) and Step 9 (conflict detection) will each need this outside a React render tree and will have to re-derive it.
+- [ ] **`resolveEffectiveAssignments` (added for Step 6b) isn't reused by `GroupNode`/`FileList`** — those still resolve "own ?? inherited" inline during render (they also need the `isOwn` flag the walk doesn't currently expose), so the tree walk exists in two places. Step 9 (conflict detection) will want the same resolver.
 - [ ] **`PickerTarget`/`onSelect` only support one target at a time** — sized for the current single-field-click flow; Step 3e (batch assignment for multi-select) will need this reworked to apply one picked folder to many targets at once.
 
 ## Future / out of scope for v1

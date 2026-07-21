@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Loader, Stack, Text } from '@mantine/core'
+import { Box, Button, Loader, Stack, Text, Tooltip } from '@mantine/core'
 import DetailPanel from '../DetailPanel'
 import Toolbar from '../Toolbar'
 import DriveFolderPickerModal from './DriveFolderPickerModal'
@@ -7,8 +7,10 @@ import DriveThumbnailPanel from './ThumbnailPanel'
 import GroupNode from './GroupNode'
 import FileList from './FileList'
 import ResizableLeftPanel from './ResizableLeftPanel'
-import { useFileTree, LocalFile } from './useFileTree'
-import { useDriveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
+import UploadModal from './UploadModal'
+import { useFileTree, flattenFiles, LocalFile } from './useFileTree'
+import { useDriveAssignments, resolveEffectiveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
+import * as uploadQueue from './uploadQueue'
 import * as pageCache from '../../lib/pageCache'
 import { ellipsisPath } from '../../utils'
 
@@ -47,12 +49,40 @@ export default function DriveUploadMode() {
     setPickerTarget(null)
   }
 
+  const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  const allFiles = tree ? flattenFiles(tree) : []
+  const effectiveAssignments = tree ? resolveEffectiveAssignments(tree, assignments) : null
+  const readyToUpload = allFiles.length > 0 && allFiles.every(f => effectiveAssignments!.get(f.path) != null)
+  const handleUploadAll = () => {
+    if (!tree || !effectiveAssignments) return
+    uploadQueue.start(allFiles.map(f => {
+      const assignment = effectiveAssignments.get(f.path)
+      // Upload All is disabled until readyToUpload is true, so every file
+      // should resolve here — this is a defensive check against that
+      // guard and this walk drifting out of sync, not an expected path.
+      if (!assignment) throw new Error(`No Drive folder assigned for "${f.path}"`)
+      return { path: f.path, folderId: assignment.driveFolderId, name: f.name }
+    }))
+    setUploadModalOpen(true)
+  }
+
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar>
         <Button size="xs" variant="default" onClick={pickRoot}>
           {root ? ellipsisPath(root) : 'Choose root folder…'}
         </Button>
+        <Box style={{ flex: 1 }} />
+        <Tooltip
+          label={tree ? 'Every file needs a Drive folder before uploading' : 'Choose a root folder first'}
+          disabled={readyToUpload}
+        >
+          <span>
+            <Button size="xs" disabled={!readyToUpload} onClick={handleUploadAll}>
+              Upload All
+            </Button>
+          </span>
+        </Tooltip>
       </Toolbar>
 
       <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
@@ -64,6 +94,13 @@ export default function DriveUploadMode() {
                 onClose={() => setPickerTarget(null)}
                 onSelect={handlePicked}
               />
+              {tree && (
+                <UploadModal
+                  opened={uploadModalOpen}
+                  tree={tree}
+                  onClose={() => setUploadModalOpen(false)}
+                />
+              )}
 
               {loading && <Loader size="sm" />}
               {error && <Text size="sm" c="red">{error}</Text>}

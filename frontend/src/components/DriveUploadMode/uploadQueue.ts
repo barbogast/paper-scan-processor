@@ -45,6 +45,17 @@ export function getStatus(path: string): UploadEntry | undefined {
   return filesByPath.get(path)
 }
 
+// True once none of the given files are still queued or uploading — i.e.
+// each has either reached a terminal state (done/error) or was never
+// started. Callers use this to know when it's safe to let the upload
+// modal close.
+export function hasSettled(paths: string[]): boolean {
+  return !paths.some(path => {
+    const status = filesByPath.get(path)?.status
+    return status === 'queued' || status === 'uploading'
+  })
+}
+
 function updateStatus(path: string, status: UploadStatus, error?: string) {
   const existing = filesByPath.get(path)!
   filesByPath.set(path, { ...existing, status, error })
