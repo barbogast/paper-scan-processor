@@ -106,12 +106,13 @@ export function cancelRemaining(): void {
   pendingPaths = []
 }
 
-// Callers must only invoke this once the queue is idle (nothing queued or
-// uploading) — in the UI, that's guaranteed by the upload modal staying
-// open and blocking the root-folder picker until every file reaches a
-// terminal state. If that ever stops holding, a request from the discarded
-// run could still be in flight and would resurface after this call.
 export function reset(): void {
+  if (!hasSettled(Array.from(filesByPath.keys()))) {
+    // Callers must only invoke this once hasSettled() is true for all files;
+    // otherwise a request from the discarded run could still be in flight and
+    // would resurface after this call.
+    throw new Error('reset() called while an upload is still in flight')
+  }
   cancelled = false
   running = false
   filesByPath.clear()

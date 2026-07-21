@@ -111,33 +111,39 @@ describe('uploadQueue', () => {
     expect(UploadFile).toHaveBeenCalledTimes(1)
   })
 
-  it('reset clears all statuses immediately, even mid-run', () => {
-    // reset() is only ever called once the queue is idle in practice (the
-    // upload modal blocks the root-folder picker until every file reaches a
-    // terminal state) — this just checks the unconditional clear, not what
-    // happens to an in-flight request, which is out of contract if that
-    // precondition is violated.
+  it('reset throws if a file is still queued or uploading', () => {
     const first = deferred<string>()
     vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
 
     uploadQueue.start([jobA])
     expect(uploadQueue.getStatus(jobA.path)?.status).toBe('uploading')
 
-    uploadQueue.reset()
-    expect(uploadQueue.getStatus(jobA.path)).toBeUndefined()
+    expect(() => uploadQueue.reset()).toThrow()
+
+    // Let the queue drain so it doesn't leave a dangling promise behind.
+    first.resolve('id-a')
+    return waitFor(() => expect(uploadQueue.getStatus(jobA.path)?.status).toBe('done'))
   })
 
-  it('reset lets a new run start immediately', () => {
+  it('reset clears all statuses once settled, and lets a new run start immediately', async () => {
     const first = deferred<string>()
     vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
     uploadQueue.start([jobA])
 
+    first.resolve('id-a')
+    await waitFor(() => expect(uploadQueue.getStatus(jobA.path)?.status).toBe('done'))
+
     uploadQueue.reset()
+    expect(uploadQueue.getStatus(jobA.path)).toBeUndefined()
 
     const second = deferred<string>()
     vi.mocked(UploadFile).mockReturnValueOnce(second.promise)
     uploadQueue.start([jobB])
     expect(uploadQueue.getStatus(jobB.path)?.status).toBe('uploading')
+
+    // Let the queue drain so it doesn't leave a dangling promise behind.
+    second.resolve('id-b')
+    await waitFor(() => expect(uploadQueue.getStatus(jobB.path)?.status).toBe('done'))
   })
 
   describe('hasSettled', () => {
