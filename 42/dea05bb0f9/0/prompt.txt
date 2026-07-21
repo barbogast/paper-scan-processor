@@ -144,3 +144,7 @@ The sequential one-at-a-time worker was not flagged per instructions (deliberate
 Clean elsewhere: `flattenFiles` living next to the `LocalFileGroup` type in `useFileTree.ts` is the right home and matches the plan's shared-traversal note; keeping assignment→task resolution out of the hook mirrors the existing "resolution is the caller's job" contract in `useDriveAssignments.ts`; the sequential worker is an internal of `run()` so an N-way pool later touches nothing in the API; and the `cancelledRef` (soft stop) vs `generationRef` (hard discard) split is two mechanisms for two genuinely different semantics, not layered patching.</result>
 <usage><subagent_tokens>35538</subagent_tokens><tool_uses>8</tool_uses><duration_ms>138752</duration_ms></usage>
 </task-notification>
+
+---
+
+commit to new branch "step-6a-upload-queue-fable"
