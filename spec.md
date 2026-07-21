@@ -241,6 +241,15 @@ Google OAuth via a browser window, triggered the first time Drive Upload mode is
 
 If a file upload fails, the error is shown inline next to that file in the left panel. Other uploads in the batch continue unaffected. The user can retry failed uploads individually without restarting the batch.
 
+## Global error handling
+
+The mode-specific "Error handling" sections above cover *expected* error conditions the app already knows how to name and react to (unequal page counts, filename conflicts, a failed upload). This section covers the remaining case: *unexpected* errors — bugs, panics, a call site that forgot to catch a rejected promise. Today those can fail silently (a swallowed exception, a stuck spinner) with no signal that anything went wrong. The goal is a fallback net that guarantees the user is notified, without trying to name or recover from the specific failure.
+
+- **Frontend uncaught errors**: a top-level React error boundary around the app catches render-time exceptions, replacing the crashed subtree with a generic notice instead of a blank/frozen screen.
+- **Frontend unhandled rejections**: a single `window.addEventListener('unhandledrejection', ...)` (plus `'error'` for non-promise exceptions) installed at startup shows a Mantine notification whenever an error reaches the top without having been caught by feature-specific handling. This is the backstop for the async call sites tracked in the "Various" checklist below — as those are migrated to explicit per-action error handling, this listener increasingly only fires for genuine bugs.
+- **Backend panics**: each Wails-exposed RPC method recovers from panics and converts them into a returned error, so a bug in one RPC surfaces as a rejected JS promise (and thus hits the frontend backstop above) rather than crashing the whole process.
+- **Presentation**: unexpected errors show a persistent (not auto-dismissing) notification — "An unexpected error occurred" plus the underlying error text. No retry/recovery is attempted automatically, since the cause is by definition unhandled and unclassified.
+
 ## Implementation checklist
 
 ### Primitives
@@ -328,6 +337,7 @@ Low-hanging fruit from a review of how styling is done across the frontend (all 
   - [ ] Change going to previous / next page to up / down arrows
   - [ ] Make MergeMode previous / next action to follow the order of the target PDF; meaning to go back and forth between file A and B
 - [ ] Prevent buttons that trigger an async action (Merge & Save, Split & Export, Drive folder assignment/browsing, Drive upload, root folder pickers, etc.) from being pressed again while the previous invocation from that same button is still in flight; also generalize error handling for those async actions instead of each call site catching (or failing to catch) errors ad hoc
+- [ ] **Global error handling** — top-level React error boundary, `window.onerror`/`unhandledrejection` listener showing a notification, and panic-recovery in Wails RPC handlers; see "Global error handling" section above
 
 
 ## Code review findings
