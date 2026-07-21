@@ -1,0 +1,9 @@
+How about using the new hasSettled() function in reset()? That should allow to shorten the long comment in reset()
+
+---
+
+The tests can - and should - be adapted. They test behaviour that's invalid. And yeah, this check is not strictly necessary, but it's cheap (code wise) and it enforces the condition with actual code, rather than a comment, which I prefer. Does this make sense?
+
+---
+
+Note that I've edited uploadQueue.ts
