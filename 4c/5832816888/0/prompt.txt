@@ -1,0 +1,15 @@
+You used the concept of "generations" to prevent mixing the results of a later upload job with the previous one. This mixing can only happen if the user starts multiple upload jobs in quick succession, right? (just answer)
+
+---
+
+When would reset() be called?
+
+---
+
+How about preventing this case on the UI - by only closing the modal when all jobs are finished - blocking the user from picking a different root. That way `reset()` gets only ever called when all jobs are done. This would remove the complexity of managing the generation. What do you think?
+
+I'm asking because picking a new root is not that common, long-running upload jobs are not that common (and the modal should stay open anyway until all jobs are finished) and both a slow job and a new root are super unlikely. And so having the concept of a "generation" in the most complex piece of code in the application doesn't seem worth it.
+
+---
+
+Yes
