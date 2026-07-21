@@ -310,6 +310,12 @@ The mode-specific "Error handling" sections above cover *expected* error conditi
 - [ ] **Step 9: Conflict detection** — check Drive for filename conflicts before uploading; flag conflicting files
 - [ ] **Step 10: Keychain storage** — store the Drive refresh token in the macOS Keychain instead of a plain JSON file, so it is encrypted at rest and not readable by other user-level processes
 
+### Global error handling
+
+- [ ] **Step 1a: Backend panic recovery** — a shared helper wraps each Wails-exposed RPC method with `recover()`, converting a panic into a returned error instead of crashing the process; verify with a deliberately panicking RPC
+- [ ] **Step 1b: Frontend unhandled-error listener** — `window.addEventListener` for `'unhandledrejection'` and `'error'`, installed once at startup, shows a persistent Mantine notification ("An unexpected error occurred" + the underlying error text) for anything not already caught by feature-specific handling
+- [ ] **Step 1c: React error boundary** — a top-level boundary around the app catches render-time exceptions and replaces the crashed subtree with a generic fallback notice instead of a blank/frozen screen
+
 ### Code cleanup
 
 - [x] **Move `pageCache.ts` to `src/lib/`** — it's a module-level singleton, not a hook; only `usePageCacheRender` is a hook
@@ -336,8 +342,7 @@ Low-hanging fruit from a review of how styling is done across the frontend (all 
   - [ ] in MergeMode navigation is implemented in index.ts, in SplitMode it's implemented in ThumbnailPanel.tsx. That's inconsistent
   - [ ] Change going to previous / next page to up / down arrows
   - [ ] Make MergeMode previous / next action to follow the order of the target PDF; meaning to go back and forth between file A and B
-- [ ] Prevent buttons that trigger an async action (Merge & Save, Split & Export, Drive folder assignment/browsing, Drive upload, root folder pickers, etc.) from being pressed again while the previous invocation from that same button is still in flight; also generalize error handling for those async actions instead of each call site catching (or failing to catch) errors ad hoc
-- [ ] **Global error handling** — top-level React error boundary, `window.onerror`/`unhandledrejection` listener showing a notification, and panic-recovery in Wails RPC handlers; see "Global error handling" section above
+- [ ] Prevent buttons that trigger an async action (Merge & Save, Split & Export, Drive folder assignment/browsing, Drive upload, root folder pickers, etc.) from being pressed again while the previous invocation from that same button is still in flight; also generalize error handling for those async actions instead of each call site catching (or failing to catch) errors ad hoc — see "Global error handling" checklist above for the unexpected-error backstop
 
 
 ## Code review findings
