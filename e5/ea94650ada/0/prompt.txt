@@ -1,0 +1,1 @@
+I'd like to get notified if an unexpected error occurs. Write a small spec that suggests how to handle that.
