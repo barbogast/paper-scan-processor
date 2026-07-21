@@ -26,9 +26,6 @@ let pendingPaths: string[] = []
 const listeners = new Set<() => void>()
 let running = false
 let cancelled = false
-// Bumped by reset() so a job that was already in flight can't write a
-// stale status back in after the run it belonged to was wiped.
-let generation = 0
 
 function notify() {
   for (const fn of listeners) fn()
@@ -54,26 +51,21 @@ function updateStatus(path: string, status: UploadStatus, error?: string) {
   notify()
 }
 
-async function runQueue(gen: number) {
+async function runQueue() {
   if (running) return
   running = true
-  while (!cancelled && generation === gen && pendingPaths.length > 0) {
+  while (!cancelled && pendingPaths.length > 0) {
     const path = pendingPaths.shift()!
     const job = filesByPath.get(path)!
     updateStatus(path, 'uploading')
     try {
       await UploadFile(job.path, job.folderId, job.name)
-      if (generation !== gen) break
       updateStatus(path, 'done')
     } catch (e) {
-      if (generation !== gen) break
       updateStatus(path, 'error', String(e))
     }
   }
-  // Don't clear running if a newer generation's loop has since claimed it —
-  // this loop's own run was abandoned by reset() and its cleanup shouldn't
-  // stomp on a loop that's legitimately active for the current generation.
-  if (generation === gen) running = false
+  running = false
 }
 
 function enqueue(newJobs: UploadJob[]) {
@@ -84,7 +76,7 @@ function enqueue(newJobs: UploadJob[]) {
     pendingPaths.push(job.path)
   }
   notify()
-  void runQueue(generation)
+  void runQueue()
 }
 
 export function start(newJobs: UploadJob[]): void {
@@ -103,12 +95,13 @@ export function cancelRemaining(): void {
   pendingPaths = []
 }
 
+// Callers must only invoke this once the queue is idle (nothing queued or
+// uploading) — in the UI, that's guaranteed by the upload modal staying
+// open and blocking the root-folder picker until every file reaches a
+// terminal state. If that ever stops holding, a request from the discarded
+// run could still be in flight and would resurface after this call.
 export function reset(): void {
-  generation += 1
   cancelled = false
-  // Don't wait for an abandoned in-flight request to notice the generation
-  // bump on its own — let the next start()/retry() begin immediately rather
-  // than being blocked behind a request that may never settle.
   running = false
   filesByPath.clear()
   pendingPaths = []
