@@ -1,0 +1,44 @@
+I feel the way styling is done in this respository could be improved. I first want to find out what should be done. How would you approach this? What kind of questions are relevant?
+
+---
+
+Okay, I do want:
+- Move visual components that are actually reused or are highly reusable to separate directory
+- Check for repeated color/spacing/shadow values and extract it - but only if there is a sufficient amount
+- Separate long style property lists from component code - might be within the same file, or a different file
+
+Not sure about:
+- design tokens + CSS variables + maybe a light component library: Is it worth it?
+
+Dark mode:
+- No(t yet)
+
+It might also be worth to check what mantine has to offer - maybe it could be used more extensively.
+
+---
+
+Yes. Let's focus on the low-hanging fruits (in terms of additional infrastracture and complexity) and note more invasive improvements for later.
+
+---
+
+No, Write a, b, and c into a new checklist section in spec.md. Afterwards, I'd like to talk more about 5. If most components have this issue, is it worth it to introduce css modules or something like styled-components?
+
+---
+
+Oh, I mixed up c and d. Add a and b to the checklist, and add d once we've agreed on how to tackle this.
+
+---
+
+I'd prefer to have the styles in the ts file - There are not many styles, and the extra module.css files don't seem woth it. Are there more lightweight alternatives to style-components?
+
+---
+
+I'd rather use something like goober. Are there any other - similar libraries for handling css with a small foot print? What's the industry standard in this area?
+
+---
+
+Okay, lets go with goober. Add changing the inline styles to goober to the checklist, and the hover-refactoring as a separate entry.
+
+---
+
+I'm interested in improving my skills for using AI. Have a look at this conversation and give me feedback on what I could improve.
