@@ -1,0 +1,146 @@
+Start executing plan in spec-drive-upload-step6.md but skip the prerequisite (Toolbar layout)
+
+---
+
+/code-review
+
+---
+
+/simplify
+
+---
+
+<task-notification>
+<task-id>a4b1908fea9b8c5e7</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/ba2fd62b-fc9d-478c-be97-bdf027c00dbf/tasks/a4b1908fea9b8c5e7.output</output-file>
+<status>completed</status>
+<summary>Agent "Reuse review of 6a diff" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Review complete. I read the full diff, both new untracked files, and swept `frontend/src/utils.ts`, `frontend/src/lib/` (pageCache.ts, resizableWidth.ts, useIsTruncated.ts), the sibling hooks in `components/` (useOutputFiles, usePDFFile, useDriveAssignments, useFileTree, usePendingFocus), and the Go backend packages for pre-existing equivalents.
+
+## Findings (reuse angle)
+
+1. **frontend/src/components/DriveUploadMode/useFileTree.test.ts, line 12** — New `file()` fixture helper re-implements base-name extraction with `path.split('/').pop()!`.
+   - Cost: `frontend/src/utils.ts` already exports `basename(p)` doing exactly this (and it also handles backslashes, so the fixture's inline version is a second, slightly weaker copy of the same logic).
+   - Reuse: `import { basename } from '../../utils'` and use `name: basename(path)`.
+   - Severity: minor — test fixture only.
+
+2. **app.go, lines 137–141 (`UploadFile` RPC)** — The empty-`name` sentinel that defaults to `filepath.Base(localPath)` re-derives a value the codebase already computes and hands to the caller: `backend/filetree` populates `LocalFile.Name` ("filename including extension", backend/filetree/filetree.go:16, set from `entryName` at line 97), and that field arrives in the frontend as `LocalFile.name` — the very object `useUploadQueue`'s `UploadTask` is built from (its `path` comes from `LocalFile.path`). The frontend additionally has `basename()` in utils.ts if derivation were ever needed there.
+   - Cost: two sources of truth for "this file's Drive name" plus a magic `''` contract baked into the RPC signature and documented in two places (`UploadTask.name` comment in useUploadQueue.ts line 15, app.go doc comment). If callers always pass `LocalFile.name` (which they already hold), the sentinel branch and its cross-boundary convention are dead weight to maintain.
+   - Reuse: have the task builder pass `LocalFile.name` and drop the empty-name defaulting in app.go (or keep the default only as a safety net without advertising `''` as part of the `UploadTask` contract).
+   - Severity: minor/borderline — the UI wiring isn't in this step yet, so this may be intentional forward provisioning; flagging because the derivation already exists on both sides of the boundary.
+
+## Explicitly checked, no duplication
+
+- `useUploadQueue`'s queue/worker/generation machinery: nothing comparable exists. `frontend/src/lib/pageCache.ts` has superficially similar in-flight/supersede tracking, but it's a module-level image cache with a width-supersede model, not a sequential task queue — not reusable here.
+- `flattenFiles`: no prior tree-flatten utility anywhere in the frontend (GroupNode recursion is render-only).
+- `String(e)` error formatting in useUploadQueue.ts line 69: matches the established inline convention used at 5 other call sites (SplitMode/index.tsx, MergeMode/index.tsx, useFileTree.ts, DriveFolderPickerModal.tsx) — there is no shared helper to call, so no reuse violation.
+- Go side: the `filepath.Base` removal from `backend/drive/upload.go` is a move, not a duplication; no other backend helper overlaps.
+
+Overall: no significant reuse violations; two minor findings above.</result>
+<usage><subagent_tokens>33339</subagent_tokens><tool_uses>13</tool_uses><duration_ms>101899</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a90aec3abc2306b90</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/ba2fd62b-fc9d-478c-be97-bdf027c00dbf/tasks/a90aec3abc2306b90.output</output-file>
+<status>completed</status>
+<summary>Agent "Simplification review of 6a diff" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Findings from the simplification angle, strongest first.
+
+**1. `cancelledRef` + post-loop idle sweep can be replaced by "cancel = clear the pending queue now"**
+- File: `frontend/src/components/DriveUploadMode/useUploadQueue.ts`, lines 46, 61, 75–78, 95–97 (and the `cancelledRef.current = false` reset at line 102)
+- Summary: Cancellation is modeled as a flag the worker polls, plus a deferred cleanup pass, when the same behavior is one synchronous operation.
+- Cost: Four pieces of machinery — the `cancelledRef`, the `!cancelledRef.current` loop condition, the post-loop sweep that returns never-attempted tasks to idle, and flag resets in two places (`run` and `reset`) — plus the `runningRef` guard in `cancelRemaining` that exists only because a stray `cancelledRef = true` would poison the *next* run.
+- Simpler form: `cancelRemaining` marks every task still in `queueRef.current` idle and empties the array immediately. The in-flight upload is untouched (it was already shifted out); when it settles, the loop condition `queueRef.current.length &gt; 0` is false and the run winds down naturally. This deletes `cancelledRef` entirely, the loop condition clause, the post-loop sweep, both flag resets, and the guard in `cancelRemaining` — and as a bonus, queued files flip to idle at cancel time instead of after the in-flight upload finishes. All existing tests still pass conceptually (the idle assertions are only checked after the in-flight settle anyway). It also removes a latent oddity in the current form: tasks enqueued between cancel and the in-flight settle get silently swept to idle by the flag-based version.
+
+**2. `statusesRef` mirrors `statuses` state, but its only read is derivable from the queue itself**
+- File: `frontend/src/components/DriveUploadMode/useUploadQueue.ts`, lines 43, 51–54, 84–87
+- Summary: A full mirrored Map (ref + state kept in lockstep by `setStatus`) exists solely so `enqueue`'s dedup filter can read fresh state, but "queued or uploading" is exactly "still in the queue" if the worker peeks instead of shifting.
+- Cost: Two sources of truth for the entire status map, a custom `setStatus` that must be used for every write to keep them in sync, and a dedup check routed through status strings when the queue already holds the answer.
+- Simpler form: Have the worker peek (`const task = queueRef.current[0]`) and shift only after the upload settles (after the generation guard). Then `enqueue`'s dedup is `!queueRef.current.some(q =&gt; q.path === t.path)` — one membership test covering both queued and uploading — and `statusesRef` disappears; all writes become plain functional updates `setStatuses(prev =&gt; new Map(prev).set(path, status))`, which are never stale across awaits.
+
+**3. Dual status API: `statuses` and `statusOf` both exposed, and `statusOf`'s `useCallback` buys nothing**
+- File: `frontend/src/components/DriveUploadMode/useUploadQueue.ts`, lines 19–20, 109–112
+- Summary: The handle exposes both the raw Map and a getter that is only `get(path) ?? idle`, and the getter is memoized on `[statuses]` so it's a new function on every status change anyway.
+- Cost: Two ways for callers to read the same thing (rollup code via `statuses`, per-file code via `statusOf`) that can drift in how they treat missing entries, plus a `useCallback` that recreates on exactly the updates consumers care about, so it prevents no re-renders.
+- Simpler form: Expose one of the two — either just `statusOf` (a plain closure, no `useCallback`), or just `statuses` and let the one `?? { state: 'idle' }` live at the call site. There are no consumers yet in this diff, so now is the cheapest time to pick.
+
+**4. The `name: ''` sentinel spans three layers when the caller always knows the real name**
+- Files: `frontend/src/components/DriveUploadMode/useUploadQueue.ts` line 15; `/Users/ben/git/paper-scan-processor/app.go` `UploadFile` (the `if name == ""` default)
+- Summary: An empty-string-means-base-name convention is encoded in the task comment, honored in app.go, and threaded through tests, but the frontend builds tasks from `LocalFile`, which already carries `name`.
+- Cost: A cross-language protocol convention (frontend comment + Go defaulting + the doc sentence on both `App.UploadFile` and the task field) maintained for a case the real caller never needs — the caller resolving `folderId` per file can just as easily set `name`.
+- Simpler form: Make `name` required end to end: the task builder passes `file.name`, and `App.UploadFile` drops the `filepath.Base` fallback (becoming a pure passthrough to `drive.UploadFile`). One representation, zero defaulting logic.
+
+Clean elsewhere: `flattenFiles` in `useFileTree.ts` is minimal and well-motivated; the `generationRef` guard is the appropriate idiom for the reset requirement (a status-based "still uploading?" check would be subtler, not simpler); the `running`/`runningRef` pair is the standard necessary duplication for a sync worker-start check (deriving `running` from statuses would depend on render batching — not a cleaner form); the `backend/drive/upload.go` parameter change itself is a straight simplification of the callee.</result>
+<usage><subagent_tokens>23095</subagent_tokens><tool_uses>3</tool_uses><duration_ms>115472</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a095be5578a43db54</task-id>
+<tool-use-id>toolu_01GbND6Cnshh5ADYXHPoBRYo</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/ba2fd62b-fc9d-478c-be97-bdf027c00dbf/tasks/a095be5578a43db54.output</output-file>
+<status>completed</status>
+<summary>Agent "Efficiency review of 6a diff" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Review complete. I read the full diff, both new useUploadQueue files, and followed the upload path into `backend/drive/auth.go` to check for repeated I/O per queue item.
+
+## Efficiency findings
+
+**1. `enqueue` and the post-cancel drain do one full Map copy + one setState per task — O(N²) copying where one batched copy would do**
+- File: `frontend/src/components/DriveUploadMode/useUploadQueue.ts`, lines 83–90 (`enqueue`) and 75–76 (post-cancel idle drain), via `setStatus` at lines 51–54.
+- Cost: `setStatus` does `new Map(statusesRef.current)` per call. Enqueueing N files runs it N times synchronously, copying maps of size 1..N — O(N²) entry copies plus N `setStatuses` calls in one tick (React batches the renders, but the allocations and copies all happen). Same shape in the cancel drain loop. At the stated scale (hundreds of files) this is a few ms, so it's a pattern flag more than a hot spot — but it's the one quadratic loop in the diff and grows fast past that scale.
+- Cheaper alternative: batch the loop into a single copy — `const next = new Map(statusesRef.current); for (const t of fresh) next.set(t.path, {state:'queued'}); statusesRef.current = next; setStatuses(next)`. Same for the idle drain. Keep per-file `setStatus` inside the worker loop as-is; there it's one copy per network upload, which is fine.
+
+**2. `statusOf` allocates a fresh `{ state: 'idle' }` on every miss**
+- File: `frontend/src/components/DriveUploadMode/useUploadQueue.ts`, lines 109–112.
+- Cost: before anything is enqueued, every file row's status lookup is a miss, so a render of a few hundred rows allocates a few hundred identical objects — and each call returns a new identity, so any downstream `memo`/equality check on the status always sees a change even when nothing did (extra re-renders are the real cost, not the allocation).
+- Cheaper alternative: a module-level `const IDLE: UploadStatus = { state: 'idle' }` (optionally `Object.freeze`d) returned for misses; stable identity makes memoized consumers actually skip.
+
+**3. `flattenFiles` allocates intermediate arrays per tree level — fine for the worker, watch the advertised per-render rollup use**
+- File: `frontend/src/components/DriveUploadMode/useFileTree.ts`, lines 22–24.
+- Cost: `[...group.files, ...group.subgroups.flatMap(flattenFiles)]` copies every file O(depth) times through intermediate arrays. For a single call at dozens-to-hundreds of files this is negligible — no change needed for the enqueue path. But the doc comment commits future callers to using it for "per-group status rollups" on render: calling `flattenFiles(group)` for every group node each render re-walks each subtree once per ancestor, multiplying the work by tree size × depth on every status tick (and there are two ticks per uploaded file).
+- Cheaper alternative when that caller lands: either an accumulator variant (`function collect(g, out)` pushing into one array) plus `useMemo` of the flattened list per group keyed on the tree (the tree is immutable between scans, so it memoizes cleanly), or compute rollups in one bottom-up pass instead of flatten-per-group.
+
+**Not flagged / pre-existing note:** each `UploadFile` RPC re-reads and re-parses `credentials.json` and the token file and rebuilds the `*drive.Service` (`service()` in `/Users/ben/git/paper-scan-processor/backend/drive/auth.go:68`, called from `upload.go:20`). The new queue makes this per-file, but the diff didn't introduce the pattern (it predates the `name` param change, and all Drive RPCs share it), refreshed tokens are persisted so there's no repeated token-endpoint round trip, and a couple of small local file reads are noise next to a network upload. Only worth caching the service if profiling ever says otherwise.
+
+The sequential one-at-a-time worker was not flagged per instructions (deliberate spec choice). The Go changes (`app.go`, `upload.go`) introduce no wasted work. Overall the diff is close to clean; findings 1–2 are cheap, contained fixes and finding 3 is a forward-looking caution tied to the module's own doc comment.</result>
+<usage><subagent_tokens>27975</subagent_tokens><tool_uses>7</tool_uses><duration_ms>110960</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ab7ec9fd8d0b929f2</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/ba2fd62b-fc9d-478c-be97-bdf027c00dbf/tasks/ab7ec9fd8d0b929f2.output</output-file>
+<status>completed</status>
+<summary>Agent "Altitude review of 6a diff" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Review complete. From the altitude angle, the layering is mostly right — and to answer the prompt's explicit question first: moving name-defaulting **out of** `backend/drive/upload.go` (making `drive.UploadFile` take an explicit `name`) is the correct depth; the domain function is now pure and the convenience sits at the RPC boundary. The problem is not where the default lives but that it exists at all. Findings:
+
+**1. The `name == ""` sentinel is a second source of truth for a value the frontend already owns**
+- Files: `/Users/ben/git/paper-scan-processor/app.go` line 140 (`if name == "" { name = filepath.Base(localPath) }`), `/Users/ben/git/paper-scan-processor/frontend/src/components/DriveUploadMode/useUploadQueue.ts` line 15 (comment: `'' lets the backend default to the base name`).
+- The backend scanner already returns the base filename as `LocalFile.Name` (`backend/filetree/filetree.go:16,97`), and `flattenFiles` hands the 6b caller full `LocalFile` objects — so the task builder always has `file.name` in hand. Codifying `''` in `UploadTask`'s contract creates two code paths for "what is this file called on Drive": `filepath.Base` in Go and `LocalFile.name` from the scanner. When step 4 (inline renaming) lands, callers will always pass a real name and the `''` path becomes an untested, live-but-dead branch that silently masks a bug (a caller that forgot to plumb the edited name uploads under the wrong name instead of failing).
+- Better-placed fix: keep the `name` parameter (the plan is right that this avoids signature churn at step 4) but drop the defaulting and the `''` convention — have app.go reject empty name, and have 6b's task builder pass `file.name`. Step 4 then only changes what the builder puts in that field.
+
+**2. Retry's "same locked-in destination and name" guarantee is enforced two layers away from where the data lived**
+- File: `/Users/ben/git/paper-scan-processor/frontend/src/components/DriveUploadMode/useUploadQueue.ts` lines 62-72 and 83-93 — completed/failed tasks are discarded; only the status survives.
+- The plan (spec-drive-upload-step6.md, "Left panel becomes read-only") promises "Retry always re-sends to the same locked-in destination and name." The hook had exactly that task in hand when the upload failed, but throws it away, so 6b's per-file Retry and 6c's "Retry Failed (N)" must re-run flatten + effective-assignment resolution and trust the 6c read-only UI lock to make re-resolution yield identical results. The invariant is guaranteed by a UI freeze in a different step rather than by construction; any gap in the lock (or a future relaxation of it) silently redirects retries. It also forces the assignment-resolution code to be invoked from three call sites (Upload All, modal per-file Retry, toolbar Retry Failed) instead of one.
+- Better-placed fix: retain the last task for `error`-state files inside the hook and expose `retry(path)` / `retryFailed()` (or expose the failed tasks). The queue already owns "what was attempted"; letting it own "what to re-attempt" makes the plan's semantic structural instead of conventional. Callers then resolve assignments exactly once, at initial enqueue.
+
+**3. The 6c read-only lock signal ("a run has ever started") is only derivable from an incidental detail of the status map**
+- File: `/Users/ben/git/paper-scan-processor/frontend/src/components/DriveUploadMode/useUploadQueue.ts` line 76 (cancelled tasks are set back to `{state:'idle'}` but their *entries* remain in the map) and lines 99-107 (`reset` clears).
+- 6c needs "tree locked once Upload All is first clicked, until a new root" — regardless of whether files ended `done`, `error`, or never-attempted. The only in-hook signal is `statuses.size &gt; 0`, which works solely because the cancel drain writes idle *entries* rather than deleting them. That's an implementation accident, not API: if the drain were ever changed to the equally-reasonable "delete never-attempted entries," the lock derivation breaks with no test pointing at why. Alternatively 6c tracks its own `hasStarted` boolean, duplicating lifecycle state (must remember to clear it exactly when `reset()` is called) outside the hook that owns the lifecycle.
+- Better-placed fix: expose a `started: boolean` (set on first `enqueue`, cleared by `reset`) from the hook — one line each, and 6c's lock, the "All Uploaded"/"Retry Failed" button machine, and the residual-badge rendering all key off the hook that already defines the run lifecycle.
+
+Clean elsewhere: `flattenFiles` living next to the `LocalFileGroup` type in `useFileTree.ts` is the right home and matches the plan's shared-traversal note; keeping assignment→task resolution out of the hook mirrors the existing "resolution is the caller's job" contract in `useDriveAssignments.ts`; the sequential worker is an internal of `run()` so an N-way pool later touches nothing in the API; and the `cancelledRef` (soft stop) vs `generationRef` (hard discard) split is two mechanisms for two genuinely different semantics, not layered patching.</result>
+<usage><subagent_tokens>35538</subagent_tokens><tool_uses>8</tool_uses><duration_ms>138752</duration_ms></usage>
+</task-notification>
