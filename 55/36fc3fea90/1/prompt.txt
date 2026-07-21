@@ -1,0 +1,21 @@
+start step 6b
+
+---
+
+resolveEffectiveAssignments() should fail loudly if a file doesn't have an assignment
+
+---
+
+I like reusing the result of resolveEffectiveAssignments() to also set readyToUpload(). But is throwing an error to indicate a valid result good code style in JS world? Or would you rather return a value or two?
+
+---
+
+yes
+
+---
+
+UploadModal.ts, lines 12 and 13 contain text that belongs in a TODO-list - not in code
+
+---
+
+UploadModal.ts: How about moving the hasSettled calculation to uploadQueue.ts?

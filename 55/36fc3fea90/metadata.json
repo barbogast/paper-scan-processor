@@ -3,10 +3,14 @@
   "checkpoint_id": "5536fc3fea90",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 7,
+  "checkpoints_count": 13,
   "files_touched": [
+    "frontend/src/components/DriveUploadMode/UploadModal.tsx",
     "frontend/src/components/DriveUploadMode/index.test.tsx",
     "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/DriveUploadMode/uploadQueue.test.ts",
+    "frontend/src/components/DriveUploadMode/uploadQueue.ts",
+    "frontend/src/components/DriveUploadMode/useDriveAssignments.test.ts",
     "frontend/src/components/DriveUploadMode/useDriveAssignments.ts",
     "spec.md"
   ],
@@ -16,13 +20,19 @@
       "transcript": "/55/36fc3fea90/0/full.jsonl",
       "content_hash": "/55/36fc3fea90/0/content_hash.txt",
       "prompt": "/55/36fc3fea90/0/prompt.txt"
+    },
+    {
+      "metadata": "/55/36fc3fea90/1/metadata.json",
+      "transcript": "/55/36fc3fea90/1/full.jsonl",
+      "content_hash": "/55/36fc3fea90/1/content_hash.txt",
+      "prompt": "/55/36fc3fea90/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 54,
-    "cache_creation_tokens": 197112,
-    "cache_read_tokens": 1747338,
-    "output_tokens": 29935,
-    "api_call_count": 27
+    "input_tokens": 7012,
+    "cache_creation_tokens": 453826,
+    "cache_read_tokens": 12378027,
+    "output_tokens": 97293,
+    "api_call_count": 135
   }
 }
