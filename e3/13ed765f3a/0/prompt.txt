@@ -1,0 +1,5 @@
+Remember in future to be careful when introducing complexity for correctness or performance reasons: Is it necessary? Is it reasonable? Is it proportional to the size and scope of the tool?
+
+---
+
+Let's add this to claude.md, rather then to memory, as it's quite important.
