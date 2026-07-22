@@ -1,0 +1,13 @@
+start working on the styling cleanup
+
+---
+
+There is a "Styling Cleanup" heading in spec.md!??
+
+---
+
+At which commit did you branch off for the worktree_
+
+---
+
+I've started `wails dev`, so the bindings are now generated
