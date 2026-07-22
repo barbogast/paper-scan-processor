@@ -8,6 +8,16 @@ import (
 	"paper-scan-processor/backend/pdf"
 )
 
+func TestRecoverToErrConvertsPanicToError(t *testing.T) {
+	err := func() (err error) {
+		defer recoverToErr(&err)
+		panic("boom")
+	}()
+	if err == nil {
+		t.Fatal("expected an error, got nil")
+	}
+}
+
 func TestExportSplitSingleFile(t *testing.T) {
 	tmp := t.TempDir()
 	in := filepath.Join(tmp, "input.pdf")

@@ -27,6 +27,15 @@ func NewApp() *App {
 	return &App{}
 }
 
+// recoverToErr recovers from a panic in a deferred call and assigns it to
+// *err, so a bug in one RPC method surfaces to the frontend as a rejected
+// promise instead of crashing the whole process.
+func recoverToErr(err *error) {
+	if r := recover(); r != nil {
+		*err = fmt.Errorf("recovered from panic: %v", r)
+	}
+}
+
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
@@ -35,8 +44,9 @@ func (a *App) startup(ctx context.Context) {
 
 // OpenPDF shows a file-open dialog filtered to PDFs and returns the selected path.
 // Returns an empty string if the user cancels.
-func (a *App) OpenPDF() (string, error) {
-	path, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+func (a *App) OpenPDF() (path string, err error) {
+	defer recoverToErr(&err)
+	path, err = runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
 		Title: "Open PDF",
 		Filters: []runtime.FileFilter{
 			{DisplayName: "PDF Files (*.pdf)", Pattern: "*.pdf"},
@@ -46,13 +56,15 @@ func (a *App) OpenPDF() (string, error) {
 }
 
 // PageCount returns the number of pages in the PDF at path.
-func (a *App) PageCount(path string) (int, error) {
+func (a *App) PageCount(path string) (n int, err error) {
+	defer recoverToErr(&err)
 	return pdf.PageCount(path)
 }
 
 // RenderPage renders a single page of the PDF at path as a PNG and returns it
 // base64-encoded. widthPx controls the output width; height is scaled proportionally.
-func (a *App) RenderPage(path string, pageNum int, widthPx int) (string, error) {
+func (a *App) RenderPage(path string, pageNum int, widthPx int) (encoded string, err error) {
+	defer recoverToErr(&err)
 	tmpDir, err := os.MkdirTemp("", "psp-render-*")
 	if err != nil {
 		return "", err
@@ -86,8 +98,9 @@ func (a *App) RenderPage(path string, pageNum int, widthPx int) (string, error) 
 
 // SavePDF shows a save-file dialog filtered to PDFs and returns the chosen path.
 // Returns an empty string if the user cancels.
-func (a *App) SavePDF() (string, error) {
-	path, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+func (a *App) SavePDF() (path string, err error) {
+	defer recoverToErr(&err)
+	path, err = runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
 		Title:           "Save Merged PDF",
 		DefaultFilename: "merged.pdf",
 		Filters: []runtime.FileFilter{
@@ -104,23 +117,27 @@ func (a *App) SavePDF() (string, error) {
 }
 
 // OpenFile opens the file at path with the system default application.
-func (a *App) OpenFile(path string) error {
+func (a *App) OpenFile(path string) (err error) {
+	defer recoverToErr(&err)
 	return exec.Command("open", path).Run()
 }
 
 // DeleteFile removes the file at path.
-func (a *App) DeleteFile(path string) error {
+func (a *App) DeleteFile(path string) (err error) {
+	defer recoverToErr(&err)
 	return os.Remove(path)
 }
 
 // MergePDFs interleaves pages from pathA and pathB and writes the result to outPath.
-func (a *App) MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) error {
+func (a *App) MergePDFs(pathA, pathB, outPath string, firstPageInA, reverseB bool, skipA, skipB []int, rotationsA, rotationsB map[int]int) (err error) {
+	defer recoverToErr(&err)
 	return pdf.MergePDFs(pathA, pathB, outPath, firstPageInA, reverseB, skipA, skipB, rotationsA, rotationsB)
 }
 
 // PickFolder shows a folder-select dialog with the given title and returns
 // the chosen path. Returns an empty string if the user cancels.
-func (a *App) PickFolder(title string) (string, error) {
+func (a *App) PickFolder(title string) (path string, err error) {
+	defer recoverToErr(&err)
 	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
 		Title: title,
 	})
@@ -129,21 +146,24 @@ func (a *App) PickFolder(title string) (string, error) {
 // ScanLocalRoot recursively scans root and returns it as a LocalFileGroup
 // tree (nested to match the folder structure), with size and page count
 // metadata for each file.
-func (a *App) ScanLocalRoot(root string) (filetree.LocalFileGroup, error) {
+func (a *App) ScanLocalRoot(root string) (group filetree.LocalFileGroup, err error) {
+	defer recoverToErr(&err)
 	return filetree.ScanLocalRoot(root)
 }
 
 // ListDriveFolder returns the direct children of the Drive folder with the
 // given ID ("root" for the top level of My Drive), folders first then
 // files. Triggers the OAuth flow on first use if no token is cached yet.
-func (a *App) ListDriveFolder(folderID string) ([]drive.Item, error) {
+func (a *App) ListDriveFolder(folderID string) (items []drive.Item, err error) {
+	defer recoverToErr(&err)
 	return drive.ListFolder(a.ctx, folderID)
 }
 
 // UploadFile uploads the local file at localPath to the Drive folder with
 // the given ID, naming it name on Drive. Returns the ID of the created
 // Drive file.
-func (a *App) UploadFile(localPath, folderID, name string) (string, error) {
+func (a *App) UploadFile(localPath, folderID, name string) (id string, err error) {
+	defer recoverToErr(&err)
 	return drive.UploadFile(a.ctx, localPath, folderID, name)
 }
 
@@ -160,8 +180,9 @@ func outputFileDest(files []pdf.OutputFileSpec, i int) string {
 }
 
 // CheckConflicts returns the destination paths that already exist on disk.
-func (a *App) CheckConflicts(files []pdf.OutputFileSpec) ([]string, error) {
-	conflicts := []string{}
+func (a *App) CheckConflicts(files []pdf.OutputFileSpec) (conflicts []string, err error) {
+	defer recoverToErr(&err)
+	conflicts = []string{}
 	for i := range files {
 		dest := outputFileDest(files, i)
 		if _, err := os.Stat(dest); err == nil {
@@ -176,7 +197,8 @@ func (a *App) CheckConflicts(files []pdf.OutputFileSpec) ([]string, error) {
 // Each file's Pages lists the original (1-indexed) page numbers in display
 // order; skip filtering and reordering have already been applied by the caller.
 // rotations maps 1-indexed page numbers to clockwise degrees (90, 180, 270).
-func (a *App) ExportSplit(inPath string, files []pdf.OutputFileSpec, rotations map[int]int) error {
+func (a *App) ExportSplit(inPath string, files []pdf.OutputFileSpec, rotations map[int]int) (err error) {
+	defer recoverToErr(&err)
 	tmpDir, err := os.MkdirTemp("", "psp-split-*")
 	if err != nil {
 		return err
