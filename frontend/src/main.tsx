@@ -6,6 +6,7 @@ import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
 import './style.css'
 import App from './App'
+import ErrorBoundary from './components/ErrorBoundary'
 import { installGlobalErrorHandler } from './lib/globalErrorHandler'
 
 installGlobalErrorHandler()
@@ -17,7 +18,9 @@ root.render(
   <React.StrictMode>
     <MantineProvider>
       <Notifications />
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </MantineProvider>
   </React.StrictMode>
 )
