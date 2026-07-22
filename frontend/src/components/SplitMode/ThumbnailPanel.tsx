@@ -6,8 +6,9 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import * as pageCache from '../../lib/pageCache'
 import { makeResizeDragHandler } from '../../lib/resizableWidth'
-import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
+import { DEFAULT_WIDTH, ITEM_PADDING, PAGE_ASPECT, LABEL_HEIGHT, HEADER_HEIGHT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
+import ResizeHandle from '../ResizeHandle'
 import type { OutputFilesHandle } from './useOutputFiles'
 import OutputFileHeader from './OutputFileHeader'
 import type { PendingFocusHandle } from './usePendingFocus'
@@ -256,16 +257,7 @@ export default function SplitThumbnailPanel({
         </DndContext>
       </div>
 
-      <div
-        onMouseDown={startDrag}
-        style={{
-          width: DRAG_HANDLE_WIDTH,
-          height: '100%',
-          cursor: 'col-resize',
-          flexShrink: 0,
-          background: 'var(--mantine-color-gray-3)',
-        }}
-      />
+      <ResizeHandle onMouseDown={startDrag} />
     </div>
   )
 }

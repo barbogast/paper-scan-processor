@@ -4,8 +4,9 @@ import { Box } from '@mantine/core'
 import * as pageCache from '../../lib/pageCache'
 import { PDFFile } from './usePDFFile'
 import { makeResizeDragHandler } from '../../lib/resizableWidth'
-import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
+import { DEFAULT_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
+import ResizeHandle from '../ResizeHandle'
 
 const MIN_TOTAL_WIDTH = 240
 const MAX_TOTAL_WIDTH = 960
@@ -110,17 +111,7 @@ export default function MergeModeThumbnailPanel({
         </div>
       </Box>
 
-      {/* Resize drag handle */}
-      <div
-        onMouseDown={startDrag}
-        style={{
-          width: DRAG_HANDLE_WIDTH,
-          height: '100%',
-          cursor: 'col-resize',
-          flexShrink: 0,
-          background: 'var(--mantine-color-gray-3)',
-        }}
-      />
+      <ResizeHandle onMouseDown={startDrag} />
     </Box>
   )
 }

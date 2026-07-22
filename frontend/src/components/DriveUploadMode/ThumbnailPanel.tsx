@@ -3,8 +3,9 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Text } from '@mantine/core'
 import * as pageCache from '../../lib/pageCache'
 import { makeResizeDragHandler } from '../../lib/resizableWidth'
-import { DEFAULT_WIDTH, DRAG_HANDLE_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
+import { DEFAULT_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
+import ResizeHandle from '../ResizeHandle'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
@@ -112,10 +113,7 @@ export default function DriveThumbnailPanel({ pdfPath, pageCount, selectedPage, 
         )}
       </Box>
 
-      <div
-        onMouseDown={startDrag}
-        style={{ width: DRAG_HANDLE_WIDTH, height: '100%', cursor: 'col-resize', flexShrink: 0, background: 'var(--mantine-color-gray-3)' }}
-      />
+      <ResizeHandle onMouseDown={startDrag} />
     </Box>
   )
 }

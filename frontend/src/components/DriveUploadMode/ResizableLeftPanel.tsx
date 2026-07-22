@@ -1,7 +1,7 @@
 import { useState, ReactNode } from 'react'
 import { Box } from '@mantine/core'
-import { DRAG_HANDLE_WIDTH } from '../../constants'
 import { makeResizeDragHandler } from '../../lib/resizableWidth'
+import ResizeHandle from '../ResizeHandle'
 
 const DEFAULT_LEFT_PANEL_WIDTH = 300
 const MIN_LEFT_PANEL_WIDTH = 180
@@ -33,16 +33,7 @@ export default function ResizableLeftPanel({ left, children }: Props) {
         {left}
       </Box>
 
-      <Box
-        onMouseDown={startDrag}
-        style={{
-          width: DRAG_HANDLE_WIDTH,
-          height: '100%',
-          cursor: 'col-resize',
-          flexShrink: 0,
-          background: 'var(--mantine-color-gray-3)',
-        }}
-      />
+      <ResizeHandle onMouseDown={startDrag} />
 
       {children}
     </Box>
