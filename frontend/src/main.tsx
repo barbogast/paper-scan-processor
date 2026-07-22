@@ -6,6 +6,9 @@ import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
 import './style.css'
 import App from './App'
+import { installGlobalErrorHandler } from './lib/globalErrorHandler'
+
+installGlobalErrorHandler()
 
 const container = document.getElementById('root')
 const root = createRoot(container!)

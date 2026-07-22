@@ -313,7 +313,7 @@ The mode-specific "Error handling" sections above cover *expected* error conditi
 ### Global error handling
 
 - [x] **Step 1a: Backend panic recovery** — a shared helper wraps each Wails-exposed RPC method with `recover()`, converting a panic into a returned error instead of crashing the process; verify with a deliberately panicking RPC
-- [ ] **Step 1b: Frontend unhandled-error listener** — `window.addEventListener` for `'unhandledrejection'` and `'error'`, installed once at startup, shows a persistent Mantine notification ("An unexpected error occurred" + the underlying error text) for anything not already caught by feature-specific handling
+- [x] **Step 1b: Frontend unhandled-error listener** — `window.addEventListener` for `'unhandledrejection'` and `'error'`, installed once at startup, shows a persistent Mantine notification ("An unexpected error occurred" + the underlying error text) for anything not already caught by feature-specific handling
 - [ ] **Step 1c: React error boundary** — a top-level boundary around the app catches render-time exceptions and replaces the crashed subtree with a generic fallback notice instead of a blank/frozen screen
 
 ### Code cleanup
