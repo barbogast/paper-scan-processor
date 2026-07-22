@@ -1,6 +1,6 @@
 import { Badge, Box, Group, Stack, Text, Tooltip } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
-import TruncatedText from './TruncatedText'
+import TruncatedText from '../TruncatedText'
 import { LocalFile } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
 import { formatFileSize } from '../../utils'

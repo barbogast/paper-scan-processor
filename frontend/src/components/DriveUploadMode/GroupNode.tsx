@@ -1,6 +1,6 @@
 import { Box, Group, Stack, Text } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
-import TruncatedText from './TruncatedText'
+import TruncatedText from '../TruncatedText'
 import FileList from './FileList'
 import { LocalFile, LocalFileGroup } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'

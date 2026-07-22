@@ -1,5 +1,5 @@
 import { Box, Button, Group, Loader, Modal, Stack, Text } from '@mantine/core'
-import TruncatedText from './TruncatedText'
+import TruncatedText from '../TruncatedText'
 import { LocalFile, LocalFileGroup, flattenFiles } from './useFileTree'
 import * as uploadQueue from './uploadQueue'
 
