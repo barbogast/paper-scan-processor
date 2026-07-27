@@ -4,6 +4,7 @@ import TruncatedText from '../TruncatedText'
 import FileList from './FileList'
 import { LocalFile, LocalFileGroup } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
+import styles from './GroupNode.module.css'
 
 const INDENT_PER_LEVEL = 16
 
@@ -31,21 +32,9 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
           type="button"
           onClick={() => onToggle(groupKey)}
           aria-expanded={expanded}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            flex: 1,
-            minWidth: 0,
-            border: 'none',
-            background: 'transparent',
-            padding: 0,
-            cursor: 'pointer',
-            textAlign: 'left',
-            fontFamily: 'inherit',
-          }}
+          className={styles.toggle}
         >
-          <Text size="xs" c="dimmed" style={{ width: 10, flexShrink: 0 }}>{expanded ? '▼' : '▶'}</Text>
+          <Text size="xs" c="dimmed" className={styles.chevron}>{expanded ? '▼' : '▶'}</Text>
           <TruncatedText label={group.name} size="sm" fw={600}>📁 {group.name}</TruncatedText>
         </button>
         <DriveAssignmentField

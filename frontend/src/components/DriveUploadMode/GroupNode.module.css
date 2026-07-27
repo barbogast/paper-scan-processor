@@ -1,0 +1,18 @@
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.chevron {
+  width: 10px;
+  flex-shrink: 0;
+}

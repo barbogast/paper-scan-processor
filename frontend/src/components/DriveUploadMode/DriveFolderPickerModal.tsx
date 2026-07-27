@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Box, Button, Group, Loader, Modal, Text } from '@mantine/core'
 import { ListDriveFolder } from '../../../wailsjs/go/main/App'
 import { DriveAssignment } from './useDriveAssignments'
+import styles from './DriveFolderPickerModal.module.css'
 
 interface DriveFolder {
   id: string
@@ -56,23 +57,14 @@ function DriveTreeNode({ item, path, selectedId, onSelect, defaultExpanded }: Dr
           onClick={toggle}
           aria-expanded={expanded}
           aria-label={expanded ? `Collapse ${item.name}` : `Expand ${item.name}`}
-          style={{ width: 16, flexShrink: 0, border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
+          className={styles.toggleButton}
         >
           {loading ? <Loader size={10} /> : <Text size="xs" c="dimmed">{expanded ? '▼' : '▶'}</Text>}
         </button>
         <button
           type="button"
           onClick={() => onSelect(item, path)}
-          style={{
-            flex: 1,
-            textAlign: 'left',
-            border: 'none',
-            padding: '2px 6px',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            background: item.id === selectedId ? 'var(--mantine-color-blue-1)' : 'transparent',
-          }}
+          className={`${styles.selectButton} ${item.id === selectedId ? styles.selectButtonSelected : ''}`}
         >
           <Text size="sm" fw={item.id === selectedId ? 600 : 400}>📁 {item.name}</Text>
         </button>
@@ -118,7 +110,7 @@ export default function DriveFolderPickerModal({ opened, onClose, onSelect }: Pr
 
   return (
     <Modal opened={opened} onClose={onClose} title="Choose a Drive folder" size="md">
-      <Box style={{ maxHeight: 400, overflowY: 'auto' }}>
+      <Box className={styles.treeScroll}>
         <DriveTreeNode
           item={ROOT}
           path={ROOT.name}

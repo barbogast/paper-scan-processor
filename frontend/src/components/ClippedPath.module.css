@@ -1,0 +1,35 @@
+.container {
+  position: relative;
+}
+
+.ellipsis {
+  position: absolute;
+  left: 0;
+  font-size: 11px;
+  pointer-events: none;
+  color: var(--mantine-color-gray-6);
+  background: var(--mantine-color-white);
+  padding-right: 1px;
+}
+
+.button {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.buttonWithPath {
+  color: var(--mantine-color-gray-6);
+}
+
+.buttonPlaceholder {
+  color: var(--mantine-color-dimmed);
+}

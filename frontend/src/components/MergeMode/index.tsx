@@ -9,6 +9,7 @@ import { usePDFFile } from './usePDFFile'
 import * as pageCache from '../../lib/pageCache'
 import { basename } from '../../utils'
 import { DRAG_HANDLE_WIDTH } from '../../constants'
+import styles from './index.module.css'
 
 // Width consumed by the scrollbar inside the two-column thumbnail area.
 const SCROLLBAR_WIDTH = 22
@@ -87,7 +88,7 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
   const selectedCount = selectedFile.count
 
   return (
-    <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box className={styles.root}>
       <Modal opened={mergedPath !== null} onClose={() => setMergedPath(null)} title="Merge complete" centered>
         <Text size="sm" c="dimmed" mb="md">{mergedPath}</Text>
         <Group>
@@ -99,17 +100,10 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
           </Button>
         </Group>
       </Modal>
-      <Box
-        style={{
-          flexShrink: 0,
-          borderBottom: '1px solid var(--mantine-color-gray-3)',
-          display: 'flex',
-          alignItems: 'stretch',
-        }}
-      >
+      <Box className={styles.headerRow}>
         <FilePickerColumn label="File A" path={fileA.path} width={colWidth} onChoose={() => handleChoose('a')} />
         <FilePickerColumn label="File B" path={fileB.path} width={colWidth + SCROLLBAR_WIDTH + DRAG_HANDLE_WIDTH} onChoose={() => handleChoose('b')} />
-        <Group gap={8} px={12} style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <Group gap={8} px={12} className={styles.controlsGroup}>
           {unequalCounts && (
             <Tooltip
               label={`File A has ${fileA.count} page${fileA.count !== 1 ? 's' : ''}, File B has ${fileB.count} page${fileB.count !== 1 ? 's' : ''}. The extra ${Math.abs(fileA.count - fileB.count)} page${Math.abs(fileA.count - fileB.count) !== 1 ? 's' : ''} will be appended at the end.`}
@@ -141,7 +135,7 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
         </Group>
       </Box>
 
-      <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
+      <Box className={styles.body}>
         <MergeModeThumbnailPanel
           fileA={fileA}
           fileB={fileB}
@@ -177,27 +171,12 @@ function FilePickerColumn({
   onChoose: () => void
 }) {
   return (
-    <Box
-      style={{
-        width,
-        flexShrink: 0,
-        padding: '6px 8px',
-        borderRight: '1px solid var(--mantine-color-gray-3)',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        gap: 2,
-      }}
-    >
+    <Box className={styles.column} style={{ width }}>
       <Group justify="space-between" gap={4} wrap="nowrap">
         <Text size="xs" c="dimmed">{label}</Text>
         <Button size="xs" variant="default" onClick={onChoose}>Choose…</Button>
       </Group>
-      <Text
-        size="xs"
-        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        title={path ?? undefined}
-      >
+      <Text size="xs" className={styles.columnPath} title={path ?? undefined}>
         {path ? basename(path) : '—'}
       </Text>
     </Box>

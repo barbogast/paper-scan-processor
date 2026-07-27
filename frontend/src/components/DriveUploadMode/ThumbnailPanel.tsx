@@ -6,6 +6,7 @@ import { makeResizeDragHandler } from '../../lib/resizableWidth'
 import { DEFAULT_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
 import ResizeHandle from '../ResizeHandle'
+import styles from './ThumbnailPanel.module.css'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
@@ -67,29 +68,22 @@ export default function DriveThumbnailPanel({ pdfPath, pageCount, selectedPage, 
   }, [pdfPath, selectedPage, pageCount, onSelectPage])
 
   return (
-    <Box style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
-      <Box style={{ width: panelWidth, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box className={styles.outer}>
+      <Box className={styles.panel} style={{ width: panelWidth }}>
         {!pdfPath ? (
-          <Box
-            style={{
-              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--mantine-color-gray-1)',
-            }}
-          >
+          <Box className={styles.emptyState}>
             <Text size="sm" c="dimmed">Select a file to preview</Text>
           </Box>
         ) : (
-          <div
-            ref={scrollRef}
-            style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', background: 'var(--mantine-color-gray-3)' }}
-          >
-            <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+          <div ref={scrollRef} className={styles.scroll}>
+            <div className={styles.sizer} style={{ height: virtualizer.getTotalSize() }}>
               {virtualizer.getVirtualItems().map(item => {
                 const page = item.index + 1
                 return (
                   <div
                     key={item.key}
-                    style={{ position: 'absolute', top: item.start, left: 0, width: '100%', height: item.size }}
+                    className={styles.itemWrapper}
+                    style={{ top: item.start, height: item.size }}
                   >
                     <PageThumbnail
                       src={pageCache.getSrc(pdfPath, page)}

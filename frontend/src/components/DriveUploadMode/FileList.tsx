@@ -4,6 +4,7 @@ import TruncatedText from '../TruncatedText'
 import { LocalFile } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
 import { formatFileSize } from '../../utils'
+import styles from './FileList.module.css'
 
 interface Props {
   files: LocalFile[]
@@ -31,16 +32,12 @@ export default function FileList({ files, assignments, inheritedAssignment, onPi
             pl={4}
             py={2}
             onClick={() => previewable && onSelectFile(file)}
-            style={{
-              cursor: previewable ? 'pointer' : 'default',
-              borderRadius: 4,
-              background: selectedPath === file.path ? 'var(--mantine-color-blue-0)' : undefined,
-            }}
+            className={`${styles.row} ${previewable ? styles.rowClickable : styles.rowNotClickable} ${selectedPath === file.path ? styles.rowSelected : ''}`}
           >
             <Group gap={8} wrap="nowrap" align="center">
-              <Group gap={4} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+              <Group gap={4} wrap="nowrap" className={styles.nameGroup}>
                 {file.isPdf && (
-                  <Badge size="xs" variant="light" color="red" radius="sm" style={{ flexShrink: 0 }}>
+                  <Badge size="xs" variant="light" color="red" radius="sm" className={styles.pdfBadge}>
                     PDF
                   </Badge>
                 )}

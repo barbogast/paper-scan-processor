@@ -1,0 +1,24 @@
+.row {
+  border-radius: 4px;
+}
+
+.rowClickable {
+  cursor: pointer;
+}
+
+.rowNotClickable {
+  cursor: default;
+}
+
+.rowSelected {
+  background: var(--mantine-color-blue-0);
+}
+
+.nameGroup {
+  flex: 1;
+  min-width: 0;
+}
+
+.pdfBadge {
+  flex-shrink: 0;
+}

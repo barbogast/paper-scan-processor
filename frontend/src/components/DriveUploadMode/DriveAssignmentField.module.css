@@ -1,0 +1,32 @@
+.badge {
+  cursor: pointer;
+  font-weight: 400;
+  text-transform: none;
+  max-width: 220px;
+}
+
+.badgeOwn {
+  font-weight: 600;
+}
+
+.badgeText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.clearButton {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0.6;
+}

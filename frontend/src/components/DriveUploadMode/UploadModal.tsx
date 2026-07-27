@@ -2,6 +2,7 @@ import { Box, Button, Group, Loader, Modal, Stack, Text } from '@mantine/core'
 import TruncatedText from '../TruncatedText'
 import { LocalFile, LocalFileGroup, flattenFiles } from './useFileTree'
 import * as uploadQueue from './uploadQueue'
+import styles from './UploadModal.module.css'
 
 interface Props {
   opened: boolean
@@ -55,7 +56,7 @@ function GroupSection({ group, groupKey }: { group: LocalFileGroup; groupKey: st
     <Box pl={12}>
       <Group justify="space-between" gap={8} mb={4} wrap="nowrap">
         <TruncatedText label={group.name} size="sm" fw={600}>📁 {group.name}</TruncatedText>
-        <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>{doneCount}/{groupFiles.length}</Text>
+        <Text size="xs" c="dimmed" className={styles.groupCount}>{doneCount}/{groupFiles.length}</Text>
       </Group>
       <Stack gap={10}>
         {group.files.map(file => <FileRow key={file.path} file={file} />)}
@@ -73,7 +74,7 @@ function FileRow({ file }: { file: LocalFile }) {
 
   return (
     <Group justify="space-between" wrap="nowrap" gap={8}>
-      <TruncatedText label={file.name} size="sm" style={{ flex: 1, minWidth: 0 }}>{file.name}</TruncatedText>
+      <TruncatedText label={file.name} size="sm" className={styles.fileName}>{file.name}</TruncatedText>
       {status === 'queued' && <Text size="sm" c="dimmed">Queued</Text>}
       {status === 'uploading' && (
         <Group gap={6} wrap="nowrap">
@@ -96,7 +97,7 @@ function FileRow({ file }: { file: LocalFile }) {
       )}
       {status === 'error' && (
         <Group gap={8} wrap="nowrap">
-          <TruncatedText label={entry?.error ?? ''} size="sm" c="red" style={{ maxWidth: 220 }}>
+          <TruncatedText label={entry?.error ?? ''} size="sm" c="red" className={styles.errorText}>
             ⚠ {entry?.error}
           </TruncatedText>
           <Button size="xs" variant="default" onClick={() => uploadQueue.retry(entry!)}>

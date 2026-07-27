@@ -1,0 +1,12 @@
+.groupCount {
+  flex-shrink: 0;
+}
+
+.fileName {
+  flex: 1;
+  min-width: 0;
+}
+
+.errorText {
+  max-width: 220px;
+}

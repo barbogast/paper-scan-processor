@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { Badge, Box, Tooltip } from '@mantine/core'
 import { DriveAssignment } from './useDriveAssignments'
 import { useIsTruncated } from '../../lib/useIsTruncated'
+import styles from './DriveAssignmentField.module.css'
 
 interface Props {
   label: string
@@ -29,24 +30,24 @@ export default function DriveAssignmentField({ label, assignment, isOwn, onPick,
       variant={isOwn ? 'light' : 'outline'}
       size="sm"
       radius="sm"
-      style={{ cursor: 'pointer', fontWeight: isOwn ? 600 : 400, textTransform: 'none', maxWidth: 220 }}
+      className={`${styles.badge} ${isOwn ? styles.badgeOwn : ''}`}
       styles={{ label: { overflow: 'hidden' } }}
     >
-      <span ref={textRef} style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <span ref={textRef} className={styles.badgeText}>
         📁 {displayPath}
       </span>
     </Badge>
   )
 
   return (
-    <Box style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+    <Box className={styles.container}>
       {truncated ? <Tooltip label={displayPath} openDelay={500}>{badge}</Tooltip> : badge}
       {isOwn && (
         <button
           type="button"
           onClick={onClear}
           aria-label={`Clear Drive folder for ${label}`}
-          style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer', flexShrink: 0, opacity: 0.6 }}
+          className={styles.clearButton}
         >
           ✕
         </button>

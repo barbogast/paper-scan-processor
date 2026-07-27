@@ -12,6 +12,7 @@ import ResizeHandle from '../ResizeHandle'
 import type { OutputFilesHandle } from './useOutputFiles'
 import OutputFileHeader from './OutputFileHeader'
 import type { PendingFocusHandle } from './usePendingFocus'
+import styles from './ThumbnailPanel.module.css'
 
 const MIN_WIDTH = 120
 const MAX_WIDTH = 480
@@ -141,8 +142,8 @@ export default function SplitThumbnailPanel({
   }
 
   return (
-    <div style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', width: panelWidth, height: '100%' }}>
+    <div className={styles.outer}>
+      <div className={styles.panel} style={{ width: panelWidth }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -150,17 +151,8 @@ export default function SplitThumbnailPanel({
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={pageOrder} strategy={verticalListSortingStrategy}>
-            <div
-              ref={scrollRef}
-              style={{
-                flex: 1,
-                minHeight: 0,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                background: 'var(--mantine-color-gray-3)',
-              }}
-            >
-              <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+            <div ref={scrollRef} className={styles.scroll}>
+              <div className={styles.sizer} style={{ height: virtualizer.getTotalSize() }}>
                 {virtualItems.map(vItem => {
                   const item = items[vItem.index]
 
@@ -168,7 +160,8 @@ export default function SplitThumbnailPanel({
                     return (
                       <div
                         key={vItem.key}
-                        style={{ position: 'absolute', top: vItem.start, left: 0, width: '100%', height: vItem.size }}
+                        className={styles.headerWrapper}
+                        style={{ top: vItem.start, height: vItem.size }}
                       >
                         <OutputFileHeader
                           filename={outputFiles.all.get(item.firstPosition)?.name ?? ''}
@@ -190,14 +183,8 @@ export default function SplitThumbnailPanel({
                   return (
                     <div
                       key={vItem.key}
-                      style={{
-                        position: 'absolute',
-                        top: vItem.start,
-                        left: 0,
-                        width: '100%',
-                        height: vItem.size,
-                        boxSizing: 'border-box',
-                      }}
+                      className={styles.pageWrapper}
+                      style={{ top: vItem.start, height: vItem.size }}
                       onMouseEnter={() => setHoveredPage(page)}
                       onMouseLeave={() => setHoveredPage(null)}
                     >

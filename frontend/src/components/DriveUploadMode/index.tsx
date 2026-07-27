@@ -13,6 +13,7 @@ import { useDriveAssignments, resolveEffectiveAssignments, DriveAssignment, Pick
 import * as uploadQueue from './uploadQueue'
 import * as pageCache from '../../lib/pageCache'
 import { ellipsisPath } from '../../utils'
+import styles from './index.module.css'
 
 export default function DriveUploadMode() {
   const { root, tree, loading, error, pickRoot } = useFileTree()
@@ -67,12 +68,12 @@ export default function DriveUploadMode() {
   }
 
   return (
-    <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box className={styles.root}>
       <Toolbar>
         <Button size="xs" variant="default" onClick={pickRoot}>
           {root ? ellipsisPath(root) : 'Choose root folder…'}
         </Button>
-        <Box style={{ flex: 1 }} />
+        <Box className={styles.toolbarSpacer} />
         <Tooltip
           label={tree ? 'Every file needs a Drive folder before uploading' : 'Choose a root folder first'}
           disabled={readyToUpload}
@@ -85,7 +86,7 @@ export default function DriveUploadMode() {
         </Tooltip>
       </Toolbar>
 
-      <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
+      <Box className={styles.body}>
         <ResizableLeftPanel
           left={
             <>
@@ -146,7 +147,7 @@ export default function DriveUploadMode() {
 
           {selectedFile
             ? <DetailPanel pdfPath={selectedFile.path} pageNum={selectedPage} pageCount={selectedFile.pageCount} />
-            : <Box style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />}
+            : <Box className={styles.emptyDetail} />}
         </ResizableLeftPanel>
       </Box>
     </Box>

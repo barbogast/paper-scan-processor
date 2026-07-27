@@ -1,0 +1,39 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.headerRow {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--mantine-color-gray-3);
+  display: flex;
+  align-items: stretch;
+}
+
+.controlsGroup {
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+
+.column {
+  flex-shrink: 0;
+  padding: 6px 8px;
+  border-right: 1px solid var(--mantine-color-gray-3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.columnPath {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

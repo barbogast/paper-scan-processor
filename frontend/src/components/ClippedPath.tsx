@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { Tooltip } from '@mantine/core'
 import { useIsTruncated } from '../lib/useIsTruncated'
+import styles from './ClippedPath.module.css'
 
 interface Props {
   path: string | null
@@ -15,35 +16,15 @@ export default function ClippedPath({ path, onClick, placeholder = 'Choose folde
   const clipped = useIsTruncated(ref, path, { scrollToEnd: true })
 
   const inner = (
-    <div style={{ position: 'relative' }}>
+    <div className={styles.container}>
       {/* Overlay '…' at the left edge to signal that the path is truncated. */}
-      {clipped && (
-        <span style={{
-          position: 'absolute', left: 0, fontSize: 11, pointerEvents: 'none',
-          color: 'var(--mantine-color-gray-6)',
-          background: 'var(--mantine-color-white)',
-          paddingRight: 1,
-        }}>…</span>
-      )}
+      {clipped && <span className={styles.ellipsis}>…</span>}
       <button
         type="button"
         ref={ref}
         onClick={onClick}
         aria-label={path ? `Change destination folder (currently ${path})` : placeholder}
-        style={{
-          display: 'block',
-          width: '100%',
-          border: 'none',
-          background: 'transparent',
-          padding: 0,
-          textAlign: 'left',
-          fontSize: 11,
-          fontFamily: 'inherit',
-          color: path ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-dimmed)',
-          cursor: 'pointer',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-        }}
+        className={`${styles.button} ${path ? styles.buttonWithPath : styles.buttonPlaceholder}`}
       >
         {path ?? placeholder}
       </button>

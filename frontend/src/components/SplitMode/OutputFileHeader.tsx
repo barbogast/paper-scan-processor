@@ -1,6 +1,7 @@
 import { ITEM_PADDING, HEADER_HEIGHT } from '../../constants'
 import { PendingFocusHandle } from './usePendingFocus'
 import ClippedPath from '../ClippedPath'
+import styles from './OutputFileHeader.module.css'
 
 interface Props {
   filename: string
@@ -19,19 +20,10 @@ export default function OutputFileHeader({
   const cursorPos = focus.pendingFocus?.cursorPos ?? 0
   return (
     <div
-      style={{
-        margin: `4px ${ITEM_PADDING}px`,
-        height: HEADER_HEIGHT - 8,
-        padding: '4px 6px',
-        background: 'var(--mantine-color-white)',
-        border: `1px solid ${isDuplicate ? 'var(--mantine-color-red-5)' : 'var(--mantine-color-gray-3)'}`,
-        borderRadius: 4,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
+      className={`${styles.header} ${isDuplicate ? styles.headerDuplicate : ''}`}
+      style={{ margin: `4px ${ITEM_PADDING}px`, height: HEADER_HEIGHT - 8 }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <div className={styles.nameRow}>
         <input
           ref={(el) => {
             if (el && shouldFocus) {
@@ -44,18 +36,9 @@ export default function OutputFileHeader({
           value={filename}
           onChange={(e) => onChange(e.target.value)}
           placeholder="filename"
-          style={{
-            flex: 1,
-            border: 'none',
-            outline: 'none',
-            background: 'transparent',
-            fontSize: 12,
-            fontWeight: 500,
-            color: isDuplicate ? 'var(--mantine-color-red-7)' : 'inherit',
-            minWidth: 0,
-          }}
+          className={`${styles.input} ${isDuplicate ? styles.inputDuplicate : ''}`}
         />
-        <span style={{ fontSize: 12, color: 'var(--mantine-color-dimmed)', flexShrink: 0 }}>.pdf</span>
+        <span className={styles.extension}>.pdf</span>
       </div>
       <ClippedPath path={folder} onClick={onPickFolder} />
     </div>

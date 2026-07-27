@@ -1,0 +1,23 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.toolbarSpacer {
+  flex: 1;
+}
+
+.body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+
+.emptyDetail {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -7,6 +7,7 @@ import { makeResizeDragHandler } from '../../lib/resizableWidth'
 import { DEFAULT_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
 import PageThumbnail from '../PageThumbnail'
 import ResizeHandle from '../ResizeHandle'
+import styles from './ThumbnailPanel.module.css'
 
 const MIN_TOTAL_WIDTH = 240
 const MAX_TOTAL_WIDTH = 960
@@ -64,21 +65,12 @@ export default function MergeModeThumbnailPanel({
   const startDrag = makeResizeDragHandler(totalWidth, onWidthChange, MIN_TOTAL_WIDTH, MAX_TOTAL_WIDTH)
 
   return (
-    <Box style={{ display: 'flex', height: '100%', flexShrink: 0 }}>
-      <Box style={{ display: 'flex', flexDirection: 'column', width: totalWidth, height: '100%' }}>
+    <Box className={styles.outer}>
+      <Box className={styles.panel} style={{ width: totalWidth }}>
         {/* Single scroll area with two absolute columns */}
-        <div
-          ref={scrollRef}
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            background: 'var(--mantine-color-gray-3)',
-          }}
-        >
-          <div style={{ height: totalHeight, position: 'relative' }}>
-            <div style={{ position: 'absolute', left: 0, top: 0, width: colWidth, height: '100%' }}>
+        <div ref={scrollRef} className={styles.scroll}>
+          <div className={styles.sizer} style={{ height: totalHeight }}>
+            <div className={styles.col} style={{ left: 0, width: colWidth }}>
               <ThumbColumn
                 scrollRef={scrollRef}
                 file={fileA}
@@ -92,7 +84,7 @@ export default function MergeModeThumbnailPanel({
                 pageLabel={pageLabelA}
               />
             </div>
-            <div style={{ position: 'absolute', left: colWidth, top: 0, width: colWidth, height: '100%' }}>
+            <div className={styles.col} style={{ left: colWidth, width: colWidth }}>
               <ThumbColumn
                 scrollRef={scrollRef}
                 file={fileB}
@@ -176,14 +168,8 @@ function ThumbColumn({
             key={item.key}
             onMouseEnter={() => setHoveredPage(page)}
             onMouseLeave={() => setHoveredPage(null)}
-            style={{
-              position: 'absolute',
-              top: item.start,
-              left: 0,
-              width: '100%',
-              height: item.size,
-              boxSizing: 'border-box',
-            }}
+            className={styles.itemWrapper}
+            style={{ top: item.start, height: item.size }}
           >
             <PageThumbnail
               src={pageCache.getSrc(pdfPath, page)}

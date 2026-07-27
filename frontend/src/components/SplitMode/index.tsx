@@ -9,6 +9,7 @@ import { ellipsisPath } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
 import { usePendingFocus } from './usePendingFocus'
 import * as pageCache from '../../lib/pageCache'
+import styles from './index.module.css'
 
 const DEFAULT_TEMPLATE = '{date} {name}'
 
@@ -151,11 +152,11 @@ export default function SplitMode({ initialPath }: Props) {
   }, [template, outputFiles.toggle])
 
   return (
-    <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box className={styles.root}>
       <Modal opened={successModal.show} onClose={closeSuccessModal} title="Export complete" centered>
         <Stack gap="md">
           <Group>
-            <Text size="sm" c="dimmed" style={{ flex: 1 }}>{successModal.outputPath}</Text>
+            <Text size="sm" c="dimmed" className={styles.outputPath}>{successModal.outputPath}</Text>
             <Button size="xs" variant="default" onClick={() => OpenFile(successModal.outputPath)}>
               Open in Finder
             </Button>
@@ -180,9 +181,9 @@ export default function SplitMode({ initialPath }: Props) {
           placeholder={DEFAULT_TEMPLATE}
           value={template}
           onChange={(e) => setTemplate(e.currentTarget.value)}
-          leftSection={<span style={{ fontSize: 11, whiteSpace: 'nowrap', color: 'var(--mantine-color-dimmed)' }}>Template</span>}
+          leftSection={<span className={styles.templateLabel}>Template</span>}
           leftSectionWidth={60}
-          style={{ flex: 1 }}
+          className={styles.templateInput}
         />
         <Button size="xs" variant="default" onClick={handlePickOutputFolder}>
           {outputFolder ? ellipsisPath(outputFolder) : 'Output folder…'}
@@ -192,7 +193,7 @@ export default function SplitMode({ initialPath }: Props) {
         </Button>
       </Toolbar>
 
-      <Box style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
+      <Box className={styles.body}>
         {pdfPath ? (
           <>
             <ThumbnailPanel
@@ -219,7 +220,7 @@ export default function SplitMode({ initialPath }: Props) {
             />
           </>
         ) : (
-          <Box style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box className={styles.emptyState}>
             <Button onClick={handleOpen}>Open PDF</Button>
           </Box>
         )}

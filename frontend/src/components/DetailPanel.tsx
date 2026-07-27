@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react'
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
 import { Center, Loader } from '@mantine/core'
 import * as pageCache from '../lib/pageCache'
+import styles from './DetailPanel.module.css'
 
 const DETAIL_WIDTH = 1400
 
@@ -45,32 +46,21 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
     : undefined
 
   return (
-    <div
-      style={{
-        flex: 1,
-        height: '100%',
-        overflow: 'hidden',
-        position: 'relative',
-        background: 'var(--mantine-color-gray-1)',
-        padding: 8,
-      }}
-    >
+    <div className={styles.panel}>
       {pageCache.isLoading(pdfPath, pageNum) && (
-        <Center style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+        <Center className={styles.loaderCenter}>
           <Loader />
         </Center>
       )}
       {src && (
         <TransformWrapper ref={transformRef} centerOnInit minScale={0.1} maxScale={8}>
-          <TransformComponent
-            wrapperStyle={{ width: '100%', height: '100%' }}
-            contentStyle={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
+          <TransformComponent wrapperClass={styles.wrapper} contentClass={styles.content}>
             <img
               src={src}
               alt={`Page ${pageNum}`}
               draggable={false}
-              style={{ maxWidth: '100%', maxHeight: '100%', display: 'block', userSelect: 'none', transform: rotation ? `rotate(${rotation}deg)` : undefined }}
+              className={styles.image}
+              style={{ transform: rotation ? `rotate(${rotation}deg)` : undefined }}
             />
           </TransformComponent>
         </TransformWrapper>

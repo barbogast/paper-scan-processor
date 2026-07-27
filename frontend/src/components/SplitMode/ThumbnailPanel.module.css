@@ -1,0 +1,36 @@
+.outer {
+  display: flex;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--mantine-color-gray-3);
+}
+
+.sizer {
+  position: relative;
+}
+
+.headerWrapper {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+.pageWrapper {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+}

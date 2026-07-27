@@ -2,6 +2,7 @@ import { Loader } from '@mantine/core'
 import { IconRotateClockwise, IconX, IconArrowUp, IconArrowDown } from '@tabler/icons-react'
 import * as pageCache from '../lib/pageCache'
 import { ITEM_PADDING, LABEL_HEIGHT } from '../constants'
+import styles from './PageThumbnail.module.css'
 
 interface Props {
   src: string | undefined
@@ -37,22 +38,19 @@ export default function PageThumbnail({
   const showMoveButtons = isHovered && (onMoveUp !== undefined || onMoveDown !== undefined)
 
   return (
-    <div style={{ padding: ITEM_PADDING, paddingBottom: 0, cursor: 'pointer' }} onClick={onClick}>
-      <div style={{
-        position: 'relative',
-        border: `2px solid ${isSelected ? 'var(--mantine-color-blue-5)' : 'transparent'}`,
-        borderRadius: 4,
-      }}>
-        <div style={{ overflow: 'hidden', borderRadius: 2, background: 'var(--mantine-color-gray-1)' }}>
+    <div className={styles.wrapper} style={{ padding: ITEM_PADDING, paddingBottom: 0 }} onClick={onClick}>
+      <div className={`${styles.frame} ${isSelected ? styles.frameSelected : ''}`}>
+        <div className={styles.imageContainer}>
           {src ? (
             <img
               src={src}
               alt={`page ${page}`}
-              style={{ width: '100%', display: 'block', opacity: isSkipped ? 0.3 : 1, transform: imgTransform }}
+              className={styles.image}
+              style={{ opacity: isSkipped ? 0.3 : 1, transform: imgTransform }}
               draggable={false}
             />
           ) : (
-            <div style={{ width: '100%', height: thumbHeight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className={styles.placeholder} style={{ height: thumbHeight }}>
               {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
             </div>
           )}
@@ -95,13 +93,10 @@ export default function PageThumbnail({
           </>
         )}
       </div>
-      <div style={{
-        textAlign: 'center',
-        fontSize: 11,
-        color: isSkipped ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-7)',
-        height: LABEL_HEIGHT,
-        lineHeight: `${LABEL_HEIGHT}px`,
-      }}>
+      <div
+        className={`${styles.label} ${isSkipped ? styles.labelSkipped : ''}`}
+        style={{ height: LABEL_HEIGHT, lineHeight: `${LABEL_HEIGHT}px` }}
+      >
         {label}
       </div>
     </div>

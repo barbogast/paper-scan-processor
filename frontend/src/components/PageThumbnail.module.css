@@ -1,0 +1,41 @@
+.wrapper {
+  cursor: pointer;
+}
+
+.frame {
+  position: relative;
+  border-radius: 4px;
+  border: 2px solid transparent;
+}
+
+.frameSelected {
+  border-color: var(--mantine-color-blue-5);
+}
+
+.imageContainer {
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--mantine-color-gray-1);
+}
+
+.image {
+  width: 100%;
+  display: block;
+}
+
+.placeholder {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label {
+  text-align: center;
+  font-size: 11px;
+  color: var(--mantine-color-gray-7);
+}
+
+.labelSkipped {
+  color: var(--mantine-color-gray-5);
+}

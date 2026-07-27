@@ -1,0 +1,6 @@
+.handle {
+  height: 100%;
+  cursor: col-resize;
+  flex-shrink: 0;
+  background: var(--mantine-color-gray-3);
+}
