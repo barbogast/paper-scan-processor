@@ -1,0 +1,63 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c0fc9abcf789",
+  "strategy": "manual-commit",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "frontend/src/App.module.css",
+    "frontend/src/App.tsx",
+    "frontend/src/components/ClippedPath.module.css",
+    "frontend/src/components/ClippedPath.tsx",
+    "frontend/src/components/DetailPanel.module.css",
+    "frontend/src/components/DetailPanel.tsx",
+    "frontend/src/components/DriveUploadMode/DriveAssignmentField.module.css",
+    "frontend/src/components/DriveUploadMode/DriveAssignmentField.tsx",
+    "frontend/src/components/DriveUploadMode/DriveFolderPickerModal.module.css",
+    "frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx",
+    "frontend/src/components/DriveUploadMode/FileList.module.css",
+    "frontend/src/components/DriveUploadMode/FileList.tsx",
+    "frontend/src/components/DriveUploadMode/GroupNode.module.css",
+    "frontend/src/components/DriveUploadMode/GroupNode.tsx",
+    "frontend/src/components/DriveUploadMode/ResizableLeftPanel.module.css",
+    "frontend/src/components/DriveUploadMode/ResizableLeftPanel.tsx",
+    "frontend/src/components/DriveUploadMode/ThumbnailPanel.module.css",
+    "frontend/src/components/DriveUploadMode/ThumbnailPanel.tsx",
+    "frontend/src/components/DriveUploadMode/UploadModal.module.css",
+    "frontend/src/components/DriveUploadMode/UploadModal.tsx",
+    "frontend/src/components/DriveUploadMode/index.module.css",
+    "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/MergeMode/ThumbnailPanel.module.css",
+    "frontend/src/components/MergeMode/ThumbnailPanel.tsx",
+    "frontend/src/components/MergeMode/index.module.css",
+    "frontend/src/components/MergeMode/index.tsx",
+    "frontend/src/components/PageThumbnail.module.css",
+    "frontend/src/components/PageThumbnail.tsx",
+    "frontend/src/components/ResizeHandle.module.css",
+    "frontend/src/components/ResizeHandle.tsx",
+    "frontend/src/components/SplitMode/OutputFileHeader.module.css",
+    "frontend/src/components/SplitMode/OutputFileHeader.tsx",
+    "frontend/src/components/SplitMode/ThumbnailPanel.module.css",
+    "frontend/src/components/SplitMode/ThumbnailPanel.tsx",
+    "frontend/src/components/SplitMode/index.module.css",
+    "frontend/src/components/SplitMode/index.tsx",
+    "frontend/src/components/Toolbar.module.css",
+    "frontend/src/components/Toolbar.tsx",
+    "spec.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c0/fc9abcf789/0/metadata.json",
+      "transcript": "/c0/fc9abcf789/0/full.jsonl",
+      "content_hash": "/c0/fc9abcf789/0/content_hash.txt",
+      "prompt": "/c0/fc9abcf789/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 334,
+    "cache_creation_tokens": 269540,
+    "cache_read_tokens": 27190554,
+    "output_tokens": 71064,
+    "api_call_count": 167
+  }
+}

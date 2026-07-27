@@ -1,0 +1,107 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c0fc9abcf789",
+  "session_id": "e83349ab-4383-4b5a-84fa-603e704a36cd",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-27T15:50:24.68955Z",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "frontend/src/App.module.css",
+    "frontend/src/App.tsx",
+    "frontend/src/components/ClippedPath.module.css",
+    "frontend/src/components/ClippedPath.tsx",
+    "frontend/src/components/DetailPanel.module.css",
+    "frontend/src/components/DetailPanel.tsx",
+    "frontend/src/components/DriveUploadMode/DriveAssignmentField.module.css",
+    "frontend/src/components/DriveUploadMode/DriveAssignmentField.tsx",
+    "frontend/src/components/DriveUploadMode/DriveFolderPickerModal.module.css",
+    "frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx",
+    "frontend/src/components/DriveUploadMode/FileList.module.css",
+    "frontend/src/components/DriveUploadMode/FileList.tsx",
+    "frontend/src/components/DriveUploadMode/GroupNode.module.css",
+    "frontend/src/components/DriveUploadMode/GroupNode.tsx",
+    "frontend/src/components/DriveUploadMode/ResizableLeftPanel.module.css",
+    "frontend/src/components/DriveUploadMode/ResizableLeftPanel.tsx",
+    "frontend/src/components/DriveUploadMode/ThumbnailPanel.module.css",
+    "frontend/src/components/DriveUploadMode/ThumbnailPanel.tsx",
+    "frontend/src/components/DriveUploadMode/UploadModal.module.css",
+    "frontend/src/components/DriveUploadMode/UploadModal.tsx",
+    "frontend/src/components/DriveUploadMode/index.module.css",
+    "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/MergeMode/ThumbnailPanel.module.css",
+    "frontend/src/components/MergeMode/ThumbnailPanel.tsx",
+    "frontend/src/components/MergeMode/index.module.css",
+    "frontend/src/components/MergeMode/index.tsx",
+    "frontend/src/components/PageThumbnail.module.css",
+    "frontend/src/components/PageThumbnail.tsx",
+    "frontend/src/components/ResizeHandle.module.css",
+    "frontend/src/components/ResizeHandle.tsx",
+    "frontend/src/components/SplitMode/OutputFileHeader.module.css",
+    "frontend/src/components/SplitMode/OutputFileHeader.tsx",
+    "frontend/src/components/SplitMode/ThumbnailPanel.module.css",
+    "frontend/src/components/SplitMode/ThumbnailPanel.tsx",
+    "frontend/src/components/SplitMode/index.module.css",
+    "frontend/src/components/SplitMode/index.tsx",
+    "frontend/src/components/Toolbar.module.css",
+    "frontend/src/components/Toolbar.tsx",
+    "spec.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "1400b125e68c",
+  "checkpoint_transcript_start": 383,
+  "transcript_lines_at_start": 383,
+  "token_usage": {
+    "input_tokens": 334,
+    "cache_creation_tokens": 269540,
+    "cache_read_tokens": 27190554,
+    "output_tokens": 71064,
+    "api_call_count": 167
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-27T15:50:24.663802Z",
+    "agent_lines": 627,
+    "agent_removed": 266,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 627,
+    "total_lines_changed": 893,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 48,
+      "agent_lines_removed": 13
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 10,
+      "agent_lines_removed": 14
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 627,
+      "agent_lines_removed": 266
+    }
+  ]
+}

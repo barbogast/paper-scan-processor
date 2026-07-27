@@ -1,0 +1,9 @@
+start with goober and migrating inline style objects
+
+---
+
+I don't like having this hack for goober + viteest in the codebase. And https://github.com/cristianbote/goober/pull/589 looks like it addressed this issue. How come it doesn't work?
+
+---
+
+No, the commit message is wrong. Gobber was never used (according to git history). Also, I suggest continuing the conversation and do all straight-forward movals from tsx to .module.css in one go.
