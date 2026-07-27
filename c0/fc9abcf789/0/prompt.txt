@@ -7,3 +7,7 @@ I don't like having this hack for goober + viteest in the codebase. And https://
 ---
 
 No, the commit message is wrong. Gobber was never used (according to git history). Also, I suggest continuing the conversation and do all straight-forward movals from tsx to .module.css in one go.
+
+---
+
+commit
