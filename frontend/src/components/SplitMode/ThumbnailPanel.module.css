@@ -34,3 +34,38 @@
   width: 100%;
   box-sizing: border-box;
 }
+
+.gapZone {
+  width: 100%;
+  border: none;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  background: transparent;
+}
+
+.gapZone:hover,
+.gapZone:focus-visible {
+  background: var(--mantine-color-gray-2);
+}
+
+.split {
+  background: var(--mantine-color-blue-0);
+}
+
+.split:hover,
+.split:focus-visible {
+  background: var(--mantine-color-blue-0);
+}
+
+.hoverLine {
+  flex: 1;
+  height: 0;
+  border-top: 1px dashed var(--mantine-color-gray-5);
+  opacity: 0;
+}
+
+.gapZone:hover .hoverLine,
+.gapZone:focus-visible .hoverLine {
+  opacity: 1;
+}

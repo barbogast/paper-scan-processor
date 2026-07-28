@@ -93,11 +93,8 @@ export default function DriveThumbnailPanel({ pdfPath, pageCount, selectedPage, 
                       isSelected={page === selectedPage}
                       isSkipped={false}
                       rotation={0}
-                      isHovered={false}
                       label={String(page)}
                       onClick={() => onSelectPage(page)}
-                      onRotate={() => {}}
-                      onToggleSkip={() => {}}
                     />
                   </div>
                 )

@@ -39,3 +39,34 @@
 .labelSkipped {
   color: var(--mantine-color-gray-5);
 }
+
+.iconBtn {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.frame:hover .iconBtn,
+.frame:focus-within .iconBtn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.frame:hover .iconBtnDisabled,
+.frame:focus-within .iconBtnDisabled {
+  opacity: 0.3;
+}
+
+.iconBtnActive {
+  opacity: 1;
+  pointer-events: auto;
+}

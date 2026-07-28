@@ -64,8 +64,6 @@ export default function SplitThumbnailPanel({
 }: Props) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_WIDTH)
   const startDrag = makeResizeDragHandler(panelWidth, setPanelWidth, MIN_WIDTH, MAX_WIDTH)
-  const [hoveredGap, setHoveredGap] = useState<number | null>(null)
-  const [hoveredPage, setHoveredPage] = useState<number | null>(null)
   const [activeId, setActiveId] = useState<number | null>(null)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -185,8 +183,6 @@ export default function SplitThumbnailPanel({
                       key={vItem.key}
                       className={styles.pageWrapper}
                       style={{ top: vItem.start, height: vItem.size }}
-                      onMouseEnter={() => setHoveredPage(page)}
-                      onMouseLeave={() => setHoveredPage(null)}
                     >
                       <SortablePageItem id={page}>
                         <PageThumbnail
@@ -197,7 +193,6 @@ export default function SplitThumbnailPanel({
                           isSelected={page === selectedPage}
                           isSkipped={skipped.has(page)}
                           rotation={rotations.get(page) ?? 0}
-                          isHovered={hoveredPage === page}
                           label={String(page)}
                           onClick={() => onSelectPage(page)}
                           onRotate={() => onRotate(page)}
@@ -211,10 +206,7 @@ export default function SplitThumbnailPanel({
                       {!isLastPage && (
                         <GapZone
                           isSplit={isSplit}
-                          isHovered={hoveredGap === position}
                           onClick={(e) => { e.stopPropagation(); onToggleSplitPoint(position) }}
-                          onMouseEnter={() => setHoveredGap(position)}
-                          onMouseLeave={() => setHoveredGap(null)}
                         />
                       )}
                     </div>
@@ -233,7 +225,6 @@ export default function SplitThumbnailPanel({
                 isSelected={false}
                 isSkipped={skipped.has(activeId)}
                 rotation={rotations.get(activeId) ?? 0}
-                isHovered={false}
                 label={String(activeId)}
                 onClick={() => {}}
                 onRotate={() => {}}
@@ -265,45 +256,23 @@ function SortablePageItem({ id, children }: { id: number; children: React.ReactN
 
 interface GapZoneProps {
   isSplit: boolean
-  isHovered: boolean
   onClick: (e: React.MouseEvent) => void
-  onMouseEnter: () => void
-  onMouseLeave: () => void
 }
 
-function GapZone({ isSplit, isHovered, onClick, onMouseEnter, onMouseLeave }: GapZoneProps) {
-  const bg = isSplit
-    ? 'var(--mantine-color-blue-0)'
-    : isHovered
-    ? 'var(--mantine-color-gray-2)'
-    : undefined
-
+function GapZone({ isSplit, onClick }: GapZoneProps) {
   return (
     <button
       type="button"
       aria-label={isSplit ? 'Remove split point here' : 'Add split point here'}
       aria-pressed={isSplit}
       onClick={onClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      style={{
-        width: '100%',
-        height: GAP_HEIGHT,
-        background: bg,
-        border: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: ITEM_PADDING,
-        paddingRight: ITEM_PADDING,
-        cursor: 'pointer',
-      }}
+      className={`${styles.gapZone} ${isSplit ? styles.split : ''}`}
+      style={{ height: GAP_HEIGHT, paddingLeft: ITEM_PADDING, paddingRight: ITEM_PADDING }}
     >
       {isSplit && (
         <div style={{ flex: 1, height: 2, background: 'var(--mantine-color-blue-5)', borderRadius: 1 }} />
       )}
-      {!isSplit && isHovered && (
-        <div style={{ flex: 1, height: 0, borderTop: '1px dashed var(--mantine-color-gray-5)' }} />
-      )}
+      {!isSplit && <div className={styles.hoverLine} />}
     </button>
   )
 }

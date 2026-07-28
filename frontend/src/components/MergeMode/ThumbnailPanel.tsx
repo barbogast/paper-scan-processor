@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box } from '@mantine/core'
 import * as pageCache from '../../lib/pageCache'
@@ -130,7 +130,6 @@ function ThumbColumn({
 }: ThumbColumnProps) {
   const { count, skipped, rotations, toggleSkip, rotate } = file
   const pageAt = (index: number) => reverse ? count - index : index + 1
-  const [hoveredPage, setHoveredPage] = useState<number | null>(null)
   const virtualizer = useVirtualizer({
     count,
     getScrollElement: () => scrollRef.current,
@@ -166,8 +165,6 @@ function ThumbColumn({
         return (
           <div
             key={item.key}
-            onMouseEnter={() => setHoveredPage(page)}
-            onMouseLeave={() => setHoveredPage(null)}
             className={styles.itemWrapper}
             style={{ top: item.start, height: item.size }}
           >
@@ -179,7 +176,6 @@ function ThumbColumn({
               isSelected={page === selectedPage}
               isSkipped={skipped.has(page)}
               rotation={rotations.get(page) ?? 0}
-              isHovered={hoveredPage === page}
               label={String(pageLabel ? pageLabel(item.index) : page)}
               onClick={() => onSelectPage(page)}
               onRotate={() => rotate(page)}

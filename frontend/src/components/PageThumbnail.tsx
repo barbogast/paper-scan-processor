@@ -12,11 +12,10 @@ interface Props {
   isSelected: boolean
   isSkipped: boolean
   rotation: number
-  isHovered: boolean
   label: string
   onClick: () => void
-  onRotate: () => void
-  onToggleSkip: () => void
+  onRotate?: () => void
+  onToggleSkip?: () => void
   canMoveUp?: boolean
   canMoveDown?: boolean
   onMoveUp?: () => void
@@ -25,17 +24,14 @@ interface Props {
 
 export default function PageThumbnail({
   src, pdfPath, page, thumbHeight,
-  isSelected, isSkipped, rotation,
-  isHovered, label,
+  isSelected, isSkipped, rotation, label,
   onClick, onRotate, onToggleSkip,
   canMoveUp, canMoveDown, onMoveUp, onMoveDown,
 }: Props) {
   const isRotated = rotation !== 0
-  const showRotateBtn = isHovered || isRotated
   const isOddRotation = rotation === 90 || rotation === 270
   const imgTransform = rotation ? `rotate(${rotation}deg)${isOddRotation ? ` scale(${210 / 297})` : ''}` : undefined
-  const showSkipBtn = isHovered || isSkipped
-  const showMoveButtons = isHovered && (onMoveUp !== undefined || onMoveDown !== undefined)
+  const showMoveButtons = onMoveUp !== undefined || onMoveDown !== undefined
 
   return (
     <div className={styles.wrapper} style={{ padding: ITEM_PADDING, paddingBottom: 0 }} onClick={onClick}>
@@ -55,7 +51,7 @@ export default function PageThumbnail({
             </div>
           )}
         </div>
-        {showRotateBtn && (
+        {onRotate && (
           <ThumbnailIconButton
             ariaLabel="Rotate page clockwise"
             onClick={onRotate}
@@ -64,7 +60,7 @@ export default function PageThumbnail({
             icon={<IconRotateClockwise size={10} stroke={3} />}
           />
         )}
-        {showSkipBtn && (
+        {onToggleSkip && (
           <ThumbnailIconButton
             ariaLabel={isSkipped ? 'Unskip page' : 'Skip page'}
             onClick={onToggleSkip}
@@ -123,15 +119,11 @@ function ThumbnailIconButton({
       aria-label={ariaLabel}
       disabled={disabled}
       onClick={(e) => { e.stopPropagation(); onClick() }}
+      className={`${styles.iconBtn} ${active ? styles.iconBtnActive : ''} ${disabled ? styles.iconBtnDisabled : ''}`}
       style={{
-        position: 'absolute',
         ...position,
-        width: 16, height: 16, borderRadius: 3, border: 'none', padding: 0,
         background: active ? activeColor : 'rgba(0,0,0,0.45)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: disabled ? 'default' : 'pointer',
-        color: 'white',
-        opacity: disabled ? 0.3 : 1,
       }}
     >
       {icon}
