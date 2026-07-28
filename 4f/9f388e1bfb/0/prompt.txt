@@ -1,0 +1,1 @@
+Tackle the last item of the styling refactoring
