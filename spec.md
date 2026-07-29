@@ -170,20 +170,19 @@ For filing batches of local files (PDFs and other scans, e.g. images) to Google 
 ### Workflow
 
 1. The user enters Drive Upload mode. If arriving via the Split mode export success modal, the root local folder is pre-set to the Split output folder; otherwise the user picks a root folder.
-2. The app scans the root folder recursively and displays all files grouped by subfolder. Files in the root folder itself appear as a top-level group. Everything starts selected for upload.
+2. The app scans the root folder recursively (symlinked directories are not followed) and displays all files grouped by subfolder. Files in the root folder itself appear as a top-level group. Everything starts selected for upload.
 3. The user can deselect files or subfolders to exclude them from the upload. Excluded items don't need a Drive destination and are skipped by the conflict check and the upload itself.
 4. The user assigns a Google Drive destination folder to each subfolder group. The assignment propagates to all files within the group. Individual files can override the group's assignment.
 5. The user can select any PDF file to preview it — the thumbnail strip and detail panel update to show that file's pages. Non-PDF files (e.g. images) can still be assigned and uploaded, just without a preview.
-6. The user clicks Upload. Before uploading, the app checks each Drive destination for filename conflicts among the selected files. If any are found, conflicting files are flagged and the upload is aborted until resolved.
-7. Uploads proceed with per-file progress. If a file fails, it shows an inline error and a Retry button; other uploads continue unaffected.
-8. After all uploads complete, each subfolder group shows an "Open in Drive" link to its destination folder.
-9. The user is prompted to delete or move to a local archive folder the source files that uploaded successfully.
+6. The user clicks **Upload All**. Before uploading, the app checks each Drive destination for filename conflicts among the selected files. If any are found, conflicting files are flagged and the upload is aborted until resolved.
+7. Once the conflict check passes, the file tree locks for the rest of the session (see Locking below): every Drive-assignment badge, in both the main tree and the upload progress modal that opens, immediately becomes an "open in Drive" link, since the destination is already fixed at that point. Files upload sequentially, one at a time, with per-file status shown in the modal. A **Cancel** control aborts whichever file is currently uploading — marking it "Cancelled" rather than leaving it in an ambiguous uploading state — while **Cancel remaining** stops any files still queued. If a file fails, it shows an inline error and a Retry button in the modal; other uploads continue unaffected. The modal blocks closing while uploads are in progress.
+8. The user is prompted to delete or move to a local archive folder the source files that uploaded successfully.
 
 ### Layout
 
 Drive Upload mode uses a three-column layout:
 
-- **Left panel** (fixed width) — the file tree: root folder → subfolders (nested to match the local folder structure) → files. Each subfolder header is collapsible (starting expanded), shows a selection checkbox, an editable name, and its Drive destination folder. Each file shows a selection checkbox, an editable filename, inherits the parent subfolder's Drive destination (with an option to override), and — space permitting — displays file size and page count as secondary metadata. Edited names are the names used on Drive; the local files are not renamed on disk.
+- **Left panel** (fixed width) — the file tree: root folder → subfolders (nested to match the local folder structure) → files. Each subfolder header is collapsible (starting expanded), shows a selection checkbox, an editable name, and its Drive destination folder. Each file shows a selection checkbox, an editable filename, inherits the parent subfolder's Drive destination (with an option to override), and — space permitting — displays file size and page count as secondary metadata (non-PDF files show size only, since page count doesn't apply). A file whose page count can't be read — a corrupt PDF — is still shown, flagged with a warning icon, rather than dropped from the tree. Edited names are the names used on Drive; the local files are not renamed on disk.
 - **Middle panel** (adjustable width, drag handle on right edge) — thumbnail strip of the currently selected PDF.
 - **Right panel** (fills remaining space) — the page detail view.
 
@@ -217,7 +216,8 @@ The thumbnail strip and detail panel track the last previewable file *touched* b
 
 ### Drive folder assignment
 
-- Clicking a Drive folder field (on a subfolder header or an individual file) opens a **folder browser modal** displaying the user's Drive folder tree, fetched lazily on first open. A **recently used folders** list appears at the top for quick access. This always assigns just that one row, regardless of the current multi-selection.
+- Clicking a Drive folder field (on a subfolder header or an individual file) opens a **folder browser modal** displaying the user's Drive folder tree, fetched lazily on first open. A **recently used folders** list appears at the top for quick access. This always assigns just that one row, regardless of the current multi-selection. The modal also supports creating a new folder inside the currently browsed location and selecting it as the destination, for when the right Drive folder doesn't exist yet.
+- An assigned folder can be cleared back to inherited/not-assigned via a clear (✕) control next to the badge.
 - A toolbar "Assign Drive folder…" action, enabled whenever the multi-selection (Cmd/Ctrl-click, see above) is non-empty and the tree isn't locked, opens the same folder browser modal and applies the picked folder to every selected item at once — subfolders get a group assignment, files get a file-level override, via the same setters and propagation/override rules as a single assignment. The action is hidden/disabled once the tree is locked; the multi-selection and click-to-preview keep working.
 - If the selection includes both a subfolder and one of its own descendants (a nested file or subfolder), the descendant is pruned before applying — only the topmost selected item in each selected subtree gets an assignment, and the rest inherit it normally. Applying to both isn't a conflict at the moment of the click (it's the same picked folder either way), but leaving the descendant with its own override would pin it independently, so it silently stops following the subfolder if that assignment is changed later.
 - A subfolder's Drive folder assignment propagates to all files within it. A file-level assignment overrides the parent subfolder's.
@@ -231,6 +231,10 @@ The thumbnail strip and detail panel track the last previewable file *touched* b
 - A toolbar-level "Select All" / "Select None" shortcut applies to the whole tree.
 - Excluded files and subfolders don't need a Drive destination assignment and are skipped by the pre-upload conflict check and the upload itself. They remain visible, and PDFs can still be selected for preview.
 - Selection checkboxes are disabled once the tree is locked (same `locked` state that freezes Drive folder assignment and renaming after "Upload All" is clicked).
+
+### Locking
+
+Clicking **Upload All** locks the entire tree for the rest of that root's session: selection checkboxes, Drive folder assignment, and renaming all become read-only, and every Drive-assignment badge — including its clear (✕) control — is replaced by an "open in Drive" link, since the destination is fixed at that point regardless of whether the upload has actually completed yet. Picking a new root folder is the only way back to an editable tree. Retrying a failed upload happens from within the upload progress modal, not via a control in the main tree.
 
 ### Remembered folder mappings
 
@@ -249,11 +253,11 @@ After a successful upload batch, the user is prompted to either delete the sourc
 
 ### Authentication
 
-Google OAuth via a browser window, triggered the first time Drive Upload mode is used. Credentials are stored locally and reused in future sessions.
+Google OAuth via a browser window, triggered the first time Drive Upload mode is used. Credentials are stored locally and reused in future sessions. If the stored credentials are no longer valid (e.g. an expired or revoked refresh token), the user is re-prompted to authenticate.
 
 ### Error handling
 
-If a file upload fails, the error is shown inline next to that file in the left panel. Other uploads in the batch continue unaffected. The user can retry failed uploads individually without restarting the batch.
+If a file upload fails, the error is shown inline next to that file in the upload progress modal. Other uploads in the batch continue unaffected. The user can retry failed uploads individually, from within the modal, without restarting the batch.
 
 ## Global error handling
 
@@ -299,32 +303,32 @@ The mode-specific "Error handling" sections above cover *expected* error conditi
 
 ### Drive Upload mode
 
-- [x] **Step 1a: OAuth authentication** — Go backend only, no UI; OAuth via system default browser with localhost callback; credentials stored locally and reused across sessions
+- [x] **Step 1a: OAuth authentication** — Go backend only, no UI; browser-based OAuth with a localhost callback; credentials stored locally and reused across sessions
 - [x] **Step 1b: Folder listing** — list contents of a hardcoded root folder and a hardcoded subfolder via Drive API
 - [x] **Step 1c: File upload** — upload a hardcoded local file to a hardcoded Drive folder
-- [x] **Step 1d: OAuth token refresh** — debug and fix `oauth2: "invalid_grant" "Token has been expired or revoked."` seen when querying Drive after the app has been left open for a day or two; the stored refresh token is now used to eagerly renew the access token (persisting the renewed token to disk), and Drive Upload falls back to re-prompting for auth if the refresh token itself is invalid
-- [x] **Step 2a: Filesystem scan backend** — `scanLocalRoot` + `ScanLocalRoot` RPC; scans root folder recursively, returning files grouped by subfolder (nested to match the folder structure) with size and page count; symlinked directories are not followed; files whose page count can't be read are included and flagged via `Corrupt` rather than dropped
-- [x] **Step 2b: File tree UI** — new Drive Upload tab; root folder picker; three-column layout shell; recursive, collapsible (default expanded) file tree wired to the scan, indented per nesting level, with file size and page count as secondary metadata; corrupt files shown with a warning icon
-- [x] **Step 2c: Non-PDF file support** — non-PDF files (e.g. image scans) are scanned and shown too, not just PDFs, since the local root folder may hold mixed scan output; `LocalFile.IsPDF` distinguishes them, `Corrupt` only applies to PDFs; non-PDF files show file size only (no page count) and can't be previewed but can still be assigned and uploaded
+- [x] **Step 1d: OAuth token refresh** — fixes `oauth2: "invalid_grant" "Token has been expired or revoked."` seen after the app has been left open a day or two; implements the eager-renew and re-prompt behavior described in Authentication above
+- [x] **Step 2a: Filesystem scan backend** — `scanLocalRoot` + `ScanLocalRoot` RPC; implements the scan behavior described in Workflow/Layout above
+- [x] **Step 2b: File tree UI** — new Drive Upload tab; root folder picker; three-column layout shell; implements the file tree described in Layout above
+- [x] **Step 2c: Non-PDF file support** — `LocalFile.IsPDF` distinguishes non-PDF files from PDFs; `Corrupt` only applies to the latter (per Layout above)
 - [x] **Step 3a: Drive folder browser backend** — `ListDriveFolder` App RPC, thin wrapper over the existing `DriveListFolder`
 - [x] **Step 3b: Folder browser modal UI** — lazy-loaded Drive tree browsing and folder selection; no recently-used list yet
 - [ ] **Step 3c: Recently used folders list** — persisted MRU list, shown in the modal
-- [x] **Step 3d: Drive folder assignment UI** — assignment at subfolder and file level; a subfolder's assignment propagates to all files and nested subfolders beneath it unless overridden closer to the leaf; a clear (✕) control resets an explicit assignment back to inherited/not-assigned
-- [ ] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select: Cmd/Ctrl-click toggles files/subfolders into a single selection shared with the existing preview-click selection (no separate preview-only highlight); plain click replaces the selection with just the clicked row. A subfolder's chevron is a dedicated expand/collapse control, unaffected by selection or modifier keys; plain-clicking its name also toggles expand/collapse, but only as a convenience when the selection held zero or one item beforehand, so it doesn't pop open/closed while building a multi-selection. The thumbnail strip/detail panel follow the last previewable file *touched* by a click (plain or Cmd/Ctrl, add or remove) rather than requiring the selection to be a single file — clicking a subfolder or a non-previewable file leaves the preview showing whatever was last touched instead of clearing it; a filename heading above the detail panel (added by Drive Upload's own wrapper, not the shared `DetailPanel` primitive) makes the now possibly-divergent-from-selection previewed file unambiguous. A toolbar "Assign Drive folder…" action, enabled when the selection is non-empty and the tree isn't locked, applies one picked folder to every selected item via the existing group/file assignment setters, after pruning any selected item that's a descendant of another selected subfolder so it inherits rather than getting a redundant override that could later diverge from its ancestor. Per-row Drive badge clicks stay single-target regardless of the multi-selection
-- [ ] **Step 3f: Create new Drive folder** — from within the folder browser modal, allow creating a new folder inside the currently browsed location and selecting it as the destination
-- [ ] **Step 4: Inline renaming** — inline editable name for each subfolder and file (controls the Drive upload name, not the local filename); once Step 6 exists, renaming must also become disabled once an upload run has been triggered, alongside Drive folder assignment (see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md))
+- [x] **Step 3d: Drive folder assignment UI** — implements the assignment/propagation/clear behavior described in "Drive folder assignment" above
+- [ ] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select; implements the selection/preview behavior described in the Layout section and "Drive folder assignment" above
+- [ ] **Step 3f: Create new Drive folder** — from within the folder browser modal, per "Drive folder assignment" above
+- [ ] **Step 4: Inline renaming** — inline editable name for each subfolder and file, per Layout above; becomes read-only once locked (see Locking above), alongside Drive folder assignment (see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md))
 - [x] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
 - [x] **Step 6 prerequisite: Toolbar layout** — full-width toolbar strip above the three-column layout, matching the `Box` + `Group` toolbar pattern in `SplitMode`/`MergeMode`; root-folder picker moved into it (left-aligned); pure layout move, no behavior change
-- [x] **Step 6a: Upload queue state model** — `uploadQueue` module-level singleton (matching `lib/pageCache`'s pattern) tracking per-file status (idle/queued/uploading/done/error); sequential (concurrency=1) worker; shared `flattenFiles(group)` tree-traversal utility; `UploadFile` App RPC wrapper around `drive.UploadFile`; no UI yet
-- [x] **Step 6b: Upload modal** — dedicated modal with read-only tree rendering, per-file/per-group status, inline Retry, "Cancel remaining", blocking close behavior; see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md) for the UI/UX plan
-- [x] **Step 6c-i: "Open in Drive" links** — `DriveAssignmentField` (used by both `GroupNode` headers and `FileList` rows, so this covers root-level files too) switches from the folder-picker badge to a Drive-opening link, keeping the same folder-path label, once every file it covers has finished uploading; the clear (✕) control disappears at the same point since the destination is locked in. Each file row in the upload modal also gets an "open destination folder" icon link, shown throughout the run since the destination is fixed before upload starts. Backed by a new `OpenDriveFolder` App RPC (`runtime.BrowserOpenURL`)
-- [x] **Step 6c-ii: Read-only lock** — once "Upload All" is clicked, the file tree locks for the rest of that tree's session (every `DriveAssignmentField` badge becomes a Drive-opening link, same as a finished upload, since the destination is already fixed) and "Upload All" stays disabled; picking a new root is the only way back to an editable tree. Retrying failed files happens inside the upload modal, not via a separate control in the main tree
-- [x] **Step 6d: Cancel in-flight upload** — a "Cancel" button aborts the currently uploading file (not just queued-but-not-started ones); backed by a per-job `context.WithCancel` passed through `UploadFile` down to the Drive API call; the aborted file is flagged "Cancelled" rather than left in an ambiguous "Uploading" state, since Drive may or may not have completed the upload before cancellation landed
+- [x] **Step 6a: Upload queue state model** — `uploadQueue` module-level singleton (matching `lib/pageCache`'s pattern); sequential (concurrency=1) worker; shared `flattenFiles(group)` tree-traversal utility; `UploadFile` App RPC wrapper around `drive.UploadFile`; no UI yet
+- [x] **Step 6b: Upload modal** — implements the upload progress modal described in Workflow above; see also [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md) for the original UI/UX plan
+- [x] **Step 6c-i: "Open in Drive" links** — `DriveAssignmentField` (shared by `GroupNode` headers and `FileList` rows) plus a per-row link in the upload modal, per Workflow/Locking above; backed by a new `OpenDriveFolder` App RPC (`runtime.BrowserOpenURL`)
+- [x] **Step 6c-ii: Read-only lock** — implements the Locking behavior described above
+- [x] **Step 6d: Cancel in-flight upload** — per-job `context.WithCancel` passed through `UploadFile` down to the Drive API call, backing the Cancel behavior described in Workflow above
 - [ ] **Step 7: Remembered folder mappings** — auto-fill Drive destination from saved subfolder-name→Drive-folder mapping; persisted across sessions
 - [ ] **Step 8: Post-upload cleanup** — prompt to delete or archive source files; archive moves files to a user-specified local archive folder
 - [ ] **Step 9: Conflict detection** — check Drive for filename conflicts before uploading; flag conflicting files
 - [ ] **Step 10: Keychain storage** — store the Drive refresh token in the macOS Keychain instead of a plain JSON file, so it is encrypted at rest and not readable by other user-level processes
-- [x] **Step 11: Inclusion selection** — a checkbox per subfolder/file controlling whether it's included in the upload, tri-state (checked/unchecked/indeterminate) with the same recursive-propagation hierarchy as folder selection elsewhere in the tree: (un)checking a subfolder cascades to all descendants, and a partially-selected subfolder shows indeterminate and propagates that up through ancestors; clicking an indeterminate checkbox selects all descendants. Toolbar-level "Select All" / "Select None". Excluded items are skipped by the assignment gate, conflict check, and the upload queue, but remain visible and previewable. Checkboxes disabled once the tree is locked (same `locked` state as Step 6c-ii). Resets to fully-selected on every scan; not persisted. Visual treatment of excluded rows TBD.
+- [x] **Step 11: Inclusion selection** — implements the tri-state checkbox/propagation behavior described in "Inclusion selection" above
 
 ### Global error handling
 
