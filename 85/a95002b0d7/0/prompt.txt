@@ -1,0 +1,13 @@
+I want to talk about the structure of spec.dm. The file has gotten quite long and hard to read. Do you have any sugestions?
+
+---
+
+Another point: The checklist items got longer and longer and by now seem to duplicate the product spec. Is that correct?
+
+---
+
+Yes, but make sure that the product spec contains everything in the checklist
+
+---
+
+Add this separation to claude.md
