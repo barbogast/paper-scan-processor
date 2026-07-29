@@ -1,0 +1,21 @@
+Now there is an issue: When pressing cancel, only the currenlty uploading file gets a "retry" button; all the other remaining files remain at "Not uploaded". I'm not sure how to fix this: You could change the "Cancel" button into a "Resume" button, but what about the cancelled file: Should it be reuploaded, or skipped?
+
+---
+
+Yes, let's do that.
+
+---
+
+I'm not happy about "Files that were never started at all also read as 'idle' in the UI, but don't have a map entry, so they don't count here.". The state "idle" sounds equally valid as the initial state as well as the "after the cancelled file" state. Not using this state for the files initially is only "enforced" by a comment in the middle of the file.
+
+---
+
+But now we start to mix using status flags with having separate top level lists per status - something that already happened with `cancelledInFlight`. Does this make sense? Shouldn't it be one or the other - either status flags or separate lists?
+
+---
+
+Okay. Also, reorder the status strings in the UploadStatus types into the order in which they occur and add documenation to those states - they've become non-trivial by now.
+
+---
+
+I'm again unhappy: The length of the comment above the 'idle' status is a huge code smell - I want the statuses to be more intuitive, and not requiring such long explenations. Is there maybe an alternative term for 'idle'? The status itself and its semantics make sense, it's just the word used that's misleading.
