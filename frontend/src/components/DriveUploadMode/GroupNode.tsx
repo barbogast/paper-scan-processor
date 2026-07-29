@@ -1,9 +1,10 @@
-import { Box, Group, Stack, Text } from '@mantine/core'
+import { Box, Checkbox, Group, Stack, Text } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from '../TruncatedText'
 import FileList from './FileList'
 import { LocalFile, LocalFileGroup } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
+import { InclusionHandle } from './useInclusion'
 import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
 import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import styles from './GroupNode.module.css'
@@ -17,20 +18,30 @@ interface Props {
   onToggle: (groupKey: string) => void
   assignments: DriveAssignmentsHandle
   inheritedAssignment: DriveAssignment | null
+  inclusion: InclusionHandle
   locked: boolean
   onPick: (target: PickerTarget) => void
   selectedPath: string | null
   onSelectFile: (file: LocalFile) => void
 }
 
-export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, locked, onPick, selectedPath, onSelectFile }: Props) {
+export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, inclusion, locked, onPick, selectedPath, onSelectFile }: Props) {
   const expanded = !collapsedGroups.has(groupKey)
   const own = assignments.groupAssignments.get(groupKey) ?? null
   const effective = own ?? inheritedAssignment
+  const selectionState = inclusion.getGroupState(group)
 
   return (
     <Box>
       <Group gap={8} wrap="nowrap" align="center">
+        <Checkbox
+          size="xs"
+          checked={selectionState === 'checked'}
+          indeterminate={selectionState === 'indeterminate'}
+          disabled={locked}
+          onChange={() => inclusion.toggleGroup(group)}
+          aria-label={`Include ${group.name} in upload`}
+        />
         <button
           type="button"
           onClick={() => onToggle(groupKey)}
@@ -56,6 +67,7 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
             files={group.files}
             assignments={assignments}
             inheritedAssignment={effective}
+            inclusion={inclusion}
             locked={locked}
             onPick={onPick}
             selectedPath={selectedPath}
@@ -72,6 +84,7 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
                   onToggle={onToggle}
                   assignments={assignments}
                   inheritedAssignment={effective}
+                  inclusion={inclusion}
                   locked={locked}
                   onPick={onPick}
                   selectedPath={selectedPath}

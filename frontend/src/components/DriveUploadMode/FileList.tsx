@@ -1,8 +1,9 @@
-import { Badge, Box, Group, Stack, Text, Tooltip } from '@mantine/core'
+import { Badge, Box, Checkbox, Group, Stack, Text, Tooltip } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from '../TruncatedText'
 import { LocalFile } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
+import { InclusionHandle } from './useInclusion'
 import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
 import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import { formatFileSize } from '../../utils'
@@ -12,13 +13,14 @@ interface Props {
   files: LocalFile[]
   assignments: DriveAssignmentsHandle
   inheritedAssignment: DriveAssignment | null
+  inclusion: InclusionHandle
   locked: boolean
   onPick: (target: PickerTarget) => void
   selectedPath: string | null
   onSelectFile: (file: LocalFile) => void
 }
 
-export default function FileList({ files, assignments, inheritedAssignment, locked, onPick, selectedPath, onSelectFile }: Props) {
+export default function FileList({ files, assignments, inheritedAssignment, inclusion, locked, onPick, selectedPath, onSelectFile }: Props) {
   return (
     <Stack gap={10} mt={4}>
       {files.map(file => {
@@ -38,6 +40,13 @@ export default function FileList({ files, assignments, inheritedAssignment, lock
             className={`${styles.row} ${previewable ? styles.rowClickable : styles.rowNotClickable} ${selectedPath === file.path ? styles.rowSelected : ''}`}
           >
             <Group gap={8} wrap="nowrap" align="center">
+              <Checkbox
+                size="xs"
+                checked={inclusion.isFileSelected(file.path)}
+                disabled={locked}
+                onChange={() => inclusion.toggleFile(file.path)}
+                aria-label={`Include ${file.name} in upload`}
+              />
               <Group gap={4} wrap="nowrap" className={styles.nameGroup}>
                 {file.isPdf && (
                   <Badge size="xs" variant="light" color="red" radius="sm" className={styles.pdfBadge}>

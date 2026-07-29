@@ -10,6 +10,7 @@ import ResizableLeftPanel from './ResizableLeftPanel'
 import UploadModal from './UploadModal'
 import { useFileTree, flattenFiles, LocalFile } from './useFileTree'
 import { useDriveAssignments, resolveEffectiveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
+import { useInclusion } from './useInclusion'
 import * as uploadQueue from './uploadQueue'
 import * as pageCache from '../../lib/pageCache'
 import { ellipsisPath } from '../../utils'
@@ -42,6 +43,7 @@ export default function DriveUploadMode() {
     })
   }
 
+  const inclusion = useInclusion(tree)
   const assignments = useDriveAssignments()
   const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null)
   const handlePicked = (folder: DriveAssignment) => {
@@ -58,12 +60,13 @@ export default function DriveUploadMode() {
   // to false except via a fresh root pick.
   const [started, setStarted] = useState(false)
   const allFiles = tree ? flattenFiles(tree) : []
+  const selectedFiles = allFiles.filter(f => inclusion.isFileSelected(f.path))
   const effectiveAssignments = tree ? resolveEffectiveAssignments(tree, assignments) : null
-  const readyToUpload = allFiles.length > 0 && allFiles.every(f => effectiveAssignments!.get(f.path) != null)
+  const readyToUpload = selectedFiles.length > 0 && selectedFiles.every(f => effectiveAssignments!.get(f.path) != null)
 
   const handleUploadAll = () => {
     if (!tree || !effectiveAssignments) return
-    uploadQueue.start(allFiles.map(f => {
+    uploadQueue.start(selectedFiles.map(f => {
       const assignment = effectiveAssignments.get(f.path)
       // Upload All is disabled until readyToUpload is true, so every file
       // should resolve here — this is a defensive check against that
@@ -90,8 +93,14 @@ export default function DriveUploadMode() {
           {root ? ellipsisPath(root) : 'Choose root folder…'}
         </Button>
         <Box className={styles.toolbarSpacer} />
+        <Button size="xs" variant="default" disabled={started || !tree} onClick={inclusion.selectAll}>
+          Select All
+        </Button>
+        <Button size="xs" variant="default" disabled={started || !tree} onClick={inclusion.selectNone}>
+          Select None
+        </Button>
         <Tooltip
-          label={tree ? 'Every file needs a Drive folder before uploading' : 'Choose a root folder first'}
+          label={tree ? 'Every selected file needs a Drive folder before uploading' : 'Choose a root folder first'}
           disabled={started || readyToUpload}
         >
           <span>
@@ -136,6 +145,7 @@ export default function DriveUploadMode() {
                       onToggle={toggleGroup}
                       assignments={assignments}
                       inheritedAssignment={null}
+                      inclusion={inclusion}
                       locked={started}
                       onPick={setPickerTarget}
                       selectedPath={selectedFile?.path ?? null}
@@ -146,6 +156,7 @@ export default function DriveUploadMode() {
                     files={tree.files}
                     assignments={assignments}
                     inheritedAssignment={null}
+                    inclusion={inclusion}
                     locked={started}
                     onPick={setPickerTarget}
                     selectedPath={selectedFile?.path ?? null}

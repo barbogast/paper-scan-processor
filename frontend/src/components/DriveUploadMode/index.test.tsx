@@ -300,3 +300,76 @@ describe('DriveUploadMode upload run', () => {
     expect(isDisabled('Upload All')).toBe(false)
   })
 })
+
+describe('DriveUploadMode inclusion selection', () => {
+  beforeEach(() => {
+    vi.mocked(PickFolder).mockReset()
+    vi.mocked(ScanLocalRoot).mockReset()
+    vi.mocked(ListDriveFolder).mockReset()
+    vi.mocked(UploadFile).mockReset()
+    uploadQueue.reset()
+  })
+
+  afterEach(() => {
+    uploadQueue.reset()
+  })
+
+  function isDisabled(name: string) {
+    return (screen.getByRole('button', { name }) as HTMLButtonElement).disabled
+  }
+
+  function checkbox(name: string) {
+    return screen.getByRole('checkbox', { name }) as HTMLInputElement
+  }
+
+  it('excluding a file drops it from the Drive-folder requirement and the upload run', async () => {
+    await setupWithTree()
+    await assign('invoices')
+    await assign('misc')
+    expect(isDisabled('Upload All')).toBe(true) // scan.jpg still unassigned
+
+    fireEvent.click(checkbox('Include scan.jpg in upload'))
+    expect(isDisabled('Upload All')).toBe(false)
+
+    vi.mocked(UploadFile).mockResolvedValue('drive-id')
+    fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
+    await waitFor(() => expect(UploadFile).toHaveBeenCalledTimes(2))
+    expect(UploadFile).not.toHaveBeenCalledWith('/root/scan.jpg', expect.anything(), expect.anything())
+  })
+
+  it('unchecking a group excludes all of its files', async () => {
+    await setupWithTree()
+    fireEvent.click(checkbox('Include invoices in upload'))
+
+    expect(checkbox('Include a in upload').checked).toBe(false)
+  })
+
+  it('Select None disables Upload All; Select All restores the assignment requirement', async () => {
+    await setupWithTree()
+    await assignAllFolders()
+    expect(isDisabled('Upload All')).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select None' }))
+    expect(isDisabled('Upload All')).toBe(true)
+    expect(checkbox('Include misc in upload').checked).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select All' }))
+    expect(isDisabled('Upload All')).toBe(false)
+    expect(checkbox('Include misc in upload').checked).toBe(true)
+  })
+
+  it('checkboxes lock once the tree locks', async () => {
+    await setupWithTree()
+    await assignAllFolders()
+    vi.mocked(UploadFile).mockResolvedValue('drive-id')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
+
+    expect(checkbox('Include misc in upload').disabled).toBe(true)
+    expect(checkbox('Include invoices in upload').disabled).toBe(true)
+    expect(isDisabled('Select All')).toBe(true)
+    expect(isDisabled('Select None')).toBe(true)
+
+    await waitFor(() => expect(screen.getAllByText('✓ Uploaded').length).toBe(3))
+  })
+})
