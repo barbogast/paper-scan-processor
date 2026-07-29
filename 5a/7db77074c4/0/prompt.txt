@@ -15,3 +15,7 @@ Create a quick checklist here in the chat for these items:
 ---
 
 commit changes
+
+---
+
+Only commit 2)
