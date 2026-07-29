@@ -170,19 +170,20 @@ For filing batches of local files (PDFs and other scans, e.g. images) to Google 
 ### Workflow
 
 1. The user enters Drive Upload mode. If arriving via the Split mode export success modal, the root local folder is pre-set to the Split output folder; otherwise the user picks a root folder.
-2. The app scans the root folder recursively and displays all files grouped by subfolder. Files in the root folder itself appear as a top-level group.
-3. The user assigns a Google Drive destination folder to each subfolder group. The assignment propagates to all files within the group. Individual files can override the group's assignment.
-4. The user can select any PDF file to preview it — the thumbnail strip and detail panel update to show that file's pages. Non-PDF files (e.g. images) can still be assigned and uploaded, just without a preview.
-5. The user clicks Upload. Before uploading, the app checks each Drive destination for filename conflicts. If any are found, conflicting files are flagged and the upload is aborted until resolved.
-6. Uploads proceed with per-file progress. If a file fails, it shows an inline error and a Retry button; other uploads continue unaffected.
-7. After all uploads complete, each subfolder group shows an "Open in Drive" link to its destination folder.
-8. The user is prompted to delete or move to a local archive folder the source files that uploaded successfully.
+2. The app scans the root folder recursively and displays all files grouped by subfolder. Files in the root folder itself appear as a top-level group. Everything starts selected for upload.
+3. The user can deselect files or subfolders to exclude them from the upload. Excluded items don't need a Drive destination and are skipped by the conflict check and the upload itself.
+4. The user assigns a Google Drive destination folder to each subfolder group. The assignment propagates to all files within the group. Individual files can override the group's assignment.
+5. The user can select any PDF file to preview it — the thumbnail strip and detail panel update to show that file's pages. Non-PDF files (e.g. images) can still be assigned and uploaded, just without a preview.
+6. The user clicks Upload. Before uploading, the app checks each Drive destination for filename conflicts among the selected files. If any are found, conflicting files are flagged and the upload is aborted until resolved.
+7. Uploads proceed with per-file progress. If a file fails, it shows an inline error and a Retry button; other uploads continue unaffected.
+8. After all uploads complete, each subfolder group shows an "Open in Drive" link to its destination folder.
+9. The user is prompted to delete or move to a local archive folder the source files that uploaded successfully.
 
 ### Layout
 
 Drive Upload mode uses a three-column layout:
 
-- **Left panel** (fixed width) — the file tree: root folder → subfolders (nested to match the local folder structure) → files. Each subfolder header is collapsible (starting expanded), shows an editable name, and its Drive destination folder. Each file shows an editable filename, inherits the parent subfolder's Drive destination (with an option to override), and — space permitting — displays file size and page count as secondary metadata. Edited names are the names used on Drive; the local files are not renamed on disk.
+- **Left panel** (fixed width) — the file tree: root folder → subfolders (nested to match the local folder structure) → files. Each subfolder header is collapsible (starting expanded), shows a selection checkbox, an editable name, and its Drive destination folder. Each file shows a selection checkbox, an editable filename, inherits the parent subfolder's Drive destination (with an option to override), and — space permitting — displays file size and page count as secondary metadata. Edited names are the names used on Drive; the local files are not renamed on disk.
 - **Middle panel** (adjustable width, drag handle on right edge) — thumbnail strip of the currently selected PDF.
 - **Right panel** (fills remaining space) — the page detail view.
 
@@ -217,6 +218,16 @@ Clicking a subfolder header selects all files in that group. Clicking a file sel
 - Clicking a Drive folder field (on a subfolder header or an individual file) opens a **folder browser modal** displaying the user's Drive folder tree, fetched lazily on first open. A **recently used folders** list appears at the top for quick access.
 - Selecting multiple items (files and/or subfolders) and assigning a Drive folder applies it to all selected items at once.
 - A subfolder's Drive folder assignment propagates to all files within it. A file-level assignment overrides the parent subfolder's.
+
+### Inclusion selection
+
+- Every subfolder and file has a checkbox controlling whether it's included in the upload. Everything starts selected on a fresh scan; this always resets to fully selected (it is not remembered across scans, unlike Drive folder mappings).
+- Checking or unchecking a subfolder recursively sets all of its descendants (nested subfolders and files) to the same state.
+- Unchecking a single file or subfolder underneath an otherwise fully-selected subfolder puts that subfolder into an indeterminate state; this propagates upward through ancestors as needed. Unchecking the last remaining selected descendant of a subfolder leaves it fully unselected rather than indeterminate — and that resolution is itself recursive: if that was also the last selected descendant of its own parent, the parent becomes fully unselected too, and so on up to the root. The same recursive collapse applies symmetrically in the other direction: checking the last remaining unselected descendant leaves a subfolder fully selected rather than indeterminate, propagating upward the same way.
+- Clicking an indeterminate subfolder's checkbox selects all of its descendants (an indeterminate checkbox click always selects, never clears).
+- A toolbar-level "Select All" / "Select None" shortcut applies to the whole tree.
+- Excluded files and subfolders don't need a Drive destination assignment and are skipped by the pre-upload conflict check and the upload itself. They remain visible, and PDFs can still be selected for preview.
+- Selection checkboxes are disabled once the tree is locked (same `locked` state that freezes Drive folder assignment and renaming after "Upload All" is clicked).
 
 ### Remembered folder mappings
 
@@ -310,6 +321,7 @@ The mode-specific "Error handling" sections above cover *expected* error conditi
 - [ ] **Step 8: Post-upload cleanup** — prompt to delete or archive source files; archive moves files to a user-specified local archive folder
 - [ ] **Step 9: Conflict detection** — check Drive for filename conflicts before uploading; flag conflicting files
 - [ ] **Step 10: Keychain storage** — store the Drive refresh token in the macOS Keychain instead of a plain JSON file, so it is encrypted at rest and not readable by other user-level processes
+- [ ] **Step 11: Inclusion selection** — a checkbox per subfolder/file controlling whether it's included in the upload, tri-state (checked/unchecked/indeterminate) with the same recursive-propagation hierarchy as folder selection elsewhere in the tree: (un)checking a subfolder cascades to all descendants, and a partially-selected subfolder shows indeterminate and propagates that up through ancestors; clicking an indeterminate checkbox selects all descendants. Toolbar-level "Select All" / "Select None". Excluded items are skipped by the assignment gate, conflict check, and the upload queue, but remain visible and previewable. Checkboxes disabled once the tree is locked (same `locked` state as Step 6c-ii). Resets to fully-selected on every scan; not persisted. Visual treatment of excluded rows TBD.
 
 ### Global error handling
 
