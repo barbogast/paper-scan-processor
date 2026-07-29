@@ -1,0 +1,62 @@
+Let's have a look at step 6d. First give me a rundown on how to implement this
+
+---
+
+No, leave it and go ahead
+
+---
+
+Create a quick checklist here in the chat for these items:
+- empty .catch() handler: Remember to always handle promise rejections (add to claude.md)
+- calling cancel() cancels only the current one; the remaining ones remain queued?
+- why writing "void CancelUpload". What's the purpose of the "void"?
+- what's the purpose of calling "cancel()" in app.go:183
+
+---
+
+commit changes
+
+---
+
+Only commit 2)
+
+---
+
+You forgot to properly handle a unexpected promise rejection, so I want to solidify that:
+1. Create a small helper function for unexpected promise rejections, which accepts an error object and shows a notification, similar to SplitMode/index.ts:89
+2. Go through the code base and use this helper function for all catch() calls
+3. Adapt the guideline in claude.md
+
+I want to verify the helper before you refactor the rest of the code
+
+---
+
+No, revert your changes. The old showUnexpectedError() was what I wanted.
+
+---
+
+export it and rename it to "handleUnexpectedError"
+
+---
+
+Quick question before you start: Do you think promises should always have their catch() handler set, or is it enough to listen to the `unhandledrejection` event?
+
+---
+
+Okay, go ahead with step 2
+
+---
+
+Also convert the .catch() calls in SplitMode/index.tsx and  MergeMode/index.tsx as those a also unexpected promise rejections. Add a `title` argument to handleUnexpectedError.
+
+---
+
+I just manually edited some code. Have a look to see if it makes sense and run tests/checks
+
+---
+
+I removed the void. commit changes
+
+---
+
+I removed the void. Now let's rephrase the item in CLAUDE.MD
