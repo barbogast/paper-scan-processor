@@ -1,0 +1,60 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6eabeb2b87fb",
+  "session_id": "cd4c1894-982f-4036-85da-785e409d4f20",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-29T16:04:33.381171Z",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/FileList.module.css",
+    "frontend/src/components/DriveUploadMode/FileList.tsx",
+    "frontend/src/components/DriveUploadMode/GroupNode.module.css",
+    "frontend/src/components/DriveUploadMode/GroupNode.tsx",
+    "frontend/src/components/DriveUploadMode/index.test.tsx",
+    "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/DriveUploadMode/useSelection.test.ts",
+    "frontend/src/components/DriveUploadMode/useSelection.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "ad79c0a39144",
+  "token_usage": {
+    "input_tokens": 120,
+    "cache_creation_tokens": 237110,
+    "cache_read_tokens": 4830990,
+    "output_tokens": 45432,
+    "api_call_count": 60
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-29T16:04:33.369009Z",
+    "agent_lines": 292,
+    "agent_removed": 30,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 292,
+    "total_lines_changed": 322,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 292,
+      "agent_lines_removed": 30
+    }
+  ]
+}

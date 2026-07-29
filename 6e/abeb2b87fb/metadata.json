@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6eabeb2b87fb",
+  "strategy": "manual-commit",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/FileList.module.css",
+    "frontend/src/components/DriveUploadMode/FileList.tsx",
+    "frontend/src/components/DriveUploadMode/GroupNode.module.css",
+    "frontend/src/components/DriveUploadMode/GroupNode.tsx",
+    "frontend/src/components/DriveUploadMode/index.test.tsx",
+    "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/DriveUploadMode/useSelection.test.ts",
+    "frontend/src/components/DriveUploadMode/useSelection.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6e/abeb2b87fb/0/metadata.json",
+      "transcript": "/6e/abeb2b87fb/0/full.jsonl",
+      "content_hash": "/6e/abeb2b87fb/0/content_hash.txt",
+      "prompt": "/6e/abeb2b87fb/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 120,
+    "cache_creation_tokens": 237110,
+    "cache_read_tokens": 4830990,
+    "output_tokens": 45432,
+    "api_call_count": 60
+  }
+}
