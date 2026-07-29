@@ -98,7 +98,7 @@ describe('uploadQueue', () => {
     await waitFor(() => expect(uploadQueue.getStatus(jobA.path)?.status).toBe('done'))
   })
 
-  it('cancelRemaining stops starting new files and reverts queued files to idle', async () => {
+  it('cancelRemaining stops starting new files and pauses queued files', async () => {
     const first = deferred<string>()
     vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
 
@@ -106,7 +106,7 @@ describe('uploadQueue', () => {
     expect(uploadQueue.getStatus(jobA.path)?.status).toBe('uploading')
 
     uploadQueue.cancelRemaining()
-    expect(uploadQueue.getStatus(jobB.path)?.status).toBe('idle')
+    expect(uploadQueue.getStatus(jobB.path)?.status).toBe('paused')
 
     first.resolve('id-a')
     await waitFor(() => expect(uploadQueue.getStatus(jobA.path)?.status).toBe('done'))
@@ -162,7 +162,7 @@ describe('uploadQueue', () => {
     expect(uploadQueue.getStatus(jobA.path)?.status).toBe('cancelled')
   })
 
-  it('cancelAll cancels the in-flight upload and idles everything still queued', async () => {
+  it('cancelAll cancels the in-flight upload and pauses everything still queued', async () => {
     const first = deferred<string>()
     vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
     uploadQueue.start([jobA, jobB])
@@ -171,12 +171,35 @@ describe('uploadQueue', () => {
     uploadQueue.cancelAll()
 
     expect(uploadQueue.getStatus(jobA.path)?.status).toBe('cancelled')
-    expect(uploadQueue.getStatus(jobB.path)?.status).toBe('idle')
+    expect(uploadQueue.getStatus(jobB.path)?.status).toBe('paused')
     expect(CancelUpload).toHaveBeenCalledWith(jobA.path)
 
     // Let the queue drain so it doesn't leave a dangling promise behind.
     first.resolve('id-a')
     await waitFor(() => expect(UploadFile).toHaveBeenCalledTimes(1))
+  })
+
+  it('resumePaused re-queues paused files but leaves the cancelled upload alone', async () => {
+    const first = deferred<string>()
+    vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
+    uploadQueue.start([jobA, jobB])
+    uploadQueue.cancelAll()
+    expect(uploadQueue.getStatus(jobB.path)?.status).toBe('paused')
+
+    const second = deferred<string>()
+    vi.mocked(UploadFile).mockReturnValueOnce(second.promise)
+    uploadQueue.resumePaused([jobA.path, jobB.path])
+
+    expect(uploadQueue.getStatus(jobA.path)?.status).toBe('cancelled')
+    expect(uploadQueue.getStatus(jobB.path)?.status).toBe('queued')
+
+    // The worker loop is still stuck awaiting jobA's cancelled request, so
+    // resumed jobB can't actually start until that unwinds.
+    first.resolve('id-a')
+    await waitFor(() => expect(uploadQueue.getStatus(jobB.path)?.status).toBe('uploading'))
+
+    second.resolve('id-b')
+    await waitFor(() => expect(uploadQueue.getStatus(jobB.path)?.status).toBe('done'))
   })
 
   it('reset throws if a file is still queued or uploading', () => {
@@ -231,12 +254,44 @@ describe('uploadQueue', () => {
       expect(uploadQueue.hasSettled([jobA.path, jobB.path])).toBe(true)
     })
 
-    it('only considers the given paths, ignoring other in-flight uploads', () => {
+    it('only considers the given paths, ignoring other in-flight uploads', async () => {
       const first = deferred<string>()
       vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
       uploadQueue.start([jobA]) // jobA now uploading
 
       expect(uploadQueue.hasSettled(['/root/unrelated.pdf'])).toBe(true)
+
+      // Let the queue drain so it doesn't leave a dangling promise behind.
+      first.resolve('id-a')
+      await waitFor(() => expect(uploadQueue.getStatus(jobA.path)?.status).toBe('done'))
+    })
+  })
+
+  describe('hasPaused', () => {
+    it('is false for paths with no status at all', () => {
+      expect(uploadQueue.hasPaused([jobA.path, jobB.path])).toBe(false)
+    })
+
+    it('is false once a batch runs to completion', async () => {
+      vi.mocked(UploadFile).mockResolvedValueOnce('id-a')
+      uploadQueue.start([jobA])
+      await waitFor(() => expect(uploadQueue.getStatus(jobA.path)?.status).toBe('done'))
+
+      expect(uploadQueue.hasPaused([jobA.path])).toBe(false)
+    })
+
+    it('is true for files left paused by cancelAll', async () => {
+      const first = deferred<string>()
+      vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
+      uploadQueue.start([jobA, jobB])
+
+      uploadQueue.cancelAll()
+
+      expect(uploadQueue.hasPaused([jobA.path, jobB.path])).toBe(true)
+
+      // Let the queue drain so it doesn't leave a dangling promise behind.
+      first.resolve('id-a')
+      await waitFor(() => expect(UploadFile).toHaveBeenCalledTimes(1))
     })
   })
 })

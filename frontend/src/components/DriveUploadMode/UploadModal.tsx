@@ -16,7 +16,9 @@ interface Props {
 export default function UploadModal({ opened, tree, onClose }: Props) {
   uploadQueue.useUploadQueueRender()
 
-  const settled = uploadQueue.hasSettled(flattenFiles(tree).map(f => f.path))
+  const paths = flattenFiles(tree).map(f => f.path)
+  const settled = uploadQueue.hasSettled(paths)
+  const canResume = settled && uploadQueue.hasPaused(paths)
 
   return (
     <Modal
@@ -36,8 +38,12 @@ export default function UploadModal({ opened, tree, onClose }: Props) {
           ))}
         </Stack>
         <Group justify="flex-end">
-          <Button variant="default" disabled={settled} onClick={() => uploadQueue.cancelAll()}>
-            Cancel
+          <Button
+            variant="default"
+            disabled={settled && !canResume}
+            onClick={() => (canResume ? uploadQueue.resumePaused(paths) : uploadQueue.cancelAll())}
+          >
+            {canResume ? 'Resume' : 'Cancel'}
           </Button>
           <Button disabled={!settled} onClick={onClose}>
             Close
@@ -70,7 +76,7 @@ function GroupSection({ group, groupKey }: { group: LocalFileGroup; groupKey: st
 
 function FileRow({ file }: { file: LocalFile }) {
   const entry = uploadQueue.getStatus(file.path)
-  const status = entry?.status ?? 'idle'
+  const status = entry?.status
 
   return (
     <Group justify="space-between" wrap="nowrap" gap={8}>
@@ -83,7 +89,7 @@ function FileRow({ file }: { file: LocalFile }) {
         </Group>
       )}
       {status === 'done' && <Text size="sm" c="green">✓ Uploaded</Text>}
-      {status === 'idle' && <Text size="sm" c="dimmed">Not uploaded</Text>}
+      {(status === undefined || status === 'paused') && <Text size="sm" c="dimmed">Not uploaded</Text>}
       {status === 'cancelled' && (
         <Group gap={8} wrap="nowrap">
           <Text size="sm" c="dimmed">Cancelled</Text>

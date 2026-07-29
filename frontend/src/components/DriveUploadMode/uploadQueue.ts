@@ -2,7 +2,21 @@ import { useEffect, useState } from 'react'
 import { CancelUpload, UploadFile } from '../../../wailsjs/go/main/App'
 import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 
-export type UploadStatus = 'idle' | 'queued' | 'uploading' | 'done' | 'error' | 'cancelled'
+export type UploadStatus =
+  /** Enqueued, waiting for the worker to reach it. */
+  | 'queued'
+  /** Was queued, then reverted here by cancelRemaining/cancelAll before the
+   * worker reached it — never actually attempted. resumePaused re-queues
+   * these in bulk. */
+  | 'paused'
+  /** The worker is currently awaiting UploadFile for it. */
+  | 'uploading'
+  /** Terminal: UploadFile resolved. */
+  | 'done'
+  /** Terminal: UploadFile rejected; .error holds the message. Retry re-queues it. */
+  | 'error'
+  /** Terminal: aborted mid-upload via cancel/cancelAll. Retry re-queues it. */
+  | 'cancelled'
 
 export interface UploadJob {
   path: string
@@ -64,6 +78,12 @@ export function hasSettled(paths: string[]): boolean {
   })
 }
 
+// True if any of the given files are paused — i.e. there's a cancelled batch
+// the modal can offer to resume.
+export function hasPaused(paths: string[]): boolean {
+  return paths.some(path => filesByPath.get(path)?.status === 'paused')
+}
+
 function updateStatus(path: string, status: UploadStatus, error?: string) {
   const existing = filesByPath.get(path)!
   filesByPath.set(path, { ...existing, status, error })
@@ -107,10 +127,10 @@ export function retry(job: UploadJob): void {
 }
 
 // Stops starting new files; does not abort an in-flight request. Files
-// still waiting their turn go back to idle since they were never attempted.
+// still waiting their turn are marked paused since they were never attempted.
 export function cancelRemaining(): void {
   cancelled = true
-  for (const path of pendingPaths) updateStatus(path, 'idle')
+  for (const path of pendingPaths) updateStatus(path, 'paused')
   pendingPaths = []
 }
 
@@ -127,11 +147,22 @@ export function cancel(path: string): void {
 }
 
 // The modal's single Cancel button: aborts whatever is currently uploading
-// and idles everything still queued. Concurrency is 1, so at most one entry
+// and pauses everything still queued. Concurrency is 1, so at most one entry
 // can be 'uploading' at a time.
 export function cancelAll(): void {
   cancelRemaining()
   for (const path of filesByPath.keys()) cancel(path)
+}
+
+// Re-queues every paused file among the given paths — i.e. resumes a batch
+// left over from cancelAll. The file that was actually mid-upload when
+// cancelled is left alone; it's 'cancelled', not 'paused', and already has
+// its own per-row Retry button.
+export function resumePaused(paths: string[]): void {
+  const jobs = paths
+    .map(path => filesByPath.get(path))
+    .filter((entry): entry is UploadEntry => entry?.status === 'paused')
+  enqueue(jobs)
 }
 
 export function reset(): void {
