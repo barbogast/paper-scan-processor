@@ -36,8 +36,8 @@ export default function UploadModal({ opened, tree, onClose }: Props) {
           ))}
         </Stack>
         <Group justify="flex-end">
-          <Button variant="default" disabled={settled} onClick={() => uploadQueue.cancelRemaining()}>
-            Cancel remaining
+          <Button variant="default" disabled={settled} onClick={() => uploadQueue.cancelAll()}>
+            Cancel
           </Button>
           <Button disabled={!settled} onClick={onClose}>
             Close
@@ -80,9 +80,6 @@ function FileRow({ file }: { file: LocalFile }) {
         <Group gap={6} wrap="nowrap">
           <Loader size="xs" />
           <Text size="sm" c="dimmed">Uploading…</Text>
-          <Button size="xs" variant="default" onClick={() => uploadQueue.cancel(file.path)}>
-            Cancel
-          </Button>
         </Group>
       )}
       {status === 'done' && <Text size="sm" c="green">✓ Uploaded</Text>}

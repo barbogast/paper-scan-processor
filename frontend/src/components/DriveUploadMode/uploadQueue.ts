@@ -126,6 +126,14 @@ export function cancel(path: string): void {
   CancelUpload(path).catch(handlePromiseRejection('Canceling upload failed'))
 }
 
+// The modal's single Cancel button: aborts whatever is currently uploading
+// and idles everything still queued. Concurrency is 1, so at most one entry
+// can be 'uploading' at a time.
+export function cancelAll(): void {
+  cancelRemaining()
+  for (const path of filesByPath.keys()) cancel(path)
+}
+
 export function reset(): void {
   if (!hasSettled(Array.from(filesByPath.keys()))) {
     // Callers must only invoke this once hasSettled() is true for all files;

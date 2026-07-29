@@ -162,6 +162,23 @@ describe('uploadQueue', () => {
     expect(uploadQueue.getStatus(jobA.path)?.status).toBe('cancelled')
   })
 
+  it('cancelAll cancels the in-flight upload and idles everything still queued', async () => {
+    const first = deferred<string>()
+    vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
+    uploadQueue.start([jobA, jobB])
+    expect(uploadQueue.getStatus(jobA.path)?.status).toBe('uploading')
+
+    uploadQueue.cancelAll()
+
+    expect(uploadQueue.getStatus(jobA.path)?.status).toBe('cancelled')
+    expect(uploadQueue.getStatus(jobB.path)?.status).toBe('idle')
+    expect(CancelUpload).toHaveBeenCalledWith(jobA.path)
+
+    // Let the queue drain so it doesn't leave a dangling promise behind.
+    first.resolve('id-a')
+    await waitFor(() => expect(UploadFile).toHaveBeenCalledTimes(1))
+  })
+
   it('reset throws if a file is still queued or uploading', () => {
     const first = deferred<string>()
     vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
