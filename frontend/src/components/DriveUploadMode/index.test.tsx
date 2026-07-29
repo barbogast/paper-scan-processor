@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
 import DriveUploadMode from './index'
 import { PickFolder, ScanLocalRoot, ListDriveFolder, UploadFile } from '../../../wailsjs/go/main/App'
@@ -10,6 +10,7 @@ vi.mock('../../../wailsjs/go/main/App', () => ({
   ScanLocalRoot: vi.fn(),
   ListDriveFolder: vi.fn(),
   UploadFile: vi.fn(),
+  CancelUpload: vi.fn().mockResolvedValue(undefined),
   RenderPage: vi.fn().mockResolvedValue(''),
 }))
 
@@ -214,7 +215,7 @@ describe('DriveUploadMode upload run', () => {
     expect(screen.queryByText(/quota exceeded/)).toBeNull()
   })
 
-  it('Cancel remaining reverts queued files without touching the one already in flight', async () => {
+  it('Cancel aborts the in-flight upload and pauses everything still queued', async () => {
     await setupWithTree()
     await assignAllFolders()
     let resolveFirst: (v: string) => void = () => {}
@@ -223,9 +224,12 @@ describe('DriveUploadMode upload run', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
     await waitFor(() => expect(UploadFile).toHaveBeenCalledTimes(1))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel remaining' }))
+    const closeButton = screen.getByRole('button', { name: 'Close' })
+    const uploadDialog = closeButton.closest('[role="dialog"]') as HTMLElement
+    fireEvent.click(within(uploadDialog).getByRole('button', { name: 'Cancel' }))
     expect(screen.getAllByText('Not uploaded').length).toBe(2)
-    expect(isDisabled('Close')).toBe(true) // the in-flight file hasn't resolved yet
+    expect(screen.getByText('Cancelled')).toBeTruthy()
+    expect(isDisabled('Close')).toBe(false) // cancelAll marks the in-flight file 'cancelled' immediately, without waiting for it to resolve
 
     resolveFirst('drive-id')
     await waitFor(() => expect(isDisabled('Close')).toBe(false))
