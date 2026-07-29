@@ -1,0 +1,13 @@
+Now move all checklists into one separate file
+
+---
+
+Which filename would you suggest for the checklist file?
+
+---
+
+Yes, go with checklist.md
+
+---
+
+Move the other checklists (Various, code review findings) also to checklist.md
