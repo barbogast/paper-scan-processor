@@ -343,6 +343,7 @@ Low-hanging fruit from a review of how styling is done across the frontend (all 
   - [ ] Change going to previous / next page to up / down arrows
   - [ ] Make MergeMode previous / next action to follow the order of the target PDF; meaning to go back and forth between file A and B
 - [ ] Prevent buttons that trigger an async action (Merge & Save, Split & Export, Drive folder assignment/browsing, Drive upload, root folder pickers, etc.) from being pressed again while the previous invocation from that same button is still in flight; also generalize error handling for those async actions instead of each call site catching (or failing to catch) errors ad hoc — see "Global error handling" checklist above for the unexpected-error backstop
+- [ ] `lib/pageCache.ts`'s render failures are silently swallowed — a failed thumbnail render is tracked internally (`isFailed()`) but never surfaced anywhere in the UI, so a systemic failure (e.g. `pdftoppm` missing) looks like thumbnails just never load, with no explanation. Needs a real UX design (e.g. a per-thumbnail broken-image indicator) rather than routing it through the generic unexpected-error notification, since a batch of concurrent failures across visible thumbnails would otherwise pop many persistent notifications at once.
 
 
 ## Code review findings

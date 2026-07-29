@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { notifications } from '@mantine/notifications'
-import { installGlobalErrorHandler } from './globalErrorHandler'
+import { handleUnexpectedError, installGlobalErrorHandler } from './globalErrorHandler'
 
 vi.mock('@mantine/notifications', () => ({
   notifications: { show: vi.fn() },
@@ -47,5 +47,21 @@ describe('installGlobalErrorHandler', () => {
     render(<>{lastNotification().message}</>)
     expect(screen.getByText('plain string reason')).toBeTruthy()
     expect(screen.queryByText('Details')).toBeNull()
+  })
+})
+
+describe('handleUnexpectedError', () => {
+  beforeEach(() => {
+    vi.mocked(notifications.show).mockReset()
+  })
+
+  it('defaults to the generic title', () => {
+    handleUnexpectedError(new Error('boom'))
+    expect(lastNotification().title).toBe('An unexpected error occurred')
+  })
+
+  it('uses a call-site-provided title when given one', () => {
+    handleUnexpectedError(new Error('boom'), 'Export failed')
+    expect(lastNotification().title).toBe('Export failed')
   })
 })

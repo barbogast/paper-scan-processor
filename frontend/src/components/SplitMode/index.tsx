@@ -9,6 +9,7 @@ import { ellipsisPath } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
 import { usePendingFocus } from './usePendingFocus'
 import * as pageCache from '../../lib/pageCache'
+import { handlePromiseRejection, handleUnexpectedError } from '../../lib/globalErrorHandler'
 import styles from './index.module.css'
 
 const DEFAULT_TEMPLATE = '{date} {name}'
@@ -86,7 +87,7 @@ export default function SplitMode({ initialPath }: Props) {
     if (!initialPath) return
     PageCount(initialPath)
       .then(count => resetForFile(count, initialPath, template))
-      .catch(e => notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' }))
+      .catch(handlePromiseRejection('Failed to open file'))
   }, [initialPath])
 
   const handleOpen = async () => {
@@ -96,7 +97,7 @@ export default function SplitMode({ initialPath }: Props) {
       const count = await PageCount(path)
       resetForFile(count, path, template)
     } catch (e) {
-      notifications.show({ title: 'Failed to open file', message: String(e), color: 'red' })
+      handleUnexpectedError(e, 'Failed to open file')
     }
   }
 
@@ -125,7 +126,7 @@ export default function SplitMode({ initialPath }: Props) {
       await ExportSplit(pdfPath, files, Object.fromEntries(rotations))
       setSuccessModal({show: true, outputPath: outputFolder, inputPath: pdfPath})
     } catch (e) {
-      notifications.show({ title: 'Export failed', message: String(e), color: 'red' })
+      handleUnexpectedError(e, 'Export failed')
     } finally {
       setExporting(false)
     }
@@ -133,16 +134,13 @@ export default function SplitMode({ initialPath }: Props) {
 
   const closeSuccessModal = () => setSuccessModal({show: false, outputPath: '', inputPath: ''})
 
-  const handleDeleteInput = async () => {
+  const handleDeleteInput = () => {
     const { inputPath } = successModal
     closeSuccessModal()
     setPdfPath(null)
-    try {
-      await DeleteFile(inputPath)
-    } catch (e) {
-      notifications.show({ title: 'Failed to delete file', message: String(e), color: 'red' })
-    }
+    DeleteFile(inputPath).catch(handlePromiseRejection('Failed to delete file'))
   }
+
 
   const handleToggleSplitPoint = useCallback((afterPosition: number) => {
     const prefill = applyTemplate(template)

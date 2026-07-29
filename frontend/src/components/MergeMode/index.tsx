@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Box, Button, Checkbox, Group, Modal, SegmentedControl, Text, Tooltip } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
 import { IconAlertTriangle } from '@tabler/icons-react'
 import { MergePDFs, OpenFile, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import { usePDFFile } from './usePDFFile'
 import * as pageCache from '../../lib/pageCache'
+import { handleUnexpectedError } from '../../lib/globalErrorHandler'
 import { basename } from '../../utils'
 import { DRAG_HANDLE_WIDTH } from '../../constants'
 import styles from './index.module.css'
@@ -75,7 +75,7 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
       )
       setMergedPath(outPath)
     } catch (e) {
-      notifications.show({ title: 'Merge failed', message: String(e), color: 'red' })
+      handleUnexpectedError(e, 'Merge failed')
     } finally {
       setMerging(false)
     }

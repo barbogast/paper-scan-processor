@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CancelUpload, UploadFile } from '../../../wailsjs/go/main/App'
+import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 
 export type UploadStatus = 'idle' | 'queued' | 'uploading' | 'done' | 'error' | 'cancelled'
 
@@ -122,7 +123,7 @@ export function cancel(path: string): void {
   if (filesByPath.get(path)?.status !== 'uploading') return
   cancelledInFlight.add(path)
   updateStatus(path, 'cancelled')
-  void CancelUpload(path).catch(e => console.error(`CancelUpload(${path}) failed:`, e))
+  CancelUpload(path).catch(handlePromiseRejection('Canceling upload failed'))
 }
 
 export function reset(): void {
