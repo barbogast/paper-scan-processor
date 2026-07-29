@@ -1,0 +1,13 @@
+I want the user to be able to open Google Drive with the folder a file was/is going to be uploaded into in the UploadModal and in the DriveMode tree panel after the upload finished.
+
+---
+
+In the filetree, only files in a subfolder have a "Open in Drive" link - files in the root folder do not. What do you think about replacing the folder-picker badge with the drive link? It's inactive anyway... It makese sense to still show the name of the drive folder, though, that information is still valid.
+
+---
+
+The horizontal icon position in the UploadModal is jumping when the status changes
+
+---
+
+commit
