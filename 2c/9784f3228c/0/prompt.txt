@@ -1,0 +1,45 @@
+How would you implement Step 3e: Drive folder assignment UI** — batch assignment for multi-select? answer, don't code
+
+---
+
+I feel 2 different row-highlights (one for preview and one for batch-select) is confusing, and not really necessary. How about scratching that? This would also give "Clear selection" for free: whenever the user clicks without cmd/ctrl it would clear the selection and only select the clicked one.
+
+---
+
+Single target is fine.
+
+---
+
+Add this to spec.dm
+
+---
+
+Is it possible to expand/collapse a subfolder when there are already multiple files selected and a file within the subfolder should be added?
+
+---
+
+Yes - and one addition: using the folder name to expand/collapse is nice in the single-selection case. Would it be possible to have the folder name expand/collapse if there is zero/one file currently selected and cmd/ctrl is not pressed?
+
+---
+
+Could the preview panel show the latest addition / removal of the selection when the user has pressed cmd/ctrl?
+
+---
+
+yes
+
+---
+
+Since now it's possible that the previewed file doesn't match what is selected add the name of the currently previewed file as a heading to the preview pannel
+
+---
+
+Why display it over the thumbnail strip? It should be over the DetailPanel, right?
+
+---
+
+What happens if a user selects a subfolder _and_ one of it's decendants? That would be conflicting, right?
+
+---
+
+yes
