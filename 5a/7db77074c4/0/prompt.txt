@@ -1,0 +1,17 @@
+Let's have a look at step 6d. First give me a rundown on how to implement this
+
+---
+
+No, leave it and go ahead
+
+---
+
+Create a quick checklist here in the chat for these items:
+- empty .catch() handler: Remember to always handle promise rejections (add to claude.md)
+- calling cancel() cancels only the current one; the remaining ones remain queued?
+- why writing "void CancelUpload". What's the purpose of the "void"?
+- what's the purpose of calling "cancel()" in app.go:183
+
+---
+
+commit changes
