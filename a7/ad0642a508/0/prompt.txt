@@ -1,0 +1,17 @@
+I forgott earlier: Is DriveUploadMode/index.ts:22 really necessary? Doesn't the component get rerendered anyway when the modal is closed?
+
+---
+
+So it's about updating the filetree while the modal is still open?
+
+---
+
+Two points:
+- The modal should only close after all upload activity finished
+- There's no reason to update the filetree while the modal is still open: The user can't click anything in filetree, and the modal covers most of it anyway.
+
+Does this change things?
+
+---
+
+yes

@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a7ad0642a508",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/index.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a7/ad0642a508/0/metadata.json",
+      "transcript": "/a7/ad0642a508/0/full.jsonl",
+      "content_hash": "/a7/ad0642a508/0/content_hash.txt",
+      "prompt": "/a7/ad0642a508/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 316,
+    "cache_creation_tokens": 10360,
+    "cache_read_tokens": 1146855,
+    "output_tokens": 9373,
+    "api_call_count": 13
+  }
+}
