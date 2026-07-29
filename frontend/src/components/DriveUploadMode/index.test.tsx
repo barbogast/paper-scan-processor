@@ -173,6 +173,98 @@ describe('DriveUploadMode file preview', () => {
   })
 })
 
+describe('DriveUploadMode multi-selection', () => {
+  beforeEach(() => {
+    vi.mocked(PickFolder).mockReset()
+    vi.mocked(ScanLocalRoot).mockReset()
+    vi.mocked(ListDriveFolder).mockReset()
+  })
+
+  function ariaSelected(text: string) {
+    return screen.getByText(text).closest('[aria-selected]')!.getAttribute('aria-selected')
+  }
+
+  it('plain click selects only the clicked file, replacing any prior selection', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('a'))
+    expect(ariaSelected('a')).toBe('true')
+
+    fireEvent.click(screen.getByText('misc'))
+    expect(ariaSelected('misc')).toBe('true')
+    expect(ariaSelected('a')).toBe('false')
+  })
+
+  it('Cmd/Ctrl-click adds a file to the existing selection instead of replacing it', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('a'))
+    fireEvent.click(screen.getByText('misc'), { metaKey: true })
+
+    expect(ariaSelected('a')).toBe('true')
+    expect(ariaSelected('misc')).toBe('true')
+  })
+
+  it('Cmd/Ctrl-click on an already-selected file removes just that file', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('a'))
+    fireEvent.click(screen.getByText('misc'), { metaKey: true })
+    fireEvent.click(screen.getByText('a'), { metaKey: true })
+
+    expect(ariaSelected('a')).toBe('false')
+    expect(ariaSelected('misc')).toBe('true')
+  })
+
+  it('clicking a checkbox or Drive badge does not disturb the selection', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('a'))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include misc in upload' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Set Drive folder for misc' }))
+
+    expect(ariaSelected('a')).toBe('true')
+  })
+
+  it('clicking the chevron toggles expand/collapse without touching the selection', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('a'))
+    expect(ariaSelected('a')).toBe('true')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse invoices' }))
+    expect(screen.queryByText('a')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand invoices' }))
+    expect(ariaSelected('a')).toBe('true')
+  })
+
+  it('a plain click on a subfolder name selects it and, as a convenience, toggles expand/collapse when the selection held at most one item', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('📁 invoices'))
+
+    expect(ariaSelected('📁 invoices')).toBe('true')
+    expect(screen.queryByText('a')).toBeNull() // convenience collapse fired
+  })
+
+  it('does not pop a subfolder open/closed from a plain click once two or more items are selected', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('misc'))
+    fireEvent.click(screen.getByText('📄 scan.jpg'), { metaKey: true })
+
+    fireEvent.click(screen.getByText('📁 invoices'))
+
+    expect(ariaSelected('📁 invoices')).toBe('true')
+    expect(ariaSelected('misc')).toBe('false') // selection replaced
+    expect(screen.getByText('a')).toBeTruthy() // still expanded — convenience suppressed
+  })
+
+  it('Cmd/Ctrl-click on a subfolder name toggles it into the selection without affecting expand/collapse', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('misc'))
+    fireEvent.click(screen.getByText('📁 invoices'), { metaKey: true })
+
+    expect(ariaSelected('misc')).toBe('true')
+    expect(ariaSelected('📁 invoices')).toBe('true')
+    expect(screen.getByText('a')).toBeTruthy() // unaffected, still expanded
+  })
+})
+
 describe('DriveUploadMode upload run', () => {
   beforeEach(() => {
     vi.mocked(PickFolder).mockReset()

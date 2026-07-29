@@ -6,10 +6,6 @@
   cursor: pointer;
 }
 
-.rowNotClickable {
-  cursor: default;
-}
-
 .rowSelected {
   background: var(--mantine-color-blue-0);
 }

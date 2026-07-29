@@ -4,6 +4,7 @@ import TruncatedText from '../TruncatedText'
 import { LocalFile } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
 import { InclusionHandle } from './useInclusion'
+import { SelectionHandle } from './useSelection'
 import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
 import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import { formatFileSize } from '../../utils'
@@ -14,13 +15,13 @@ interface Props {
   assignments: DriveAssignmentsHandle
   inheritedAssignment: DriveAssignment | null
   inclusion: InclusionHandle
+  selection: SelectionHandle
   locked: boolean
   onPick: (target: PickerTarget) => void
-  selectedPath: string | null
   onSelectFile: (file: LocalFile) => void
 }
 
-export default function FileList({ files, assignments, inheritedAssignment, inclusion, locked, onPick, selectedPath, onSelectFile }: Props) {
+export default function FileList({ files, assignments, inheritedAssignment, inclusion, selection, locked, onPick, onSelectFile }: Props) {
   return (
     <Stack gap={10} mt={4}>
       {files.map(file => {
@@ -31,19 +32,26 @@ export default function FileList({ files, assignments, inheritedAssignment, incl
           file.corrupt ? 'Unreadable' : file.isPdf ? `${file.pageCount} pages` : null,
           formatFileSize(file.sizeBytes),
         ].filter(Boolean).join(' · ')
+        const handleRowClick = (e: React.MouseEvent) => {
+          const item = { type: 'file' as const, path: file.path }
+          if (e.metaKey || e.ctrlKey) selection.toggle(item); else selection.replace(item)
+          if (previewable) onSelectFile(file)
+        }
         return (
           <Box
             key={file.path}
             pl={4}
             py={2}
-            onClick={() => previewable && onSelectFile(file)}
-            className={`${styles.row} ${previewable ? styles.rowClickable : styles.rowNotClickable} ${selectedPath === file.path ? styles.rowSelected : ''}`}
+            onClick={handleRowClick}
+            aria-selected={selection.isSelected({ type: 'file', path: file.path })}
+            className={`${styles.row} ${styles.rowClickable} ${selection.isSelected({ type: 'file', path: file.path }) ? styles.rowSelected : ''}`}
           >
             <Group gap={8} wrap="nowrap" align="center">
               <Checkbox
                 size="xs"
                 checked={inclusion.isFileSelected(file.path)}
                 disabled={locked}
+                onClick={e => e.stopPropagation()}
                 onChange={() => inclusion.toggleFile(file.path)}
                 aria-label={`Include ${file.name} in upload`}
               />
@@ -62,15 +70,17 @@ export default function FileList({ files, assignments, inheritedAssignment, incl
                   </Tooltip>
                 )}
               </Group>
-              <DriveAssignmentField
-                label={file.name}
-                assignment={effective}
-                isOwn={own !== null}
-                locked={locked}
-                onPick={() => onPick({ type: 'file', path: file.path })}
-                onClear={() => assignments.clearFileOverride(file.path)}
-                onOpen={() => effective && OpenDriveFolder(effective.driveFolderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
-              />
+              <Box onClick={e => e.stopPropagation()}>
+                <DriveAssignmentField
+                  label={file.name}
+                  assignment={effective}
+                  isOwn={own !== null}
+                  locked={locked}
+                  onPick={() => onPick({ type: 'file', path: file.path })}
+                  onClear={() => assignments.clearFileOverride(file.path)}
+                  onOpen={() => effective && OpenDriveFolder(effective.driveFolderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
+                />
+              </Box>
             </Group>
             <Text size="xs" c="dimmed" mt={2}>
               {detail}

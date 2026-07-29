@@ -5,6 +5,7 @@ import FileList from './FileList'
 import { LocalFile, LocalFileGroup } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
 import { InclusionHandle } from './useInclusion'
+import { SelectionHandle } from './useSelection'
 import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
 import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import styles from './GroupNode.module.css'
@@ -19,25 +20,42 @@ interface Props {
   assignments: DriveAssignmentsHandle
   inheritedAssignment: DriveAssignment | null
   inclusion: InclusionHandle
+  selection: SelectionHandle
   locked: boolean
   onPick: (target: PickerTarget) => void
-  selectedPath: string | null
   onSelectFile: (file: LocalFile) => void
 }
 
-export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, inclusion, locked, onPick, selectedPath, onSelectFile }: Props) {
+export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, inclusion, selection, locked, onPick, onSelectFile }: Props) {
   const expanded = !collapsedGroups.has(groupKey)
   const own = assignments.groupAssignments.get(groupKey) ?? null
   const effective = own ?? inheritedAssignment
-  const selectionState = inclusion.getGroupState(group)
+  const inclusionState = inclusion.getGroupState(group)
+  const selected = selection.isSelected({ type: 'group', key: groupKey })
+
+  // Cmd/Ctrl-click toggles this group into/out of the shared selection. A
+  // plain click replaces the selection with just this group, and — only as
+  // a convenience when the selection held zero or one item beforehand —
+  // also toggles expand/collapse, so building a multi-selection doesn't pop
+  // groups open/closed as a side effect once it's under way.
+  const onNameClick = (e: React.MouseEvent) => {
+    const item = { type: 'group' as const, key: groupKey }
+    if (e.metaKey || e.ctrlKey) {
+      selection.toggle(item)
+    } else {
+      const hadZeroOrOne = selection.size <= 1
+      selection.replace(item)
+      if (hadZeroOrOne) onToggle(groupKey)
+    }
+  }
 
   return (
     <Box>
-      <Group gap={8} wrap="nowrap" align="center">
+      <Group gap={8} wrap="nowrap" align="center" pl={4} py={2} aria-selected={selected} className={`${styles.row} ${selected ? styles.rowSelected : ''}`}>
         <Checkbox
           size="xs"
-          checked={selectionState === 'checked'}
-          indeterminate={selectionState === 'indeterminate'}
+          checked={inclusionState === 'checked'}
+          indeterminate={inclusionState === 'indeterminate'}
           disabled={locked}
           onChange={() => inclusion.toggleGroup(group)}
           aria-label={`Include ${group.name} in upload`}
@@ -46,9 +64,16 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
           type="button"
           onClick={() => onToggle(groupKey)}
           aria-expanded={expanded}
-          className={styles.toggle}
+          aria-label={expanded ? `Collapse ${group.name}` : `Expand ${group.name}`}
+          className={styles.chevronButton}
         >
           <Text size="xs" c="dimmed" className={styles.chevron}>{expanded ? '▼' : '▶'}</Text>
+        </button>
+        <button
+          type="button"
+          onClick={onNameClick}
+          className={styles.nameButton}
+        >
           <TruncatedText label={group.name} size="sm" fw={600}>📁 {group.name}</TruncatedText>
         </button>
         <DriveAssignmentField
@@ -68,9 +93,9 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
             assignments={assignments}
             inheritedAssignment={effective}
             inclusion={inclusion}
+            selection={selection}
             locked={locked}
             onPick={onPick}
-            selectedPath={selectedPath}
             onSelectFile={onSelectFile}
           />
           {group.subgroups.length > 0 && (
@@ -85,9 +110,9 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
                   assignments={assignments}
                   inheritedAssignment={effective}
                   inclusion={inclusion}
+                  selection={selection}
                   locked={locked}
                   onPick={onPick}
-                  selectedPath={selectedPath}
                   onSelectFile={onSelectFile}
                 />
               ))}

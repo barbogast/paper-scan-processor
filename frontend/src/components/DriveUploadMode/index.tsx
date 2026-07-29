@@ -11,6 +11,7 @@ import UploadModal from './UploadModal'
 import { useFileTree, flattenFiles, LocalFile } from './useFileTree'
 import { useDriveAssignments, resolveEffectiveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
 import { useInclusion } from './useInclusion'
+import { useSelection } from './useSelection'
 import * as uploadQueue from './uploadQueue'
 import * as pageCache from '../../lib/pageCache'
 import { ellipsisPath } from '../../utils'
@@ -44,6 +45,7 @@ export default function DriveUploadMode() {
   }
 
   const inclusion = useInclusion(tree)
+  const selection = useSelection(tree)
   const assignments = useDriveAssignments()
   const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null)
   const handlePicked = (folder: DriveAssignment) => {
@@ -146,9 +148,9 @@ export default function DriveUploadMode() {
                       assignments={assignments}
                       inheritedAssignment={null}
                       inclusion={inclusion}
+                      selection={selection}
                       locked={started}
                       onPick={setPickerTarget}
-                      selectedPath={selectedFile?.path ?? null}
                       onSelectFile={handleSelectFile}
                     />
                   ))}
@@ -157,9 +159,9 @@ export default function DriveUploadMode() {
                     assignments={assignments}
                     inheritedAssignment={null}
                     inclusion={inclusion}
+                    selection={selection}
                     locked={started}
                     onPick={setPickerTarget}
-                    selectedPath={selectedFile?.path ?? null}
                     onSelectFile={handleSelectFile}
                   />
                 </Stack>
