@@ -30,7 +30,10 @@ export interface FileTreeHandle {
   tree: LocalFileGroup | null
   loading: boolean
   error: string | null
-  pickRoot: () => Promise<void>
+  // Resolves to whether a folder was actually picked (false if the user
+  // cancelled the dialog), so callers know when a fresh root replaced the
+  // previous one and any per-root state (e.g. the upload queue) should reset.
+  pickRoot: () => Promise<boolean>
 }
 
 export function useFileTree(): FileTreeHandle {
@@ -41,7 +44,7 @@ export function useFileTree(): FileTreeHandle {
 
   const pickRoot = useCallback(async () => {
     const folder = await PickFolder('Choose Root Folder')
-    if (!folder) return
+    if (!folder) return false
 
     setRoot(folder)
     setLoading(true)
@@ -54,6 +57,7 @@ export function useFileTree(): FileTreeHandle {
     } finally {
       setLoading(false)
     }
+    return true
   }, [])
 
   return { root, tree, loading, error, pickRoot }

@@ -29,6 +29,23 @@ const TREE = {
   ],
 }
 
+// Same shape/names as TREE (so assignAllFolders' labels still match) but
+// under a different root, so its files are distinct paths from TREE's.
+const TREE2 = {
+  name: '',
+  files: [
+    { path: '/root2/misc.pdf', name: 'misc', sizeBytes: 100, isPdf: true, pageCount: 1, corrupt: false },
+    { path: '/root2/scan.jpg', name: 'scan.jpg', sizeBytes: 50, isPdf: false, pageCount: 0, corrupt: false },
+  ],
+  subgroups: [
+    {
+      name: 'invoices',
+      files: [{ path: '/root2/invoices/a.pdf', name: 'a', sizeBytes: 200, isPdf: true, pageCount: 2, corrupt: false }],
+      subgroups: [],
+    },
+  ],
+}
+
 const DRIVE_ROOT_ITEMS = [{ id: 'f1', name: 'Finance', isFolder: true, size: 0 }]
 
 function textOf(el: HTMLElement) {
@@ -233,5 +250,53 @@ describe('DriveUploadMode upload run', () => {
 
     resolveFirst('drive-id')
     await waitFor(() => expect(isDisabled('Close')).toBe(false))
+  })
+
+  it('locks the tree the moment Upload All is clicked: badges become Drive links and lose their clear control', async () => {
+    await setupWithTree()
+    await assignAllFolders()
+    vi.mocked(UploadFile).mockRejectedValueOnce(new Error('quota exceeded')).mockResolvedValue('drive-id')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
+
+    // Locked immediately — the destination is already fixed the moment the
+    // run starts, so every badge is a Drive link from the outset, not just
+    // ones whose file has actually finished uploading yet.
+    expect(isDisabled('Upload All')).toBe(true)
+    expect(screen.getByRole('button', { name: 'Open Drive folder for misc' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Set Drive folder for misc' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Clear Drive folder for misc' })).toBeNull()
+
+    await waitFor(() => expect(screen.getByText(/quota exceeded/)).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    // Still locked after close, failure and all — retrying happens inside
+    // the modal, not from the main tree.
+    expect(isDisabled('Upload All')).toBe(true)
+    expect(screen.getByRole('button', { name: 'Open Drive folder for misc' })).toBeTruthy()
+  })
+
+  it('picking a new root unlocks the tree for the new run', async () => {
+    await setupWithTree()
+    await assignAllFolders()
+    vi.mocked(UploadFile).mockResolvedValue('drive-id')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
+    await waitFor(() => expect(screen.getAllByText('✓ Uploaded').length).toBe(3))
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    expect(isDisabled('Upload All')).toBe(true)
+
+    vi.mocked(PickFolder).mockResolvedValueOnce('/root2')
+    vi.mocked(ScanLocalRoot).mockResolvedValueOnce(TREE2 as any)
+    fireEvent.click(screen.getByRole('button', { name: '…/root' }))
+    await screen.findByRole('button', { name: '…/root2' })
+
+    // The new tree's files are unassigned and unlocked, even though misc.pdf
+    // was 'done' under the old root.
+    expect(isDisabled('Upload All')).toBe(true)
+    expect(screen.getByRole('button', { name: 'Set Drive folder for misc' })).toBeTruthy()
+
+    await assignAllFolders()
+    expect(isDisabled('Upload All')).toBe(false)
   })
 })

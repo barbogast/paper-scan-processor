@@ -51,9 +51,16 @@ export default function DriveUploadMode() {
   }
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  // Once Upload All is clicked, the tree locks for the rest of this tree's
+  // session — the upload starts immediately, so there's no "in progress but
+  // not locked yet" window to account for. Retrying failed files happens
+  // inside the upload modal, not from here, so this never needs to go back
+  // to false except via a fresh root pick.
+  const [started, setStarted] = useState(false)
   const allFiles = tree ? flattenFiles(tree) : []
   const effectiveAssignments = tree ? resolveEffectiveAssignments(tree, assignments) : null
   const readyToUpload = allFiles.length > 0 && allFiles.every(f => effectiveAssignments!.get(f.path) != null)
+
   const handleUploadAll = () => {
     if (!tree || !effectiveAssignments) return
     uploadQueue.start(allFiles.map(f => {
@@ -64,22 +71,31 @@ export default function DriveUploadMode() {
       if (!assignment) throw new Error(`No Drive folder assigned for "${f.path}"`)
       return { path: f.path, folderId: assignment.driveFolderId, name: f.name }
     }))
+    setStarted(true)
     setUploadModalOpen(true)
+  }
+  const handlePickRoot = async () => {
+    // A new root discards the old tree's upload-queue state along with it —
+    // picking a new root is the only way out of the read-only lock.
+    if (await pickRoot()) {
+      uploadQueue.reset()
+      setStarted(false)
+    }
   }
 
   return (
     <Box className={styles.root}>
       <Toolbar>
-        <Button size="xs" variant="default" onClick={pickRoot}>
+        <Button size="xs" variant="default" onClick={handlePickRoot}>
           {root ? ellipsisPath(root) : 'Choose root folder…'}
         </Button>
         <Box className={styles.toolbarSpacer} />
         <Tooltip
           label={tree ? 'Every file needs a Drive folder before uploading' : 'Choose a root folder first'}
-          disabled={readyToUpload}
+          disabled={started || readyToUpload}
         >
           <span>
-            <Button size="xs" disabled={!readyToUpload} onClick={handleUploadAll}>
+            <Button size="xs" disabled={started || !readyToUpload} onClick={handleUploadAll}>
               Upload All
             </Button>
           </span>
@@ -120,6 +136,7 @@ export default function DriveUploadMode() {
                       onToggle={toggleGroup}
                       assignments={assignments}
                       inheritedAssignment={null}
+                      locked={started}
                       onPick={setPickerTarget}
                       selectedPath={selectedFile?.path ?? null}
                       onSelectFile={handleSelectFile}
@@ -129,6 +146,7 @@ export default function DriveUploadMode() {
                     files={tree.files}
                     assignments={assignments}
                     inheritedAssignment={null}
+                    locked={started}
                     onPick={setPickerTarget}
                     selectedPath={selectedFile?.path ?? null}
                     onSelectFile={handleSelectFile}

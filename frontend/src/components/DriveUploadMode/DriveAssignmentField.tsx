@@ -9,12 +9,11 @@ interface Props {
   label: string
   assignment: DriveAssignment | null
   isOwn: boolean
-  // True once every file this assignment covers has finished uploading (so
-  // assignment is non-null: nothing uploads without a resolved folder). The
-  // destination is locked in at that point (see uploadQueue's read-only
-  // rationale), so the badge opens the folder in Drive instead of the
-  // picker, and the clear control disappears.
-  uploaded: boolean
+  // True once the upload run has started for this tree — the destination is
+  // fixed at that point (see uploadQueue's read-only rationale), so the
+  // badge opens it in Drive instead of the picker, and the clear control
+  // disappears. Picking a new root is the only way back to false.
+  locked: boolean
   onPick: () => void
   onClear: () => void
   onOpen: () => void
@@ -23,7 +22,7 @@ interface Props {
 // Pinned to the right of its row (filename or folder header) by the caller,
 // so badges land at a consistent horizontal position regardless of nesting
 // depth - scannable as a column rather than a per-row detail.
-export default function DriveAssignmentField({ label, assignment, isOwn, uploaded, onPick, onClear, onOpen }: Props) {
+export default function DriveAssignmentField({ label, assignment, isOwn, locked, onPick, onClear, onOpen }: Props) {
   const textRef = useRef<HTMLSpanElement>(null)
   const displayPath = assignment ? assignment.path : 'Not assigned'
   const truncated = useIsTruncated(textRef, displayPath)
@@ -32,13 +31,13 @@ export default function DriveAssignmentField({ label, assignment, isOwn, uploade
     <Badge
       component="button"
       type="button"
-      onClick={uploaded ? onOpen : onPick}
-      aria-label={uploaded ? `Open Drive folder for ${label}` : `Set Drive folder for ${label}`}
+      onClick={locked ? onOpen : onPick}
+      aria-label={locked ? `Open Drive folder for ${label}` : `Set Drive folder for ${label}`}
       color={assignment ? 'blue' : 'gray'}
       variant={isOwn ? 'light' : 'outline'}
       size="sm"
       radius="sm"
-      rightSection={uploaded ? <IconExternalLink size={10} /> : undefined}
+      rightSection={locked ? <IconExternalLink size={10} /> : undefined}
       className={`${styles.badge} ${isOwn ? styles.badgeOwn : ''}`}
       styles={{ label: { overflow: 'hidden' } }}
     >
@@ -51,7 +50,7 @@ export default function DriveAssignmentField({ label, assignment, isOwn, uploade
   return (
     <Box className={styles.container}>
       {truncated ? <Tooltip label={displayPath} openDelay={500}>{badge}</Tooltip> : badge}
-      {isOwn && !uploaded && (
+      {isOwn && !locked && (
         <button
           type="button"
           onClick={onClear}

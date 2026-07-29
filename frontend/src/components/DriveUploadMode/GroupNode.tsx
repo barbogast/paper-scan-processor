@@ -2,9 +2,8 @@ import { Box, Group, Stack, Text } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from '../TruncatedText'
 import FileList from './FileList'
-import { LocalFile, LocalFileGroup, flattenFiles } from './useFileTree'
+import { LocalFile, LocalFileGroup } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
-import * as uploadQueue from './uploadQueue'
 import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
 import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import styles from './GroupNode.module.css'
@@ -18,18 +17,16 @@ interface Props {
   onToggle: (groupKey: string) => void
   assignments: DriveAssignmentsHandle
   inheritedAssignment: DriveAssignment | null
+  locked: boolean
   onPick: (target: PickerTarget) => void
   selectedPath: string | null
   onSelectFile: (file: LocalFile) => void
 }
 
-export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, onPick, selectedPath, onSelectFile }: Props) {
+export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, locked, onPick, selectedPath, onSelectFile }: Props) {
   const expanded = !collapsedGroups.has(groupKey)
   const own = assignments.groupAssignments.get(groupKey) ?? null
   const effective = own ?? inheritedAssignment
-
-  const groupFiles = flattenFiles(group)
-  const allUploaded = groupFiles.length > 0 && groupFiles.every(f => uploadQueue.getStatus(f.path)?.status === 'done')
 
   return (
     <Box>
@@ -47,7 +44,7 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
           label={group.name}
           assignment={effective}
           isOwn={own !== null}
-          uploaded={allUploaded && effective !== null}
+          locked={locked}
           onPick={() => onPick({ type: 'group', key: groupKey })}
           onClear={() => assignments.clearGroupAssignment(groupKey)}
           onOpen={() => effective && OpenDriveFolder(effective.driveFolderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
@@ -59,6 +56,7 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
             files={group.files}
             assignments={assignments}
             inheritedAssignment={effective}
+            locked={locked}
             onPick={onPick}
             selectedPath={selectedPath}
             onSelectFile={onSelectFile}
@@ -74,6 +72,7 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
                   onToggle={onToggle}
                   assignments={assignments}
                   inheritedAssignment={effective}
+                  locked={locked}
                   onPick={onPick}
                   selectedPath={selectedPath}
                   onSelectFile={onSelectFile}
