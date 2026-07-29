@@ -50,7 +50,8 @@ Individual pages can be edited in both modes before export or merge:
 
 - **Rotation**: pages can be rotated in 90° increments (clockwise or counter-clockwise).
 - **Skip**: pages can be marked as skipped — excluded from the output but remaining visible in the thumbnail view (greyed out). A page is skipped by clicking a skip icon that appears on hover, or via keyboard shortcut.
-- **Reorder**: pages can be reordered by dragging thumbnails to a new position.
+
+Reordering pages is Split-mode only — see below.
 
 ## Mode: Merge
 
@@ -62,13 +63,11 @@ For scanners that can only scan one side at a time. The user scans all front pag
 2. The user selects which file contains the first page (**First page in: File A / File B**).
 3. A **Reverse File B** checkbox controls whether File B is reversed before interleaving. This should be checked when the paper stack was flipped between scans (the typical case, when scanning one side at a time), causing the second-scanned pages to be in reverse order.
 4. The app interleaves the pages: A1, B1, A2, B2, etc.
-5. The user saves the merged result as a new PDF file on disk.
-
-The merged PDF can then be opened in Split mode for further processing.
+5. The user saves the merged result as a new PDF file on disk. A success modal offers **"Open in Default App"** and **"Open in Split Mode"** buttons — the latter switches directly to Split mode with the merged file loaded, for further processing.
 
 ### Unequal page counts
 
-If File A and File B have different page counts, the app shows a warning before proceeding: "File A has X pages, File B has Y pages. The extra Z page(s) will be appended at the end." The user can cancel or continue. The extra pages from the longer file are appended in order after the interleaved section.
+If File A and File B have different page counts, a warning icon appears in the toolbar; hovering it shows "File A has X pages, File B has Y pages. The extra Z page(s) will be appended at the end." This is informational only — merging isn't blocked. The extra pages from the longer file are appended in order after the interleaved section.
 
 ### Layout
 
@@ -106,7 +105,7 @@ TBD.
 
 1. The user loads an input PDF via a file picker dialog or by dragging and dropping a file onto the app window.
 2. The app displays all pages as thumbnails in the left panel. Clicking a thumbnail selects it and updates the detail panel on the right.
-3. The user defines split points by clicking in the gaps between page thumbnails. A visual divider appears at each split point; clicking again removes it. Dividers can also be repositioned by dragging them to a different gap. Each divider marks where a new output file begins.
+3. The user defines split points by clicking in the gaps between page thumbnails. A visual divider appears at each split point; clicking again removes it. Each divider marks where a new output file begins.
 4. The user sets a global filename template using `{date}` (today's date as `YYYY-MM-DD`) and `{name}` (a per-file label). Example: `{date} {name}` → `2026-06-12 invoice.pdf`. The app prefills the filename for each output file using this template. The user can then edit any individual file's name before exporting.
 5. The user sets a global output folder (an existing folder on the local filesystem). For each output file, the user can adjust:
    - The prefilled filename (editable)
@@ -140,6 +139,8 @@ The left panel is a continuous scroll area. Pages are grouped by output file. Ea
 ```
 
 Clicking a gap toggles a split point there and creates a new output file section. The filename and folder fields for each section appear immediately above its pages.
+
+Pages can be reordered by dragging a thumbnail to a new position, or via up/down buttons that appear on hover. Moving a page across a split point moves it into the adjacent output file.
 
 ### Keyboard shortcuts
 
@@ -281,7 +282,7 @@ The mode-specific "Error handling" sections above cover *expected* error conditi
 - [x] **Step 1: End-to-end merge pipeline** — Go `OpenFileDialog` / `SaveFileDialog` RPCs; `MergePDFs` Wails RPC; minimal UI with two file-picker buttons and a Merge & Save button; no thumbnails
 - [x] **Step 2: Thumbnail strips** — two-column layout using existing `ThumbnailPanel` primitive, one per file, side by side; Merge & Save moves to toolbar
 - [x] **Step 3: A/B selector + visual offset** — "First page in" toggle (File A / File B); second strip offset down by half a thumbnail height
-- [x] **Step 4: Reverse checkbox + page-count warning** — "Reverse File B" checkbox wired into merge call; detect unequal counts and show info in toolbar
+- [x] **Step 4: Reverse checkbox + page-count warning** — "Reverse File B" checkbox wired into merge call; implements the unequal-counts toolbar indicator described in "Unequal page counts" above
 - [x] **Step 5: Detail panel** — existing `DetailPanel` primitive on the right; selection in either strip updates it; `←` / `→` keyboard navigation
 - [x] **Step 6: Page editing** — rotate and skip within the merge view, applied before the merge call
 
@@ -421,5 +422,4 @@ Reuse / simplification / efficiency (lower priority, not yet actioned):
 
 - **Insert pages from another PDF**: allow the user to pull pages from a second PDF into the current document before splitting. Planned for v2.
 - **Scanning integration**: trigger a scan from within the app using OS or device APIs. Not currently planned but under consideration.
-- **Page reordering**: drag thumbnails to reorder pages before export or merge. No clear use case identified for the current workflow; omitted from v1.
 - **Pre-upload duplicate-scan review**: a review screen before upload, grouping queued files by Drive destination folder and showing them alongside files already present there, so the user could visually catch the same document scanned twice under different names/bytes. Descoped — accidental duplicate uploads are expected to be rare enough that the UI isn't worth building. If revisited, the design work landed on: gate the upload action until every file has an effective (own-or-inherited) Drive destination assignment; present the review as a modal, consistent with the existing Drive folder picker; group by *resolved* Drive destination folder id (merging local subfolders that resolve to the same Drive folder); and, since a destination folder can hold hundreds of existing files, avoid a full side-by-side dump by merging queued (highlighted) and existing files into one alphabetically-sorted list, showing only existing entries within ±1 position of a queued entry (likely-duplicate names sort near each other) and collapsing the rest into an expandable "⋯ N more files ⋯".
