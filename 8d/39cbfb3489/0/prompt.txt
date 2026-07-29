@@ -1,0 +1,17 @@
+Add a new step to spec.md, DriveUpload Mode: Allow to select which files / folders should be included in the upload. Hierarchy is the same as for folder selection (selected folder includes all chilrdren, ...). Selection should be disabled once locked==true.
+
+Anything I'm missing?
+
+---
+
+1. Selecting a folder recursively selects all decendants. Unselecting a file within a selected folder sets the folder to an indeterminate state. Unselecting a fully selected unselects all decendants. Clicking an indeterminate folder selects all decendants.
+2. yes
+3. yes
+4. not sure yet, to be decided later
+5. always reset to "everything included"
+6. yes
+7. toolbar-level shortcut
+
+---
+
+Addition to this sentence: " Unchecking the last remaining selected descendant of a subfolder leaves it fully unselected rather than indeterminate." This needs to be checked recursively to the top of the tree. Same goes for fully selecting a folder
