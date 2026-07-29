@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
@@ -20,11 +21,17 @@ import (
 // App struct
 type App struct {
 	ctx context.Context
+
+	// uploadCancels holds the cancel func for each localPath currently
+	// mid-upload, so CancelUpload (called from a separate RPC invocation,
+	// concurrently with the in-flight UploadFile call) can abort it.
+	uploadMu      sync.Mutex
+	uploadCancels map[string]context.CancelFunc
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	return &App{uploadCancels: make(map[string]context.CancelFunc)}
 }
 
 // recoverToErr recovers from a panic in a deferred call and assigns it to
@@ -161,10 +168,34 @@ func (a *App) ListDriveFolder(folderID string) (items []drive.Item, err error) {
 
 // UploadFile uploads the local file at localPath to the Drive folder with
 // the given ID, naming it name on Drive. Returns the ID of the created
-// Drive file.
+// Drive file. The upload can be aborted mid-transfer via CancelUpload.
 func (a *App) UploadFile(localPath, folderID, name string) (id string, err error) {
 	defer recoverToErr(&err)
-	return drive.UploadFile(a.ctx, localPath, folderID, name)
+
+	ctx, cancel := context.WithCancel(a.ctx)
+	a.uploadMu.Lock()
+	a.uploadCancels[localPath] = cancel
+	a.uploadMu.Unlock()
+	defer func() {
+		a.uploadMu.Lock()
+		delete(a.uploadCancels, localPath)
+		a.uploadMu.Unlock()
+		cancel()
+	}()
+
+	return drive.UploadFile(ctx, localPath, folderID, name)
+}
+
+// CancelUpload aborts the in-flight UploadFile call for localPath, if any.
+// A no-op if no upload for that path is currently running (e.g. it already
+// finished, or never started).
+func (a *App) CancelUpload(localPath string) {
+	a.uploadMu.Lock()
+	cancel, ok := a.uploadCancels[localPath]
+	a.uploadMu.Unlock()
+	if ok {
+		cancel()
+	}
 }
 
 // outputFileDest returns the destination path for the i-th pdf.OutputFileSpec.

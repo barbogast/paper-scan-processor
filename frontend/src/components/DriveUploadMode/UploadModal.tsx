@@ -79,10 +79,21 @@ function FileRow({ file }: { file: LocalFile }) {
         <Group gap={6} wrap="nowrap">
           <Loader size="xs" />
           <Text size="sm" c="dimmed">Uploading…</Text>
+          <Button size="xs" variant="default" onClick={() => uploadQueue.cancel(file.path)}>
+            Cancel
+          </Button>
         </Group>
       )}
       {status === 'done' && <Text size="sm" c="green">✓ Uploaded</Text>}
       {status === 'idle' && <Text size="sm" c="dimmed">Not uploaded</Text>}
+      {status === 'cancelled' && (
+        <Group gap={8} wrap="nowrap">
+          <Text size="sm" c="dimmed">Cancelled</Text>
+          <Button size="xs" variant="default" onClick={() => uploadQueue.retry(entry!)}>
+            Retry
+          </Button>
+        </Group>
+      )}
       {status === 'error' && (
         <Group gap={8} wrap="nowrap">
           <TruncatedText label={entry?.error ?? ''} size="sm" c="red" style={{ maxWidth: 220 }}>

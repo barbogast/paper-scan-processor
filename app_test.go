@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,6 +17,25 @@ func TestRecoverToErrConvertsPanicToError(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error, got nil")
 	}
+}
+
+func TestCancelUploadCancelsTheRegisteredContext(t *testing.T) {
+	a := NewApp()
+	ctx, cancel := context.WithCancel(context.Background())
+	a.uploadCancels["/tmp/foo.pdf"] = cancel
+
+	a.CancelUpload("/tmp/foo.pdf")
+
+	select {
+	case <-ctx.Done():
+	default:
+		t.Fatal("expected the registered context to be cancelled")
+	}
+}
+
+func TestCancelUploadIsNoopForUnknownPath(t *testing.T) {
+	a := NewApp()
+	a.CancelUpload("/tmp/never-uploaded.pdf") // must not panic
 }
 
 func TestExportSplitSingleFile(t *testing.T) {

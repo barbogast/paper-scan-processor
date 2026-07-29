@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { UploadFile } from '../../../wailsjs/go/main/App'
+import { CancelUpload, UploadFile } from '../../../wailsjs/go/main/App'
 
-export type UploadStatus = 'idle' | 'queued' | 'uploading' | 'done' | 'error'
+export type UploadStatus = 'idle' | 'queued' | 'uploading' | 'done' | 'error' | 'cancelled'
 
 export interface UploadJob {
   path: string
@@ -26,6 +26,13 @@ let pendingPaths: string[] = []
 const listeners = new Set<() => void>()
 let running = false
 let cancelled = false
+
+// Paths whose in-flight upload was cancelled. runQueue checks this once the
+// awaited UploadFile call settles (success or failure) and, if present,
+// leaves the status as 'cancelled' instead of overwriting it with
+// 'done'/'error' — the request may have raced ahead of the abort signal, but
+// the user's intent to cancel wins either way.
+const cancelledInFlight = new Set<string>()
 
 function notify() {
   for (const fn of listeners) fn()
@@ -71,9 +78,9 @@ async function runQueue() {
     updateStatus(path, 'uploading')
     try {
       await UploadFile(job.path, job.folderId, job.name)
-      updateStatus(path, 'done')
+      if (!cancelledInFlight.delete(path)) updateStatus(path, 'done')
     } catch (e) {
-      updateStatus(path, 'error', String(e))
+      if (!cancelledInFlight.delete(path)) updateStatus(path, 'error', String(e))
     }
   }
   running = false
@@ -106,6 +113,18 @@ export function cancelRemaining(): void {
   pendingPaths = []
 }
 
+// Aborts the file currently uploading. A no-op for any other status —
+// queued files are handled by cancelRemaining, and done/error/cancelled are
+// already settled. Marks the file 'cancelled' immediately rather than
+// waiting on the CancelUpload round-trip or on however UploadFile's promise
+// ends up settling.
+export function cancel(path: string): void {
+  if (filesByPath.get(path)?.status !== 'uploading') return
+  cancelledInFlight.add(path)
+  updateStatus(path, 'cancelled')
+  void CancelUpload(path).catch(e => console.error(`CancelUpload(${path}) failed:`, e))
+}
+
 export function reset(): void {
   if (!hasSettled(Array.from(filesByPath.keys()))) {
     // Callers must only invoke this once hasSettled() is true for all files;
@@ -115,6 +134,7 @@ export function reset(): void {
   }
   cancelled = false
   running = false
+  cancelledInFlight.clear()
   filesByPath.clear()
   pendingPaths = []
   notify()

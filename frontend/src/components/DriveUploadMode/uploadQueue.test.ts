@@ -2,10 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { waitFor } from '@testing-library/react'
 import * as uploadQueue from './uploadQueue'
 import { UploadJob } from './uploadQueue'
-import { UploadFile } from '../../../wailsjs/go/main/App'
+import { CancelUpload, UploadFile } from '../../../wailsjs/go/main/App'
 
 vi.mock('../../../wailsjs/go/main/App', () => ({
   UploadFile: vi.fn(),
+  CancelUpload: vi.fn(),
 }))
 
 function deferred<T>() {
@@ -21,6 +22,7 @@ const jobB: UploadJob = { path: '/root/b.pdf', folderId: 'f1', name: 'b.pdf' }
 describe('uploadQueue', () => {
   beforeEach(() => {
     vi.mocked(UploadFile).mockReset()
+    vi.mocked(CancelUpload).mockReset().mockResolvedValue(undefined)
     uploadQueue.reset()
   })
 
@@ -109,6 +111,55 @@ describe('uploadQueue', () => {
     first.resolve('id-a')
     await waitFor(() => expect(uploadQueue.getStatus(jobA.path)?.status).toBe('done'))
     expect(UploadFile).toHaveBeenCalledTimes(1)
+  })
+
+  it('cancel marks the uploading file cancelled and calls the backend', async () => {
+    const first = deferred<string>()
+    vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
+    uploadQueue.start([jobA])
+
+    uploadQueue.cancel(jobA.path)
+    expect(uploadQueue.getStatus(jobA.path)?.status).toBe('cancelled')
+    expect(CancelUpload).toHaveBeenCalledWith(jobA.path)
+
+    // Let the queue drain so it doesn't leave a dangling promise behind.
+    first.resolve('id-a')
+    await waitFor(() => expect(UploadFile).toHaveBeenCalledTimes(1))
+  })
+
+  it('cancel is ignored for a file that is not currently uploading', () => {
+    uploadQueue.start([jobA, jobB]) // jobA uploading, jobB queued
+
+    uploadQueue.cancel(jobB.path)
+    expect(uploadQueue.getStatus(jobB.path)?.status).toBe('queued')
+    expect(CancelUpload).not.toHaveBeenCalled()
+  })
+
+  it('cancelling in flight leaves status as cancelled even if the upload later resolves successfully', async () => {
+    const first = deferred<string>()
+    vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
+    uploadQueue.start([jobA])
+
+    uploadQueue.cancel(jobA.path)
+    first.resolve('id-a')
+
+    // Give runQueue's continuation a turn; status must not flip to 'done'.
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(uploadQueue.getStatus(jobA.path)?.status).toBe('cancelled')
+  })
+
+  it('cancelling in flight leaves status as cancelled rather than error if the upload rejects', async () => {
+    const first = deferred<string>()
+    vi.mocked(UploadFile).mockReturnValueOnce(first.promise)
+    uploadQueue.start([jobA])
+
+    uploadQueue.cancel(jobA.path)
+    first.reject(new Error('aborted'))
+
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(uploadQueue.getStatus(jobA.path)?.status).toBe('cancelled')
   })
 
   it('reset throws if a file is still queued or uploading', () => {
