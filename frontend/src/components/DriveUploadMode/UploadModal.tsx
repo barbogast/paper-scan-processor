@@ -1,7 +1,10 @@
-import { Box, Button, Group, Loader, Modal, Stack, Text } from '@mantine/core'
+import { ActionIcon, Box, Button, Group, Loader, Modal, Stack, Text } from '@mantine/core'
+import { IconExternalLink } from '@tabler/icons-react'
 import TruncatedText from '../TruncatedText'
 import { LocalFile, LocalFileGroup, flattenFiles } from './useFileTree'
 import * as uploadQueue from './uploadQueue'
+import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
+import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import styles from './UploadModal.module.css'
 
 interface Props {
@@ -107,6 +110,16 @@ function FileRow({ file }: { file: LocalFile }) {
             Retry
           </Button>
         </Group>
+      )}
+      {entry && (
+        <ActionIcon
+          variant="subtle"
+          size="sm"
+          aria-label={`Open destination Drive folder for ${file.name}`}
+          onClick={() => OpenDriveFolder(entry.folderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
+        >
+          <IconExternalLink size={14} />
+        </ActionIcon>
       )}
     </Group>
   )

@@ -16,6 +16,11 @@ import { ellipsisPath } from '../../utils'
 import styles from './index.module.css'
 
 export default function DriveUploadMode() {
+  // Subscribed here (not just in UploadModal) so GroupNode's "Open in Drive"
+  // link appears in the tree as soon as a group finishes, even once the
+  // modal has closed.
+  uploadQueue.useUploadQueueRender()
+
   const { root, tree, loading, error, pickRoot } = useFileTree()
   const isEmpty = tree !== null && tree.files.length === 0 && tree.subgroups.length === 0
 

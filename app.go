@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -184,6 +185,12 @@ func (a *App) UploadFile(localPath, folderID, name string) (id string, err error
 	}()
 
 	return drive.UploadFile(ctx, localPath, folderID, name)
+}
+
+// OpenDriveFolder opens the Drive folder with the given ID in the system
+// default browser.
+func (a *App) OpenDriveFolder(folderID string) {
+	runtime.BrowserOpenURL(a.ctx, "https://drive.google.com/drive/folders/"+url.PathEscape(folderID))
 }
 
 // CancelUpload aborts the in-flight UploadFile call for localPath, if any.

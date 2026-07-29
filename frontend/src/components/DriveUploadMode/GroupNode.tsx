@@ -2,8 +2,11 @@ import { Box, Group, Stack, Text } from '@mantine/core'
 import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from '../TruncatedText'
 import FileList from './FileList'
-import { LocalFile, LocalFileGroup } from './useFileTree'
+import { LocalFile, LocalFileGroup, flattenFiles } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
+import * as uploadQueue from './uploadQueue'
+import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
+import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import styles from './GroupNode.module.css'
 
 const INDENT_PER_LEVEL = 16
@@ -25,6 +28,9 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
   const own = assignments.groupAssignments.get(groupKey) ?? null
   const effective = own ?? inheritedAssignment
 
+  const groupFiles = flattenFiles(group)
+  const allUploaded = groupFiles.length > 0 && groupFiles.every(f => uploadQueue.getStatus(f.path)?.status === 'done')
+
   return (
     <Box>
       <Group gap={8} wrap="nowrap" align="center">
@@ -41,8 +47,10 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
           label={group.name}
           assignment={effective}
           isOwn={own !== null}
+          uploaded={allUploaded && effective !== null}
           onPick={() => onPick({ type: 'group', key: groupKey })}
           onClear={() => assignments.clearGroupAssignment(groupKey)}
+          onOpen={() => effective && OpenDriveFolder(effective.driveFolderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
         />
       </Group>
       {expanded && (

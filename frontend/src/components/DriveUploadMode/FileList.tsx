@@ -3,6 +3,9 @@ import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from '../TruncatedText'
 import { LocalFile } from './useFileTree'
 import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
+import * as uploadQueue from './uploadQueue'
+import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
+import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import { formatFileSize } from '../../utils'
 import styles from './FileList.module.css'
 
@@ -21,6 +24,7 @@ export default function FileList({ files, assignments, inheritedAssignment, onPi
       {files.map(file => {
         const own = assignments.fileOverrides.get(file.path) ?? null
         const effective = own ?? inheritedAssignment
+        const uploaded = uploadQueue.getStatus(file.path)?.status === 'done' && effective !== null
         const previewable = file.isPdf && !file.corrupt
         const detail = [
           file.corrupt ? 'Unreadable' : file.isPdf ? `${file.pageCount} pages` : null,
@@ -54,8 +58,10 @@ export default function FileList({ files, assignments, inheritedAssignment, onPi
                 label={file.name}
                 assignment={effective}
                 isOwn={own !== null}
+                uploaded={uploaded}
                 onPick={() => onPick({ type: 'file', path: file.path })}
                 onClear={() => assignments.clearFileOverride(file.path)}
+                onOpen={() => effective && OpenDriveFolder(effective.driveFolderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
               />
             </Group>
             <Text size="xs" c="dimmed" mt={2}>
