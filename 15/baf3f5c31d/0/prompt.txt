@@ -1,0 +1,57 @@
+I want to work on the cancel functionality during file upload: Right now there is a "Cancel" button per uploaded file (while it uploads), and a "Cancel remaining" button for all remaining files. While technically correct, I think this distinction is not necessary and potentially confusing. How about just having one "Cancel" button which aborts the current upload and cancels all remaining files?
+
+---
+
+<task-notification>
+<task-id>adc22da4f021dcac8</task-id>
+<tool-use-id>toolu_016vm47m44cnCijmJzsKeGFt</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/5d8f89be-cf8e-4fbc-accc-4e5a93e6b68f/tasks/adc22da4f021dcac8.output</output-file>
+<status>completed</status>
+<summary>Agent "Find cancel upload UI code" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Now I have everything needed for the report.
+
+## Report
+
+**1. Buttons — JSX/handlers**
+
+- `frontend/src/components/DriveUploadMode/UploadModal.tsx`
+  - Per-file **"Cancel"** button (only shown while a file is `uploading`): lines 79–86, specifically the `onClick={() =&gt; uploadQueue.cancel(file.path)}` at line 83.
+  - **"Cancel remaining"** button: lines 38–41, `onClick={() =&gt; uploadQueue.cancelRemaining()}` at line 39, disabled when `settled` (line 19: `uploadQueue.hasSettled(...)`).
+  - `FileRow` component (lines 71–110) renders per-file status/buttons; `GroupSection` (51–69) recurses into subgroups.
+
+**2. Underlying state/logic** — `frontend/src/components/DriveUploadMode/uploadQueue.ts`
+
+Module-level singleton (not React state) with subscribe/notify pattern (like `lib/pageCache`):
+- `filesByPath: Map&lt;string, UploadEntry&gt;` (line 25) — per-file status (`idle|queued|uploading|done|error|cancelled`), keyed by path.
+- `pendingPaths: string[]` (line 26) — queue of not-yet-started paths.
+- `running`/`cancelled` booleans (lines 28–29) drive the sequential (concurrency-1) `runQueue()` worker (lines 73–88).
+- `cancelledInFlight: Set&lt;string&gt;` (line 36) — tracks a path whose in-flight request was told to abort, so `runQueue`'s `await UploadFile(...)` completion (success or throw) doesn't overwrite the `'cancelled'` status with `'done'`/`'error'`.
+
+Distinguishing the two cancel actions:
+- `cancelRemaining()` (lines 111–115): sets `cancelled = true` (stops the `while` loop in `runQueue` from picking up more), and flips every still-`pendingPaths` file to `'idle'` (never attempted) and clears the queue array. It does **not** touch the file currently uploading.
+- `cancel(path)` (lines 122–127): only acts if that path's status is `'uploading'`; adds it to `cancelledInFlight`, immediately marks it `'cancelled'`, and fires the Go `CancelUpload(path)` RPC (fire-and-forget, errors routed to `handlePromiseRejection`). It's a no-op for queued/done/error/cancelled files.
+
+Other relevant functions: `start()`/`retry()` → `enqueue()` (lines 90–107), `hasSettled()` (60–65) used to gate the modal's Close button and disable "Cancel remaining", `reset()` (129–142) which throws if called before all files settle.
+
+**3. Go backend RPC** — `/Users/ben/git/paper-scan-processor/app.go`
+
+- `UploadFile` (lines 172–187): creates a cancelable `context.WithCancel(a.ctx)`, stores the `cancel` func in `a.uploadCancels[localPath]` (guarded by `a.uploadMu`), calls `drive.UploadFile(ctx, ...)`, and cleans up the map entry + calls `cancel()` in a deferred func.
+- `CancelUpload` (lines 192–199): looks up `a.uploadCancels[localPath]` and calls `cancel()` if found; no-op otherwise.
+- Bindings: `frontend/wailsjs/go/main/App.js` lines 5–7 (`CancelUpload`) and 57–59 (`UploadFile`); types in `frontend/wailsjs/go/main/App.d.ts` lines 7 and 33.
+- Actual transfer logic: `backend/drive/upload.go:14` — `UploadFile(ctx, localPath, folderID, name)` (context-aware, presumably aborts on ctx cancellation).
+- Go-side tests: `app_test.go:22` (`TestCancelUploadCancelsTheRegisteredContext`) and `app_test.go:36` (`TestCancelUploadIsNoopForUnknownPath`).
+
+**4. Type definitions** — `frontend/src/components/DriveUploadMode/uploadQueue.ts`
+
+- `UploadStatus` (line 5): `'idle' | 'queued' | 'uploading' | 'done' | 'error' | 'cancelled'`
+- `UploadJob` (lines 7–11): `{ path, folderId, name }`
+- `UploadEntry` (lines 13–16): `UploadJob &amp; { status: UploadStatus; error?: string }`
+
+Note: there's a stray worktree at `.claude/worktrees/warm-inventing-lampson/` with copies of `app.go`/`app_test.go`/`backend/drive/upload.go` — likely leftover from a prior agent run, untracked per `git status`. Not part of the main tree; ignore it for edits.</result>
+<usage><subagent_tokens>29107</subagent_tokens><tool_uses>8</tool_uses><duration_ms>44972</duration_ms></usage>
+</task-notification>
+
+---
+
+Remember: When I end a message with a question I just wnat you to answer and not yet write code.
