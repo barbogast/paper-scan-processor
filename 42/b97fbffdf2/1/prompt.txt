@@ -1,0 +1,25 @@
+Have a look at step 6c-ii
+
+---
+
+I don't like (most of) these changes - The result of the upload was already displayed in the UploadModal, and the user had the opportunity to retry, so there is no need to repeat this information in the file tree.
+There is also no need to allow the user to retry the upload - this was possible in the UploadModal.
+Checking whether the filetree should be locked can be tied to the Upload button being clicked: Once it was clicked the file tree is locked. Reason: The upload starts immediately, so at least one file has stated to uload anyway. So no need to loop through the upload statuses.
+
+So, remove the badges, remove the re-upload possibility and simplify the locking
+
+---
+
+Is there a need to have both uploaded and locked flags in DriveAssignmentField?
+
+---
+
+General question: Right now the UploadModal offers the user full feedback on the upload process and all possible ways to resolve upload issues. How about resetting the whole DriveUploadMode once the user closes the modal? After the upload started the filetree doesn't offer benefits that the UploadModal also offers. Just reply, don't code.
+
+---
+
+Still about DriveAssignmentField: Do away with the Assignmnet status, and just use a locked flag: It will be set to true once the upload is started and render a drive link instead of the folder picker
+
+---
+
+commit
