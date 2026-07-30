@@ -1,0 +1,74 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "9aedb13969c5",
+  "session_id": "6fdbacc5-3bde-4673-8e8e-1f1d50983f36",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-30T09:43:05.865204Z",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/hooks/useUploadFlow.test.ts",
+    "frontend/src/components/DriveUploadMode/hooks/useUploadFlow.ts",
+    "frontend/src/components/DriveUploadMode/index.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "362aee8c8409",
+  "checkpoint_transcript_start": 451,
+  "transcript_lines_at_start": 451,
+  "token_usage": {
+    "input_tokens": 76,
+    "cache_creation_tokens": 56140,
+    "cache_read_tokens": 6282459,
+    "output_tokens": 27420,
+    "api_call_count": 38
+  },
+  "session_metrics": {
+    "turn_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-30T09:43:05.84488Z",
+    "agent_lines": 173,
+    "agent_removed": 38,
+    "human_added": 0,
+    "human_modified": 5,
+    "human_removed": 0,
+    "total_committed": 178,
+    "total_lines_changed": 216,
+    "agent_percentage": 97.68518518518519,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 5,
+      "user_lines_removed": 5,
+      "agent_lines_added": 183,
+      "agent_lines_removed": 43,
+      "user_added_per_file": {
+        "frontend/src/components/DriveUploadMode/hooks/useUploadFlow.test.ts": 1,
+        "frontend/src/components/DriveUploadMode/hooks/useUploadFlow.ts": 3,
+        "frontend/src/components/DriveUploadMode/index.tsx": 1
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/DriveUploadMode/hooks/useUploadFlow.test.ts": 1,
+        "frontend/src/components/DriveUploadMode/hooks/useUploadFlow.ts": 3,
+        "frontend/src/components/DriveUploadMode/index.tsx": 1
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 183,
+      "agent_lines_removed": 43
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+I'd like to clean up DriveUploadMode/index.ts. Any suggestions? Just answer, no code
+
+---
+
+Let's start with 2.
+
+---
+
+I did change some files
