@@ -80,22 +80,29 @@ func scanDirectory(dir, name string) (LocalFileGroup, error) {
 		}
 
 		path := filepath.Join(dir, entryName)
-		info, err := os.Stat(path)
-		if err != nil {
-			continue
-		}
+		// info is left nil on a Stat failure (e.g. the file vanished between
+		// ReadDir and Stat, or its permissions block us) rather than skipping
+		// the entry — it still surfaces in the scan, just with a zero size,
+		// and PDFs go through the same corrupt-flagging path below since
+		// pdf.PageCount will fail on it too.
+		info, _ := os.Stat(path)
 
 		isPDF := strings.HasSuffix(strings.ToLower(entryName), ".pdf")
 		var count int
 		var corrupt bool
 		if isPDF {
+			var err error
 			count, err = pdf.PageCount(path)
 			corrupt = err != nil
+		}
+		var size int64
+		if info != nil {
+			size = info.Size()
 		}
 		files = append(files, LocalFile{
 			Path:      path,
 			Name:      entryName,
-			SizeBytes: info.Size(),
+			SizeBytes: size,
 			IsPDF:     isPDF,
 			PageCount: count,
 			Corrupt:   corrupt,
