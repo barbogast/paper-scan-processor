@@ -9,13 +9,13 @@ import GroupNode from './components/GroupNode'
 import FileList from './components/FileList'
 import ResizableLeftPanel from './components/ResizableLeftPanel'
 import UploadModal from './components/UploadModal'
-import { useFileTree, flattenFiles } from './hooks/useFileTree'
-import { useDriveAssignments, resolveEffectiveAssignments } from './hooks/useDriveAssignments'
+import { useFileTree } from './hooks/useFileTree'
+import { useDriveAssignments } from './hooks/useDriveAssignments'
 import { useInclusion } from './hooks/useInclusion'
 import { useSelection } from './hooks/useSelection'
+import { useUploadFlow } from './hooks/useUploadFlow'
 import { pruneSelectionForAssignment } from './pruneSelection'
 import { LocalFile, DriveAssignment, SelectionItem } from './types'
-import * as uploadQueue from './uploadQueue'
 import * as pageCache from '../../lib/pageCache'
 import { ellipsisPath } from '../../utils'
 import styles from './index.module.css'
@@ -72,38 +72,9 @@ export default function DriveUploadMode() {
     setPickerTargets(pruneSelectionForAssignment(tree, selection.items))
   }
 
-  const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  // Once Upload All is clicked, the tree locks for the rest of this tree's
-  // session — the upload starts immediately, so there's no "in progress but
-  // not locked yet" window to account for. Retrying failed files happens
-  // inside the upload modal, not from here, so this never needs to go back
-  // to false except via a fresh root pick.
-  const [started, setStarted] = useState(false)
-  const allFiles = tree ? flattenFiles(tree) : []
-  const selectedFiles = allFiles.filter(f => inclusion.isFileSelected(f.path))
-  const effectiveAssignments = tree ? resolveEffectiveAssignments(tree, assignments) : null
-  const readyToUpload = selectedFiles.length > 0 && selectedFiles.every(f => effectiveAssignments!.get(f.path) != null)
-
-  const handleUploadAll = () => {
-    if (!tree || !effectiveAssignments) return
-    uploadQueue.start(selectedFiles.map(f => {
-      const assignment = effectiveAssignments.get(f.path)
-      // Upload All is disabled until readyToUpload is true, so every file
-      // should resolve here — this is a defensive check against that
-      // guard and this walk drifting out of sync, not an expected path.
-      if (!assignment) throw new Error(`No Drive folder assigned for "${f.path}"`)
-      return { path: f.path, folderId: assignment.driveFolderId, name: f.name }
-    }))
-    setStarted(true)
-    setUploadModalOpen(true)
-  }
+  const uploadFlow = useUploadFlow(tree, inclusion, assignments)
   const handlePickRoot = async () => {
-    // A new root discards the old tree's upload-queue state along with it —
-    // picking a new root is the only way out of the read-only lock.
-    if (await pickRoot()) {
-      uploadQueue.reset()
-      setStarted(false)
-    }
+    if (await pickRoot()) uploadFlow.reset()
   }
 
   return (
@@ -113,21 +84,21 @@ export default function DriveUploadMode() {
           {root ? ellipsisPath(root) : 'Choose root folder…'}
         </Button>
         <Box className={styles.toolbarSpacer} />
-        <Button size="xs" variant="default" disabled={started || !tree} onClick={inclusion.selectAll}>
+        <Button size="xs" variant="default" disabled={uploadFlow.started || !tree} onClick={inclusion.selectAll}>
           Select All
         </Button>
-        <Button size="xs" variant="default" disabled={started || !tree} onClick={inclusion.selectNone}>
+        <Button size="xs" variant="default" disabled={uploadFlow.started || !tree} onClick={inclusion.selectNone}>
           Select None
         </Button>
-        <Button size="xs" variant="default" disabled={started || !tree || selection.size === 0} onClick={handleBatchAssign}>
+        <Button size="xs" variant="default" disabled={uploadFlow.started || !tree || selection.size === 0} onClick={handleBatchAssign}>
           Assign Drive folder…
         </Button>
         <Tooltip
           label={tree ? 'Every selected file needs a Drive folder before uploading' : 'Choose a root folder first'}
-          disabled={started || readyToUpload}
+          disabled={uploadFlow.started || uploadFlow.readyToUpload}
         >
           <span>
-            <Button size="xs" disabled={started || !readyToUpload} onClick={handleUploadAll}>
+            <Button size="xs" disabled={uploadFlow.started || !uploadFlow.readyToUpload} onClick={uploadFlow.startUpload}>
               Upload All
             </Button>
           </span>
@@ -145,9 +116,9 @@ export default function DriveUploadMode() {
               />
               {tree && (
                 <UploadModal
-                  opened={uploadModalOpen}
+                  opened={uploadFlow.uploadModalOpen}
                   tree={tree}
-                  onClose={() => setUploadModalOpen(false)}
+                  onClose={uploadFlow.closeUploadModal}
                 />
               )}
 
@@ -170,7 +141,7 @@ export default function DriveUploadMode() {
                       inheritedAssignment={null}
                       inclusion={inclusion}
                       selection={selection}
-                      locked={started}
+                      locked={uploadFlow.started}
                       onPick={target => setPickerTargets([target])}
                       onPreviewFile={handlePreviewFile}
                     />
@@ -181,7 +152,7 @@ export default function DriveUploadMode() {
                     inheritedAssignment={null}
                     inclusion={inclusion}
                     selection={selection}
-                    locked={started}
+                    locked={uploadFlow.started}
                     onPick={target => setPickerTargets([target])}
                     onPreviewFile={handlePreviewFile}
                   />
