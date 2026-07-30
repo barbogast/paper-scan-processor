@@ -71,7 +71,7 @@ function DriveTreeNode({ item, path, selectedId, onSelect, defaultExpanded }: Dr
           <Text size="sm" fw={item.id === selectedId ? 600 : 400}>📁 {item.name}</Text>
         </button>
       </Group>
-      {error && <Text size="xs" c="red" pl={INDENT_PER_LEVEL + 6}>{error}</Text>}
+      {expanded && error && <Text size="xs" c="red" pl={INDENT_PER_LEVEL + 6}>{error}</Text>}
       {expanded && children && (
         <Box pl={INDENT_PER_LEVEL}>
           {children.length === 0
