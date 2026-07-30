@@ -1,0 +1,5 @@
+I'd like every custom hook in DriveUploadMode/hooks to have a multiline comment desribing its purpose and what problems it solves.
+
+---
+
+commit
