@@ -3,9 +3,9 @@ import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from '../TruncatedText'
 import FileList from './FileList'
 import { LocalFile, LocalFileGroup } from './useFileTree'
-import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
+import { DriveAssignment, DriveAssignmentsHandle } from './useDriveAssignments'
 import { InclusionHandle } from './useInclusion'
-import { SelectionHandle } from './useSelection'
+import { SelectionHandle, SelectionItem } from './useSelection'
 import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
 import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import styles from './GroupNode.module.css'
@@ -22,7 +22,7 @@ interface Props {
   inclusion: InclusionHandle
   selection: SelectionHandle
   locked: boolean
-  onPick: (target: PickerTarget) => void
+  onPick: (target: SelectionItem) => void
   onPreviewFile: (file: LocalFile) => void
 }
 

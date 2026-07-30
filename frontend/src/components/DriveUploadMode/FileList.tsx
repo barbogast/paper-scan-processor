@@ -2,9 +2,9 @@ import { Badge, Box, Checkbox, Group, Stack, Text, Tooltip } from '@mantine/core
 import DriveAssignmentField from './DriveAssignmentField'
 import TruncatedText from '../TruncatedText'
 import { LocalFile } from './useFileTree'
-import { DriveAssignment, DriveAssignmentsHandle, PickerTarget } from './useDriveAssignments'
+import { DriveAssignment, DriveAssignmentsHandle } from './useDriveAssignments'
 import { InclusionHandle } from './useInclusion'
-import { SelectionHandle } from './useSelection'
+import { SelectionHandle, SelectionItem } from './useSelection'
 import { OpenDriveFolder } from '../../../wailsjs/go/main/App'
 import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import { formatFileSize } from '../../utils'
@@ -17,7 +17,7 @@ interface Props {
   inclusion: InclusionHandle
   selection: SelectionHandle
   locked: boolean
-  onPick: (target: PickerTarget) => void
+  onPick: (target: SelectionItem) => void
   onPreviewFile: (file: LocalFile) => void
 }
 

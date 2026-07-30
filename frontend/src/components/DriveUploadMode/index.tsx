@@ -10,9 +10,9 @@ import FileList from './FileList'
 import ResizableLeftPanel from './ResizableLeftPanel'
 import UploadModal from './UploadModal'
 import { useFileTree, flattenFiles, LocalFile } from './useFileTree'
-import { useDriveAssignments, resolveEffectiveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
+import { useDriveAssignments, resolveEffectiveAssignments, DriveAssignment } from './useDriveAssignments'
 import { useInclusion } from './useInclusion'
-import { useSelection } from './useSelection'
+import { useSelection, SelectionItem } from './useSelection'
 import { pruneSelectionForAssignment } from './pruneSelection'
 import * as uploadQueue from './uploadQueue'
 import * as pageCache from '../../lib/pageCache'
@@ -58,7 +58,7 @@ export default function DriveUploadMode() {
   // array for a per-row badge click, or the pruned multi-selection for the
   // toolbar batch action below — either way, the picked folder applies to
   // every target here.
-  const [pickerTargets, setPickerTargets] = useState<PickerTarget[] | null>(null)
+  const [pickerTargets, setPickerTargets] = useState<SelectionItem[] | null>(null)
   const handlePicked = (folder: DriveAssignment) => {
     for (const target of pickerTargets ?? []) {
       if (target.type === 'group') assignments.setGroupAssignment(target.key, folder)
