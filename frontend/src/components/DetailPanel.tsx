@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch'
-import { Center, Loader } from '@mantine/core'
+import { Button, Center, Loader, Stack, Text } from '@mantine/core'
+import { IconPhotoOff } from '@tabler/icons-react'
 import * as pageCache from '../lib/pageCache'
 import styles from './DetailPanel.module.css'
 
@@ -50,6 +51,17 @@ export default function DetailPanel({ pdfPath, pageNum, pageCount, rotation = 0,
       {pageCache.isLoading(pdfPath, pageNum) && (
         <Center className={styles.loaderCenter}>
           <Loader />
+        </Center>
+      )}
+      {!pageCache.isLoading(pdfPath, pageNum) && pageCache.isFailed(pdfPath, pageNum) && (
+        <Center className={styles.loaderCenter}>
+          <Stack align="center" gap="xs">
+            <IconPhotoOff size={32} color="var(--mantine-color-red-6)" />
+            <Text size="sm" c="dimmed">{pageCache.getFailureMessage(pdfPath, pageNum) ?? 'Failed to render page'}</Text>
+            <Button size="xs" variant="light" onClick={() => pageCache.retry(pdfPath, pageNum, DETAIL_WIDTH)}>
+              Retry
+            </Button>
+          </Stack>
         </Center>
       )}
       {src && (

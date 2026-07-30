@@ -25,6 +25,8 @@ A vertically scrolling strip of page thumbnails. Width is user-adjustable via a 
 
 The Go backend exposes a per-page render method returning a base64-encoded PNG; the frontend requests thumbnails as they scroll into view (`pdftoppm` subprocess).
 
+If a page fails to render, its thumbnail shows a broken-image indicator; hovering it reveals the underlying error.
+
 #### Keyboard shortcuts
 
 | Key                    | Action                                     |
@@ -37,6 +39,8 @@ The Go backend exposes a per-page render method returning a base64-encoded PNG; 
 ### Page detail panel
 
 Shows the currently selected page at reading resolution. Selecting a thumbnail updates it.
+
+If the page fails to render, the panel shows a broken-image indicator, the underlying error, and a Retry button.
 
 Supports:
 

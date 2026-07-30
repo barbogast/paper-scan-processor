@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react'
 import { RenderPage } from '../../wailsjs/go/main/App'
 
 interface Entry { src: string; width: number }
+interface FailedEntry { width: number; message: string }
 
 // entries stores the best (highest-width) image loaded so far per page.
 // loading tracks the width of the currently in-flight render per page; a higher-res
 // request overwrites the value, which lets the stale lower-res .then know it was superseded.
-// failed tracks the highest width that failed per page; retries at higher widths are still allowed.
+// failed tracks the highest width that failed per page (plus why); retries at higher widths are still allowed.
 const entries = new Map<string, Entry>()
 const loading = new Map<string, number>()
-const failed = new Map<string, number>()
+const failed = new Map<string, FailedEntry>()
 const listeners = new Set<() => void>()
 
 const pageKey = (path: string, page: number) => `${path}\0${page}`
@@ -44,6 +45,15 @@ export function isFailed(path: string, page: number): boolean {
   return failed.has(pageKey(path, page))
 }
 
+export function getFailureMessage(path: string, page: number): string | undefined {
+  return failed.get(pageKey(path, page))?.message
+}
+
+export function retry(path: string, page: number, width: number): void {
+  failed.delete(pageKey(path, page))
+  load(path, page, width)
+}
+
 export function load(path: string, page: number, width: number): void {
   if (!path) return
   const k = pageKey(path, page)
@@ -53,7 +63,7 @@ export function load(path: string, page: number, width: number): void {
   // Don't start a new render if a higher-res one is already in-flight — it will supersede this one.
   if (currentlyLoading !== undefined && currentlyLoading >= width) return
   const failedAt = failed.get(k)
-  if (failedAt !== undefined && failedAt >= width) return
+  if (failedAt !== undefined && failedAt.width >= width) return
   // Overwrite any lower-res in-flight entry. The superseded render will still complete but its
   // .then/.catch checks loading.get(k) === width before mutating state, so it becomes a no-op.
   loading.set(k, width)
@@ -68,10 +78,11 @@ export function load(path: string, page: number, width: number): void {
       if (loading.get(k) === width) loading.delete(k)
       notify()
     })
-    .catch(() => {
+    .catch((err) => {
       if (loading.get(k) === width) {
         loading.delete(k)
-        failed.set(k, width)
+        const message = err instanceof Error ? err.message : String(err)
+        failed.set(k, { width, message })
       }
       notify()
     })

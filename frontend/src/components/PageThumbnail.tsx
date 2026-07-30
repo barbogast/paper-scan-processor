@@ -1,5 +1,5 @@
-import { Loader } from '@mantine/core'
-import { IconRotateClockwise, IconX, IconArrowUp, IconArrowDown } from '@tabler/icons-react'
+import { Loader, Tooltip } from '@mantine/core'
+import { IconRotateClockwise, IconX, IconArrowUp, IconArrowDown, IconPhotoOff } from '@tabler/icons-react'
 import * as pageCache from '../lib/pageCache'
 import { ITEM_PADDING, LABEL_HEIGHT } from '../constants'
 import styles from './PageThumbnail.module.css'
@@ -48,6 +48,11 @@ export default function PageThumbnail({
           ) : (
             <div className={styles.placeholder} style={{ height: thumbHeight }}>
               {pageCache.isLoading(pdfPath, page) && <Loader size="xs" />}
+              {!pageCache.isLoading(pdfPath, page) && pageCache.isFailed(pdfPath, page) && (
+                <Tooltip label={pageCache.getFailureMessage(pdfPath, page) ?? 'Failed to render page'} openDelay={500}>
+                  <IconPhotoOff size={16} color="var(--mantine-color-red-6)" />
+                </Tooltip>
+              )}
             </div>
           )}
         </div>
