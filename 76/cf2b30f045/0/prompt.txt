@@ -1,0 +1,1 @@
+Move all custom hook calls in DriveUploadMode/index.ts together and add a comment to each hook invocation briefly explaining it's role within the component.
