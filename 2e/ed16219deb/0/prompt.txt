@@ -1,0 +1,13 @@
+I want to simplify pruneSelection.ts. Do you have suggestions?
+
+---
+
+yes
+
+---
+
+commit
+
+---
+
+The types SelectionItem and PickerTarget are identical. Would it make sense to merge them?
