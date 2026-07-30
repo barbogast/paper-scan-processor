@@ -1,0 +1,159 @@
+Have a look at "`lib/pageCache.ts`'s render failures are silently swallowed..."
+
+---
+
+<task-notification>
+<task-id>ad89ce3f3a8bd2212</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/d7fb2d01-7818-4182-a424-7d20e4a84186/tasks/ad89ce3f3a8bd2212.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore pageCache consumers and UI conventions" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything needed. Here's the report.
+
+## Findings
+
+**1. `pageCache.ts` internals (`frontend/src/lib/pageCache.ts:1-86`)**
+- `failed` map stores only `width` (highest failed width), not the `Error`/message — `.catch(() =&gt; { ...failed.set(k, width) })` (line 74) discards the error entirely.
+- `isFailed()` (line 43-45) is exported, never called anywhere in the codebase (confirmed via grep — no matches for `isFailed` outside its own definition).
+- `load()` (line 47-78): once `failed.get(k) &gt;= width`, it permanently no-ops for that width — `if (failedAt !== undefined &amp;&amp; failedAt &gt;= width) return` (line 56). There is **no manual-retry path**: calling `load()` again at the *same* width is silently ignored forever; only a request at a *strictly higher* width bypasses the guard. So a consumer wanting a "Retry" affordance can't just call `load()` again — pageCache would need a new function (e.g. `retry(path, page)` that deletes the `failed` entry) or `load` would need a `force` param.
+
+**2. Every consumer's pattern is identical**: call `pageCache.usePageCacheRender()` once per component to re-render on cache notify, `pageCache.load(path, page, width)` in a `useEffect` keyed off virtualizer range, then `src={pageCache.getSrc(path, page)}` passed into `&lt;PageThumbnail&gt;`. None of the 8 consumers reference `isFailed`.
+- `SplitMode/ThumbnailPanel.tsx:96,104,189,221`, `MergeMode/ThumbnailPanel.tsx:59,149,172`, `DriveUploadMode/components/ThumbnailPanel.tsx:32,50,89` — all pass `src` down to `PageThumbnail`, which itself owns the loading/blank rendering.
+- `DetailPanel.tsx:19-54` — loading/blank handled directly inline (no `PageThumbnail`): renders a centered full-size `&lt;Loader/&gt;` (line 50-54) when `pageCache.isLoading`, and only renders the `&lt;img&gt;` when `src` is truthy; if failed, nothing renders at all — a permanently blank panel with no loader and no image, no explanation.
+- `MergeMode/usePDFFile.ts` and `DriveUploadMode/hooks/usePreview.ts` only call `pageCache.evict()` on file change/unmount — not render-path consumers.
+- `DriveUploadMode/uploadQueue.ts` is unrelated to `pageCache` (separate singleton, different concern — file upload, not thumbnail rendering) — it appeared in the grep hit list only because it's referenced from the same package.
+
+**3. `PageThumbnail.tsx:36-53`** — the loading branch:
+```jsx
+{src ? (
+  &lt;img ... /&gt;
+) : (
+  &lt;div className={styles.placeholder} style={{ height: thumbHeight }}&gt;
+    {pageCache.isLoading(pdfPath, page) &amp;&amp; &lt;Loader size="xs" /&gt;}
+  &lt;/div&gt;
+)}
+```
+This is the exact slot for a failed-state icon: the `else` branch is a fixed-height placeholder `div` that today renders either a small `Loader` or nothing (blank, when neither loading nor failed). A broken-image icon would branch here as a third state alongside `isLoading`/blank.
+
+**4. Icon/tooltip precedent already in the app:**
+- `MergeMode/index.tsx:108-114` — `Tooltip` wrapping `IconAlertTriangle` (yellow) for the unequal-page-count warning, `multiline w={280}`.
+- `FileList.tsx:67-71` — corrupt-file warning: `&lt;Tooltip label="Could not read this file — it may be corrupt or not a valid PDF"&gt;&lt;span&gt;⚠️&lt;/span&gt;&lt;/Tooltip&gt;` (emoji, not an icon component) — closest precedent for a "file couldn't be read" indicator.
+- `ClippedPath.tsx:35` and `TruncatedText.tsx:24` show the app's general `&lt;Tooltip label={...} openDelay={500}&gt;` idiom for hover explanations — reusable for a broken-thumbnail tooltip carrying the real error message.
+- `PageThumbnail.tsx` itself only imports `IconX`/`IconRotateClockwise`/arrows for its button icons — no error/broken icon currently imported there; `@tabler/icons-react` would need something like `IconPhotoOff`/`IconAlertTriangle` added.
+- `IconAlertTriangle` is *not* currently imported into `PageThumbnail.tsx` — would be net-new there.
+
+**5. Reusable inline-error+Retry precedent** is `UploadModal.tsx:105-114` (`FileRow`), driven by `uploadQueue.ts`'s `error` string on the entry and `retry(job)` function:
+```jsx
+{status === 'error' &amp;&amp; (
+  &lt;Group gap={8} wrap="nowrap"&gt;
+    &lt;TruncatedText label={entry?.error ?? ''} size="sm" c="red" className={styles.errorText}&gt;
+      ⚠ {entry?.error}
+    &lt;/TruncatedText&gt;
+    &lt;Button size="xs" variant="default" onClick={() =&gt; uploadQueue.retry(entry!)}&gt;Retry&lt;/Button&gt;
+  &lt;/Group&gt;
+)}
+```
+This is a full list-row layout (not a small square thumbnail), so it's a pattern precedent (store error string + expose a retry function) rather than something directly reusable as JSX for thumbnails, which have far less room (tiny fixed-height placeholder, not a row).
+
+## Gaps to design against
+- `pageCache.ts` needs to store the actual error (message/Error), not just width, if a tooltip is to show anything beyond a generic message.
+- `pageCache.ts` needs a retry mechanism, since `load()` is a permanent no-op once failed at a given width.
+- `DetailPanel.tsx` has no failed-state handling at all today (fully blank on failure, no loader shown either).
+- No existing "broken image" icon import anywhere; `IconAlertTriangle` (warning, used for the merge count mismatch) or a photo-off style icon would be net-new to `PageThumbnail.tsx`, paired with the app's standard `Tooltip` idiom.</result>
+<usage><subagent_tokens>56221</subagent_tokens><tool_uses>20</tool_uses><duration_ms>57456</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>acab9ea0ea1cb8358</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor/d7fb2d01-7818-4182-a424-7d20e4a84186/tasks/acab9ea0ea1cb8358.output</output-file>
+<status>completed</status>
+<summary>Agent "Design plan for surfacing pageCache render failures" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result># Implementation Plan: Surface `pageCache.ts` Render Failures in the UI
+
+## 1. `pageCache.ts` changes
+
+Change `failed` from `Map&lt;string, number&gt;` to a richer entry so the message survives, and add a minimal `retry` API instead of a `force` flag (keeps `load()`'s signature and all 8 existing call sites untouched).
+
+```ts
+interface FailedEntry { width: number; message: string }
+const failed = new Map&lt;string, FailedEntry&gt;()
+
+export function isFailed(path: string, page: number): boolean
+export function getFailureMessage(path: string, page: number): string | undefined
+export function retry(path: string, page: number): void
+```
+
+- `isFailed` keeps its exact current signature/behavior (existing callers, if any were added, don't break).
+- `getFailureMessage(path, page)` returns `failed.get(pageKey(path,page))?.message`, used by the tooltip.
+- `retry(path, page)`: deletes the `pageKey` entry from `failed` only (leave `loading`/`entries` untouched — there won't be a stale entry since a failed render never wrote to `entries`), then calls `notify()`. It deliberately does **not** call `load()` itself — the consumer's existing `useEffect` (which already re-runs `load()` on every relevant dependency change, or which the component re-triggers) is not guaranteed to re-fire just because `failed` changed. So `retry` must itself re-invoke the render: `retry(path, page, width)` — **the signature needs `width`** so it can call `load(path, page, width)` internally after clearing the flag. Revised:
+
+```ts
+export function retry(path: string, page: number, width: number): void {
+  failed.delete(pageKey(path, page))
+  load(path, page, width)
+}
+```
+
+This is minimal surface area: one changed internal type, two new exports, `isFailed`'s signature untouched. In `.catch()`, capture `err instanceof Error ? err.message : String(err)` and store `{ width, message }` — replaces the current bare `.catch(() =&gt; {...})` with one that captures the error, satisfying the CLAUDE.md no-bare-catch rule.
+
+## 2. `PageThumbnail.tsx` UX
+
+Hover-tooltip only for v1 — no click-to-retry on the tiny thumbnail. Rationale: thumbnails are small, numerous, and virtualized; a systemic failure (missing `pdftoppm`) means retrying one-by-one is pointless — the user's real recovery path is fixing the environment and reloading the file, which already re-triggers `load()` on next scroll/mount. Adding a retry button here would also require new props/click-event plumbing (`stopPropagation`, since the wrapper's `onClick` selects the page) for marginal value.
+
+In the placeholder div, add a third branch:
+
+```tsx
+&lt;div className={styles.placeholder} style={{ height: thumbHeight }}&gt;
+  {pageCache.isLoading(pdfPath, page) &amp;&amp; &lt;Loader size="xs" /&gt;}
+  {!pageCache.isLoading(pdfPath, page) &amp;&amp; pageCache.isFailed(pdfPath, page) &amp;&amp; (
+    &lt;Tooltip label={pageCache.getFailureMessage(pdfPath, page) ?? 'Failed to render page'} openDelay={500}&gt;
+      &lt;IconPhotoOff size={16} color="var(--mantine-color-red-6)" /&gt;
+    &lt;/Tooltip&gt;
+  )}
+&lt;/div&gt;
+```
+
+`IconPhotoOff` over `IconAlertTriangle` — it's already semantically "image failed to load," reserving the triangle/yellow for warnings (page-count mismatch, corrupt-file badge) elsewhere in the app, keeping icon vocabulary consistent (error=red/photo-off, warning=yellow/triangle). Needs the `Tooltip` import from `@mantine/core` and `IconPhotoOff` from `@tabler/icons-react` (both new imports to this file).
+
+## 3. `DetailPanel.tsx` UX
+
+This panel has room and a real reason for a retry button (it's the single most important preview a user is looking at when the failure happens). Mirror the existing `Center`/`loaderCenter` structure with a new failed state, and wire retry to `pageCache.retry(pdfPath, pageNum, DETAIL_WIDTH)` (the panel already has all three needed values in scope):
+
+```tsx
+{!pageCache.isLoading(pdfPath, pageNum) &amp;&amp; pageCache.isFailed(pdfPath, pageNum) &amp;&amp; (
+  &lt;Center className={styles.loaderCenter}&gt;
+    &lt;Stack align="center" gap="xs"&gt;
+      &lt;IconPhotoOff size={32} color="var(--mantine-color-red-6)" /&gt;
+      &lt;Text size="sm" c="dimmed"&gt;{pageCache.getFailureMessage(pdfPath, pageNum) ?? 'Failed to render page'}&lt;/Text&gt;
+      &lt;Button size="xs" variant="light" onClick={() =&gt; pageCache.retry(pdfPath, pageNum, DETAIL_WIDTH)}&gt;Retry&lt;/Button&gt;
+    &lt;/Stack&gt;
+  &lt;/Center&gt;
+)}
+```
+
+Reuses `.loaderCenter` (absolute, `inset: 0`) unchanged — no new CSS needed. Adds `Stack`, `Text`, `Button` imports from `@mantine/core` (all already used elsewhere in the app) and `IconPhotoOff`.
+
+## 4. Scope check
+
+Confirmed: only `pageCache.ts`, `PageThumbnail.tsx`, `DetailPanel.tsx` need changes; no `.module.css` edits required (thumbnail placeholder is already a flex-centered container; DetailPanel reuses `loaderCenter`). `uploadQueue.ts`/`UploadModal.tsx` and `usePreview.ts`/`usePDFFile.ts` are out of scope, per the investigation.
+
+## 5. Step split (CLAUDE.md convention) and docs
+
+- **1a** — `pageCache.ts`: change `failed` map shape, capture the error message in `.catch`, add `getFailureMessage` and `retry` exports. No UI change yet; existing `isFailed` behavior/callers unaffected.
+- **1b** — `PageThumbnail.tsx`: add the failed-state tooltip+icon branch in the placeholder.
+- **1c** — `DetailPanel.tsx`: add the failed-state centered icon/message/Retry button.
+- **1d** — docs: add one sentence to spec.md's "Thumbnail panel" section (after the `pdftoppm` subprocess line, ~spec.md:26) and to "Page detail panel" (~spec.md:39), e.g. "If a page fails to render, the thumbnail/panel shows a broken-image indicator with the error on hover" (detail panel: "...with a Retry button"). Then move the checklist.md:99 item to `[x]` per the "just say what shipped + point at spec.md" convention.
+
+### Critical Files for Implementation
+- /Users/ben/git/paper-scan-processor/frontend/src/lib/pageCache.ts
+- /Users/ben/git/paper-scan-processor/frontend/src/components/PageThumbnail.tsx
+- /Users/ben/git/paper-scan-processor/frontend/src/components/DetailPanel.tsx
+- /Users/ben/git/paper-scan-processor/spec.md
+- /Users/ben/git/paper-scan-processor/checklist.md</result>
+<usage><subagent_tokens>28526</subagent_tokens><tool_uses>13</tool_uses><duration_ms>52089</duration_ms></usage>
+</task-notification>
