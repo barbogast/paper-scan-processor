@@ -1,0 +1,5 @@
+checkout "**`os.Stat` failure silently drops a file instead of flagging it corrupt**"
+
+---
+
+Is it true that this change allows sizeBytes to arrive as null on the frontend?
