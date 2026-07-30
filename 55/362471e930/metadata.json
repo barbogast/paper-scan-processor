@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "55362471e930",
+  "strategy": "manual-commit",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 9,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/components/GroupNode.tsx",
+    "frontend/src/components/DriveUploadMode/components/UploadModal.tsx",
+    "frontend/src/components/DriveUploadMode/hooks/useDriveAssignments.test.ts",
+    "frontend/src/components/DriveUploadMode/hooks/useDriveAssignments.ts",
+    "frontend/src/components/DriveUploadMode/hooks/useDrivePicker.test.ts",
+    "frontend/src/components/DriveUploadMode/hooks/useFileTree.test.ts",
+    "frontend/src/components/DriveUploadMode/hooks/useFileTree.ts",
+    "frontend/src/components/DriveUploadMode/hooks/useInclusion.test.ts",
+    "frontend/src/components/DriveUploadMode/hooks/useSelection.test.ts",
+    "frontend/src/components/DriveUploadMode/hooks/useUploadFlow.test.ts",
+    "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/DriveUploadMode/pruneSelection.test.ts",
+    "frontend/src/components/DriveUploadMode/pruneSelection.ts",
+    "frontend/src/components/DriveUploadMode/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/55/362471e930/0/metadata.json",
+      "transcript": "/55/362471e930/0/full.jsonl",
+      "content_hash": "/55/362471e930/0/content_hash.txt",
+      "prompt": "/55/362471e930/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 196,
+    "cache_creation_tokens": 126852,
+    "cache_read_tokens": 10467706,
+    "output_tokens": 61036,
+    "api_call_count": 98
+  }
+}
