@@ -41,7 +41,9 @@ func FindFolder(ctx context.Context, parentID, name string) (string, error) {
 
 // ListFolder returns the direct children of the folder with the given ID,
 // folders first then files, both sorted by name.
-// Note: results are capped at 100 items (Drive API default page size).
+// Note: capped at 1000 items (Drive's max page size). Folders sort before
+// files, so this only truncates subfolders once a single folder has more
+// than 1000 direct subfolders — not a realistic case for this tool.
 func ListFolder(ctx context.Context, folderID string) ([]Item, error) {
 	svc, err := service(ctx)
 	if err != nil {
@@ -52,6 +54,7 @@ func ListFolder(ctx context.Context, folderID string) ([]Item, error) {
 		Q(q).
 		Fields("files(id, name, mimeType, size)").
 		OrderBy("folder,name").
+		PageSize(1000).
 		Do()
 	if err != nil {
 		return nil, fmt.Errorf("list folder %q: %w", folderID, err)
