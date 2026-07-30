@@ -1,20 +1,6 @@
 import { useState, useCallback } from 'react'
 import { PickFolder, ScanLocalRoot } from '../../../wailsjs/go/main/App'
-
-export interface LocalFile {
-  path: string
-  name: string
-  sizeBytes: number
-  isPdf: boolean
-  pageCount: number
-  corrupt: boolean
-}
-
-export interface LocalFileGroup {
-  name: string
-  files: LocalFile[]
-  subgroups: LocalFileGroup[]
-}
+import { LocalFile, LocalFileGroup } from './types'
 
 // Flat, ordered list of every file in the tree (a group's own files, then
 // its subgroups' files, recursively). Shared by the upload worker (order to

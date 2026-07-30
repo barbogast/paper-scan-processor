@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { Badge, Box, Tooltip } from '@mantine/core'
 import { IconExternalLink } from '@tabler/icons-react'
-import { DriveAssignment } from './useDriveAssignments'
+import { DriveAssignment } from './types'
 import { useIsTruncated } from '../../lib/useIsTruncated'
 import styles from './DriveAssignmentField.module.css'
 

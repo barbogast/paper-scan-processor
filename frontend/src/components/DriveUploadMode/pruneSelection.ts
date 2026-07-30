@@ -1,5 +1,4 @@
-import { LocalFileGroup } from './useFileTree'
-import { SelectionItem } from './useSelection'
+import { LocalFileGroup, SelectionItem } from './types'
 
 // The key of the group directly containing groupKey, or null if it's top-level.
 function parentGroupKey(groupKey: string): string | null {

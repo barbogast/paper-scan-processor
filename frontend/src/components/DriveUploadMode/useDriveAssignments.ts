@@ -1,10 +1,5 @@
 import { useState, useCallback } from 'react'
-import { LocalFileGroup } from './useFileTree'
-
-export interface DriveAssignment {
-  driveFolderId: string
-  path: string
-}
+import { LocalFileGroup, DriveAssignment } from './types'
 
 export interface DriveAssignmentsHandle {
   groupAssignments: Map<string, DriveAssignment>

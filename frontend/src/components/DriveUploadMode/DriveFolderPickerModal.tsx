@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Box, Button, Group, Loader, Modal, Text } from '@mantine/core'
 import { ListDriveFolder } from '../../../wailsjs/go/main/App'
-import { DriveAssignment } from './useDriveAssignments'
+import { DriveAssignment } from './types'
 import styles from './DriveFolderPickerModal.module.css'
 
 interface DriveFolder {

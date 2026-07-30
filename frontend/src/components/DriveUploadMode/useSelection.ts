@@ -1,7 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { LocalFileGroup } from './useFileTree'
-
-export type SelectionItem = { type: 'file'; path: string } | { type: 'group'; key: string }
+import { LocalFileGroup, SelectionItem } from './types'
 
 function itemKey(item: SelectionItem): string {
   return item.type === 'file' ? `file:${item.path}` : `group:${item.key}`

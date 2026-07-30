@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { pruneSelectionForAssignment } from './pruneSelection'
-import { LocalFileGroup } from './useFileTree'
+import { LocalFileGroup } from './types'
 
 function file(path: string) {
   return { path, name: path, sizeBytes: 0, isPdf: true, pageCount: 1, corrupt: false }
