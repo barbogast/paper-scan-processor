@@ -1,0 +1,70 @@
+tackle "**Drive API queries are built with unescaped string interpolation**..."
+
+---
+
+<task-notification>
+<task-id>af782dafae894ab78</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor--claude-worktrees-warm-inventing-lampson/e83349ab-4383-4b5a-84fa-603e704a36cd/tasks/af782dafae894ab78.output</output-file>
+<status>completed</status>
+<summary>Agent "Find Drive API query string building" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>No escaping/sanitization helper exists anywhere in the Go backend.
+
+## Summary
+
+**File: `/Users/ben/git/paper-scan-processor/.claude/worktrees/warm-inventing-lampson/backend/drive/folders.go`**
+
+Two Drive `q` query strings are built with `fmt.Sprintf` and no escaping of single quotes/backslashes:
+
+```go
+// lines 16-27
+// FindFolder returns the ID of the first folder named name within parentID.
+// Use "root" for the Drive root. Folder names with single quotes are not supported.
+func FindFolder(ctx context.Context, parentID, name string) (string, error) {
+	svc, err := service(ctx)
+	if err != nil {
+		return "", err
+	}
+	q := fmt.Sprintf(
+		"name = '%s' and mimeType = 'application/vnd.google-apps.folder' and '%s' in parents and trashed = false",
+		name, parentID,
+	)
+	result, err := svc.Files.List().Q(q).Fields("files(id, name)").Do()
+```
+
+```go
+// lines 40-50
+func ListFolder(ctx context.Context, folderID string) ([]Item, error) {
+	svc, err := service(ctx)
+	if err != nil {
+		return nil, err
+	}
+	q := fmt.Sprintf("'%s' in parents and trashed = false", folderID)
+	result, err := svc.Files.List().
+		Q(q).
+		Fields("files(id, name, mimeType, size)").
+		OrderBy("folder,name").
+		Do()
+```
+
+Both interpolate raw variables directly inside single-quote-delimited Drive query literals with no call to `strings.NewReplacer` or any escaping helper — there is none anywhere in the codebase (confirmed by grep for `ReplaceAll`/`escape`/`sanitize` patterns near Drive code).
+
+### Variable-by-variable risk assessment
+
+1. **`name` in `FindFolder` (folders.go:24-25)** — a free-form folder-name string. The doc comment on line 17 explicitly admits the gap: *"Folder names with single quotes are not supported."* This is the clearest unescaped-injection point: if `name` ever contained `'`, it would break out of the quoted literal and let an attacker/user inject additional query clauses (or a `\` which Drive's query parser also treats specially). Currently `FindFolder` is **not called from any production path** (`app.go` never calls it) — it's only exercised in `backend/drive/upload_test.go:17` and `backend/drive/folders_test.go:17`, both with the hardcoded literal `"scan"`. So today it's dead/test-only code, but it's an unescaped Sprintf ready to be wired to a user-supplied folder name in the future.
+
+2. **`parentID` in `FindFolder` (folders.go:24-25)** and **`folderID` in `ListFolder` (folders.go:45)** — these come from the frontend (`app.go:165-167`, `ListDriveFolder` Wails-bound method) and ultimately trace back to `DriveFolderPickerModal.tsx` (`frontend/src/components/DriveUploadMode/components/DriveFolderPickerModal.tsx:33`, `item.id`), which are themselves Drive-generated file/folder IDs returned by a prior `Files.List` call, or the literal `"root"` (`DriveFolderPickerModal.tsx:11`). Google Drive resource IDs are Base64url-style tokens (`[A-Za-z0-9_-]`) and never contain `'` or `\`, so in practice this path is low-risk even though it is technically unescaped/unsanitized — there's no user-typed free text on this parameter's path in the current UI.
+
+3. **`name` in `UploadFile` (`/Users/ben/git/paper-scan-processor/.claude/worktrees/warm-inventing-lampson/backend/drive/upload.go:30-34`)** — not part of a query string at all; it's set as `drive.File{Name: name}` metadata field on a `Files.Create` call (line 30-34), so Drive query-escaping doesn't apply here. This filename does originate from user/scan-derived data (`app.go:187`, `frontend/.../uploadQueue.ts:101` `job.name`), but it's irrelevant to the "q" query-string concern since it's sent as structured JSON metadata, not interpolated into a `Q()` string.
+
+### Bottom line
+- The only interpolation that is genuinely exploitable-by-design (arbitrary free text into a quoted query literal) is `FindFolder`'s `name` parameter at `folders.go:24`, and the code even documents the limitation instead of fixing it — but it is currently dead/test-only code.
+- `folders.go:45` (`ListFolder`'s `folderID`) and the `parentID` in `FindFolder` are unescaped too, but their real-world inputs (Drive-issued IDs or the literal `"root"`) are not attacker-controllable free text in the current app, so the practical risk is low today.
+- No `strings.Replace`/`strings.NewReplacer`-based escaping helper for Drive query values exists anywhere in the repo — if `FindFolder` (or any future function) is wired to real user input, both `\` → `\\` and `'` → `\'` need to be applied to each variable before Sprintf-ing it into the `q` string.</result>
+<usage><subagent_tokens>28837</subagent_tokens><tool_uses>10</tool_uses><duration_ms>61188</duration_ms></usage>
+</task-notification>
+
+---
+
+commit
