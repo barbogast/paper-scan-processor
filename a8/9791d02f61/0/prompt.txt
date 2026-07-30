@@ -1,0 +1,5 @@
+There are a couple of fundamental types which are used in multiple files. How about moving the type definitions into a types.ts file within the DriveUploadMode folder?
+
+---
+
+yes

@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a89791d02f61",
+  "strategy": "manual-commit",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/DriveAssignmentField.tsx",
+    "frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx",
+    "frontend/src/components/DriveUploadMode/FileList.tsx",
+    "frontend/src/components/DriveUploadMode/GroupNode.tsx",
+    "frontend/src/components/DriveUploadMode/UploadModal.tsx",
+    "frontend/src/components/DriveUploadMode/index.tsx",
+    "frontend/src/components/DriveUploadMode/pruneSelection.test.ts",
+    "frontend/src/components/DriveUploadMode/pruneSelection.ts",
+    "frontend/src/components/DriveUploadMode/types.ts",
+    "frontend/src/components/DriveUploadMode/useDriveAssignments.test.ts",
+    "frontend/src/components/DriveUploadMode/useDriveAssignments.ts",
+    "frontend/src/components/DriveUploadMode/useFileTree.test.ts",
+    "frontend/src/components/DriveUploadMode/useFileTree.ts",
+    "frontend/src/components/DriveUploadMode/useInclusion.test.ts",
+    "frontend/src/components/DriveUploadMode/useInclusion.ts",
+    "frontend/src/components/DriveUploadMode/useSelection.test.ts",
+    "frontend/src/components/DriveUploadMode/useSelection.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a8/9791d02f61/0/metadata.json",
+      "transcript": "/a8/9791d02f61/0/full.jsonl",
+      "content_hash": "/a8/9791d02f61/0/content_hash.txt",
+      "prompt": "/a8/9791d02f61/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 72,
+    "cache_creation_tokens": 19422,
+    "cache_read_tokens": 2790801,
+    "output_tokens": 13181,
+    "api_call_count": 36
+  }
+}
