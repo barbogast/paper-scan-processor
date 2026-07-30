@@ -321,6 +321,99 @@ describe('DriveUploadMode multi-selection', () => {
   })
 })
 
+describe('DriveUploadMode batch Drive folder assignment', () => {
+  beforeEach(() => {
+    vi.mocked(PickFolder).mockReset()
+    vi.mocked(ScanLocalRoot).mockReset()
+    vi.mocked(ListDriveFolder).mockReset()
+    vi.mocked(UploadFile).mockReset()
+    uploadQueue.reset()
+  })
+
+  afterEach(() => {
+    uploadQueue.reset()
+  })
+
+  function isDisabled(name: string) {
+    return (screen.getByRole('button', { name }) as HTMLButtonElement).disabled
+  }
+
+  async function batchAssign() {
+    fireEvent.click(screen.getByRole('button', { name: 'Assign Drive folder…' }))
+    fireEvent.click(await screen.findByRole('button', { name: '📁 Finance' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Select "Finance"' }))
+  }
+
+  it('is disabled until the selection is non-empty', async () => {
+    await setupWithTree()
+    expect(isDisabled('Assign Drive folder…')).toBe(true)
+
+    fireEvent.click(screen.getByText('misc'))
+    expect(isDisabled('Assign Drive folder…')).toBe(false)
+  })
+
+  it('applies the picked folder to every selected file', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('misc'))
+    fireEvent.click(screen.getByText('a'), { metaKey: true })
+
+    await batchAssign()
+
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for misc' }))).toContain('/Finance')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('/Finance')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for scan.jpg' }))).toContain('Not assigned')
+  })
+
+  it('applies a group assignment when a subfolder is selected, which its files inherit', async () => {
+    await setupWithTree()
+    // Cmd/Ctrl-click, so selecting the group doesn't also collapse it via
+    // the plain-click expand/collapse convenience (unrelated to this test).
+    fireEvent.click(screen.getByText('📁 invoices'), { metaKey: true })
+
+    await batchAssign()
+
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for invoices' }))).toContain('/Finance')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('/Finance')
+    // "a" inherits rather than getting its own override.
+    expect(screen.queryByRole('button', { name: 'Clear Drive folder for a' })).toBeNull()
+  })
+
+  it('prunes a selected descendant of a selected subfolder, applying only to the ancestor', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('📁 invoices'), { metaKey: true })
+    fireEvent.click(screen.getByText('a'), { metaKey: true })
+
+    await batchAssign()
+
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for invoices' }))).toContain('/Finance')
+    // "a" still inherits — it didn't get its own redundant override.
+    expect(screen.queryByRole('button', { name: 'Clear Drive folder for a' })).toBeNull()
+  })
+
+  it('per-row badge clicks stay single-target regardless of the multi-selection', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('misc'))
+    fireEvent.click(screen.getByText('a'), { metaKey: true })
+
+    await assign('misc') // per-row badge, not the toolbar batch action
+
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for misc' }))).toContain('/Finance')
+    expect(textOf(screen.getByRole('button', { name: 'Set Drive folder for a' }))).toContain('Not assigned')
+  })
+
+  it('is disabled once the tree locks', async () => {
+    await setupWithTree()
+    await assignAllFolders()
+    fireEvent.click(screen.getByText('misc'))
+    vi.mocked(UploadFile).mockResolvedValue('drive-id')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload All' }))
+    expect(isDisabled('Assign Drive folder…')).toBe(true)
+
+    await waitFor(() => expect(screen.getAllByText('✓ Uploaded').length).toBe(3))
+  })
+})
+
 describe('DriveUploadMode upload run', () => {
   beforeEach(() => {
     vi.mocked(PickFolder).mockReset()

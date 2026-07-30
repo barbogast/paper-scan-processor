@@ -46,7 +46,7 @@ Tracks progress against [`spec.md`](spec.md), mode by mode. Entries note what sh
 - [x] **Step 3b: Folder browser modal UI** — lazy-loaded Drive tree browsing and folder selection; no recently-used list yet
 - [ ] **Step 3c: Recently used folders list** — persisted MRU list, shown in the modal
 - [x] **Step 3d: Drive folder assignment UI** — implements the assignment/propagation/clear behavior described in spec.md's "Drive folder assignment" section
-- [ ] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select; implements the selection/preview behavior described in spec.md's Drive Upload Layout section and "Drive folder assignment" section
+- [x] **Step 3e: Drive folder assignment UI** — batch assignment for multi-select; implements the selection/preview behavior described in spec.md's Drive Upload Layout section and the batch-assignment/pruning behavior in "Drive folder assignment"; reworked `PickerTarget`/`onSelect` to apply to multiple targets at once
 - [ ] **Step 3f: Create new Drive folder** — from within the folder browser modal, per spec.md's "Drive folder assignment" section
 - [ ] **Step 4: Inline renaming** — inline editable name for each subfolder and file, per spec.md's Drive Upload Layout section; becomes read-only once locked (see spec.md's Locking section), alongside Drive folder assignment (see [`spec-drive-upload-step6.md`](spec-drive-upload-step6.md))
 - [x] **Step 5: PDF preview** — selecting a file loads it into the middle thumbnail strip and right detail panel (reuses existing primitives)
@@ -147,4 +147,3 @@ Reuse / simplification / efficiency (lower priority, not yet actioned):
 - [ ] **`scanDirectory` scans fully sequentially** — every file's `os.Stat` + `pdfPageCount` call happens one at a time with no concurrency, for a tool whose whole purpose is scanning batches of scanned documents.
 - [ ] **Drive folder picker discards fetched state on every close** — Mantine's `Modal` (no `keepMounted`) unmounts `DriveTreeNode` on close, so reopening the picker re-fetches the whole tree from scratch, including previously-expanded paths, instead of reusing a cache.
 - [ ] **`resolveEffectiveAssignments` (added for Step 6b) isn't reused by `GroupNode`/`FileList`** — those still resolve "own ?? inherited" inline during render (they also need the `isOwn` flag the walk doesn't currently expose), so the tree walk exists in two places. Step 9 (conflict detection) will want the same resolver.
-- [ ] **`PickerTarget`/`onSelect` only support one target at a time** — sized for the current single-field-click flow; Step 3e (batch assignment for multi-select) will need this reworked to apply one picked folder to many targets at once.

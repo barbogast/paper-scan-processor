@@ -13,6 +13,7 @@ import { useFileTree, flattenFiles, LocalFile } from './useFileTree'
 import { useDriveAssignments, resolveEffectiveAssignments, DriveAssignment, PickerTarget } from './useDriveAssignments'
 import { useInclusion } from './useInclusion'
 import { useSelection } from './useSelection'
+import { pruneSelectionForAssignment } from './pruneSelection'
 import * as uploadQueue from './uploadQueue'
 import * as pageCache from '../../lib/pageCache'
 import { ellipsisPath } from '../../utils'
@@ -53,11 +54,21 @@ export default function DriveUploadMode() {
   const inclusion = useInclusion(tree)
   const selection = useSelection(tree)
   const assignments = useDriveAssignments()
-  const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null)
+  // One or more targets for the currently open folder picker: a single-item
+  // array for a per-row badge click, or the pruned multi-selection for the
+  // toolbar batch action below — either way, the picked folder applies to
+  // every target here.
+  const [pickerTargets, setPickerTargets] = useState<PickerTarget[] | null>(null)
   const handlePicked = (folder: DriveAssignment) => {
-    if (pickerTarget?.type === 'group') assignments.setGroupAssignment(pickerTarget.key, folder)
-    else if (pickerTarget?.type === 'file') assignments.setFileOverride(pickerTarget.path, folder)
-    setPickerTarget(null)
+    for (const target of pickerTargets ?? []) {
+      if (target.type === 'group') assignments.setGroupAssignment(target.key, folder)
+      else assignments.setFileOverride(target.path, folder)
+    }
+    setPickerTargets(null)
+  }
+  const handleBatchAssign = () => {
+    if (!tree) return
+    setPickerTargets(pruneSelectionForAssignment(tree, selection.items))
   }
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
@@ -107,6 +118,9 @@ export default function DriveUploadMode() {
         <Button size="xs" variant="default" disabled={started || !tree} onClick={inclusion.selectNone}>
           Select None
         </Button>
+        <Button size="xs" variant="default" disabled={started || !tree || selection.size === 0} onClick={handleBatchAssign}>
+          Assign Drive folder…
+        </Button>
         <Tooltip
           label={tree ? 'Every selected file needs a Drive folder before uploading' : 'Choose a root folder first'}
           disabled={started || readyToUpload}
@@ -124,8 +138,8 @@ export default function DriveUploadMode() {
           left={
             <>
               <DriveFolderPickerModal
-                opened={pickerTarget !== null}
-                onClose={() => setPickerTarget(null)}
+                opened={pickerTargets !== null}
+                onClose={() => setPickerTargets(null)}
                 onSelect={handlePicked}
               />
               {tree && (
@@ -156,7 +170,7 @@ export default function DriveUploadMode() {
                       inclusion={inclusion}
                       selection={selection}
                       locked={started}
-                      onPick={setPickerTarget}
+                      onPick={target => setPickerTargets([target])}
                       onPreviewFile={handlePreviewFile}
                     />
                   ))}
@@ -167,7 +181,7 @@ export default function DriveUploadMode() {
                     inclusion={inclusion}
                     selection={selection}
                     locked={started}
-                    onPick={setPickerTarget}
+                    onPick={target => setPickerTargets([target])}
                     onPreviewFile={handlePreviewFile}
                   />
                 </Stack>

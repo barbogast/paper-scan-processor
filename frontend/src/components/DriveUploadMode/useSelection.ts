@@ -9,6 +9,7 @@ function itemKey(item: SelectionItem): string {
 
 export interface SelectionHandle {
   size: number
+  items: SelectionItem[]
   isSelected: (item: SelectionItem) => boolean
   // Plain click: replaces the selection with just this item.
   replace: (item: SelectionItem) => void
@@ -43,5 +44,5 @@ export function useSelection(tree: LocalFileGroup | null): SelectionHandle {
     })
   }, [])
 
-  return { size: selected.size, isSelected, replace, toggle }
+  return { size: selected.size, items: Array.from(selected.values()), isSelected, replace, toggle }
 }

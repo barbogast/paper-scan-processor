@@ -61,6 +61,15 @@ describe('useSelection', () => {
     expect(result.current.size).toBe(1)
   })
 
+  it('items lists the current selection', () => {
+    const { result } = renderHook(() => useSelection(TREE))
+    act(() => result.current.toggle(fileA))
+    act(() => result.current.toggle(groupX))
+
+    expect(result.current.items).toEqual(expect.arrayContaining([fileA, groupX]))
+    expect(result.current.items.length).toBe(2)
+  })
+
   it('resets to empty when the tree changes', () => {
     const { result, rerender } = renderHook(({ tree }) => useSelection(tree), { initialProps: { tree: TREE } })
     act(() => result.current.toggle(fileA))
