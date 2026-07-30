@@ -4,9 +4,9 @@ import { IconAlertTriangle } from '@tabler/icons-react'
 import { MergePDFs, OpenFile, SavePDF } from '../../../wailsjs/go/main/App'
 import MergeModeThumbnailPanel, { DEFAULT_TOTAL_WIDTH, FirstPageIn, SelectedPage } from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
+import AsyncButton from '../AsyncButton'
 import { usePDFFile } from './usePDFFile'
 import * as pageCache from '../../lib/pageCache'
-import { handleUnexpectedError } from '../../lib/globalErrorHandler'
 import { basename } from '../../utils'
 import { DRAG_HANDLE_WIDTH } from '../../constants'
 import styles from './index.module.css'
@@ -24,7 +24,6 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
   const [selectedPage, setSelectedPage] = useState<SelectedPage>({ file: 'a', page: 1 })
   const [firstPageIn, setFirstPageIn] = useState<FirstPageIn>('a')
   const [reverseB, setReverseB] = useState(true)
-  const [merging, setMerging] = useState(false)
   const [mergedPath, setMergedPath] = useState<string | null>(null)
   const [totalWidth, setTotalWidth] = useState(DEFAULT_TOTAL_WIDTH)
 
@@ -65,20 +64,13 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
     if (!fileA.path || !fileB.path) return
     const outPath = await SavePDF()
     if (!outPath) return
-    setMerging(true)
-    try {
-      await MergePDFs(
-        fileA.path, fileB.path, outPath,
-        firstPageIn === 'a', reverseB,
-        [...fileA.skipped], [...fileB.skipped],
-        Object.fromEntries(fileA.rotations), Object.fromEntries(fileB.rotations),
-      )
-      setMergedPath(outPath)
-    } catch (e) {
-      handleUnexpectedError(e, 'Merge failed')
-    } finally {
-      setMerging(false)
-    }
+    await MergePDFs(
+      fileA.path, fileB.path, outPath,
+      firstPageIn === 'a', reverseB,
+      [...fileA.skipped], [...fileB.skipped],
+      Object.fromEntries(fileA.rotations), Object.fromEntries(fileB.rotations),
+    )
+    setMergedPath(outPath)
   }
 
   const bothLoaded = fileA.path !== null && fileB.path !== null
@@ -92,9 +84,9 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
       <Modal opened={mergedPath !== null} onClose={() => setMergedPath(null)} title="Merge complete" centered>
         <Text size="sm" c="dimmed" mb="md">{mergedPath}</Text>
         <Group>
-          <Button variant="default" onClick={() => OpenFile(mergedPath!)}>
+          <AsyncButton variant="default" errorTitle="Failed to open file" onClick={() => OpenFile(mergedPath!)}>
             Open in Default App
-          </Button>
+          </AsyncButton>
           <Button onClick={() => { onOpenInSplitMode(mergedPath!); setMergedPath(null) }}>
             Open in Split Mode
           </Button>
@@ -129,9 +121,9 @@ export default function MergeMode({ onOpenInSplitMode }: Props) {
               { label: 'File B', value: 'b' },
             ]}
           />
-          <Button size="sm" disabled={!bothLoaded} loading={merging} onClick={handleMerge}>
+          <AsyncButton size="sm" disabled={!bothLoaded} errorTitle="Merge failed" onClick={handleMerge}>
             Merge & Save
-          </Button>
+          </AsyncButton>
         </Group>
       </Box>
 
@@ -168,13 +160,13 @@ function FilePickerColumn({
   label: string
   path: string | null
   width: number
-  onChoose: () => void
+  onChoose: () => Promise<void>
 }) {
   return (
     <Box className={styles.column} style={{ width }}>
       <Group justify="space-between" gap={4} wrap="nowrap">
         <Text size="xs" c="dimmed">{label}</Text>
-        <Button size="xs" variant="default" onClick={onChoose}>Choose…</Button>
+        <AsyncButton size="xs" variant="default" errorTitle="Failed to open file" onClick={onChoose}>Choose…</AsyncButton>
       </Group>
       <Text size="xs" className={styles.columnPath} title={path ?? undefined}>
         {path ? basename(path) : '—'}

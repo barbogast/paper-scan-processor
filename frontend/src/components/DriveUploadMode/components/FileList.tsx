@@ -6,7 +6,6 @@ import { InclusionHandle } from '../hooks/useInclusion'
 import { SelectionHandle } from '../hooks/useSelection'
 import { LocalFile, DriveAssignment, SelectionItem } from '../types'
 import { OpenDriveFolder } from '../../../../wailsjs/go/main/App'
-import { handlePromiseRejection } from '../../../lib/globalErrorHandler'
 import { formatFileSize } from '../../../utils'
 import styles from './FileList.module.css'
 
@@ -78,7 +77,7 @@ export default function FileList({ files, assignments, inheritedAssignment, incl
                   locked={locked}
                   onPick={() => onPick({ type: 'file', path: file.path })}
                   onClear={() => assignments.clearFileOverride(file.path)}
-                  onOpen={() => effective && OpenDriveFolder(effective.driveFolderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
+                  onOpen={async () => { if (effective) await OpenDriveFolder(effective.driveFolderId) }}
                 />
               </Box>
             </Group>

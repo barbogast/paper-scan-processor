@@ -45,6 +45,7 @@ function DriveTreeNode({ item, path, selectedId, onSelect, defaultExpanded }: Dr
   }, [])
 
   const toggle = () => {
+    if (loading) return
     if (!expanded && children === null) load()
     setExpanded(prev => !prev)
   }
@@ -55,6 +56,7 @@ function DriveTreeNode({ item, path, selectedId, onSelect, defaultExpanded }: Dr
         <button
           type="button"
           onClick={toggle}
+          disabled={loading}
           aria-expanded={expanded}
           aria-label={expanded ? `Collapse ${item.name}` : `Expand ${item.name}`}
           className={styles.toggleButton}

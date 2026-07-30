@@ -1,6 +1,7 @@
 import { ITEM_PADDING, HEADER_HEIGHT } from '../../constants'
 import { PendingFocusHandle } from './usePendingFocus'
 import ClippedPath from '../ClippedPath'
+import { useAsyncAction } from '../../lib/useAsyncAction'
 import styles from './OutputFileHeader.module.css'
 
 interface Props {
@@ -9,13 +10,14 @@ interface Props {
   firstPosition: number
   focus: PendingFocusHandle
   folder: string | null
-  onPickFolder: () => void
+  onPickFolder: () => Promise<void>
   isDuplicate: boolean
 }
 
 export default function OutputFileHeader({
   filename, onChange, firstPosition, focus, folder, onPickFolder, isDuplicate,
 }: Props) {
+  const pickFolder = useAsyncAction(onPickFolder, 'Failed to choose folder')
   const shouldFocus = focus.pendingFocus?.afterPosition === firstPosition - 1
   const cursorPos = focus.pendingFocus?.cursorPos ?? 0
   return (
@@ -40,7 +42,7 @@ export default function OutputFileHeader({
         />
         <span className={styles.extension}>.pdf</span>
       </div>
-      <ClippedPath path={folder} onClick={onPickFolder} />
+      <ClippedPath path={folder} onClick={pickFolder.run} disabled={pickFolder.pending} />
     </div>
   )
 }

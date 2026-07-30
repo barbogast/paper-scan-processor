@@ -4,12 +4,14 @@ import { notifications } from '@mantine/notifications'
 import ThumbnailPanel from './ThumbnailPanel'
 import DetailPanel from '../DetailPanel'
 import Toolbar from '../Toolbar'
+import AsyncButton from '../AsyncButton'
 import { OpenFile, OpenPDF, PageCount, PickFolder, ExportSplit, CheckConflicts, DeleteFile } from '../../../wailsjs/go/main/App'
 import { ellipsisPath } from '../../utils'
 import { useOutputFiles } from './useOutputFiles'
 import { usePendingFocus } from './usePendingFocus'
+import { useAsyncAction } from '../../lib/useAsyncAction'
 import * as pageCache from '../../lib/pageCache'
-import { handlePromiseRejection, handleUnexpectedError } from '../../lib/globalErrorHandler'
+import { handlePromiseRejection } from '../../lib/globalErrorHandler'
 import styles from './index.module.css'
 
 const DEFAULT_TEMPLATE = '{date} {name}'
@@ -36,7 +38,6 @@ export default function SplitMode({ initialPath }: Props) {
   const outputFiles = useOutputFiles(outputFolder)
   const focus = usePendingFocus()
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
-  const [exporting, setExporting] = useState(false)
   const [rotations, setRotations] = useState<Map<number, number>>(() => new Map())
   const [skipped, setSkipped] = useState<Set<number>>(() => new Set())
 
@@ -93,13 +94,10 @@ export default function SplitMode({ initialPath }: Props) {
   const handleOpen = async () => {
     const path = await OpenPDF()
     if (!path) return
-    try {
-      const count = await PageCount(path)
-      resetForFile(count, path, template)
-    } catch (e) {
-      handleUnexpectedError(e, 'Failed to open file')
-    }
+    const count = await PageCount(path)
+    resetForFile(count, path, template)
   }
+  const openAction = useAsyncAction(handleOpen, 'Failed to open file')
 
   const handlePickOutputFolder = async () => {
     const folder = await PickFolder('Choose Output Folder')
@@ -108,28 +106,21 @@ export default function SplitMode({ initialPath }: Props) {
 
   const handleExport = async () => {
     if (!pdfPath || !outputFolder) return
-    setExporting(true)
-    try {
-      const sortedStarts = [...outputFiles.all.keys()].sort((a, b) => a - b)
-      const files = sortedStarts.map((firstPos, i) => {
-        const nextPos = sortedStarts[i + 1] ?? pageOrder.length
-        const pages = pageOrder.slice(firstPos, nextPos).filter(p => !skipped.has(p))
-        const f = outputFiles.all.get(firstPos)!
-        return { pages, name: f.name, outDir: f.folderOverride ?? outputFolder! }
-      })
-      const conflicts = await CheckConflicts(files)
-      if (conflicts.length > 0) {
-        const names = conflicts.map(p => p.split('/').pop()).join(', ')
-        notifications.show({ title: 'Filename conflict', message: `Already exists: ${names}`, color: 'orange', autoClose: false })
-        return
-      }
-      await ExportSplit(pdfPath, files, Object.fromEntries(rotations))
-      setSuccessModal({show: true, outputPath: outputFolder, inputPath: pdfPath})
-    } catch (e) {
-      handleUnexpectedError(e, 'Export failed')
-    } finally {
-      setExporting(false)
+    const sortedStarts = [...outputFiles.all.keys()].sort((a, b) => a - b)
+    const files = sortedStarts.map((firstPos, i) => {
+      const nextPos = sortedStarts[i + 1] ?? pageOrder.length
+      const pages = pageOrder.slice(firstPos, nextPos).filter(p => !skipped.has(p))
+      const f = outputFiles.all.get(firstPos)!
+      return { pages, name: f.name, outDir: f.folderOverride ?? outputFolder! }
+    })
+    const conflicts = await CheckConflicts(files)
+    if (conflicts.length > 0) {
+      const names = conflicts.map(p => p.split('/').pop()).join(', ')
+      notifications.show({ title: 'Filename conflict', message: `Already exists: ${names}`, color: 'orange', autoClose: false })
+      return
     }
+    await ExportSplit(pdfPath, files, Object.fromEntries(rotations))
+    setSuccessModal({show: true, outputPath: outputFolder, inputPath: pdfPath})
   }
 
   const closeSuccessModal = () => setSuccessModal({show: false, outputPath: '', inputPath: ''})
@@ -155,9 +146,9 @@ export default function SplitMode({ initialPath }: Props) {
         <Stack gap="md">
           <Group>
             <Text size="sm" c="dimmed" className={styles.outputPath}>{successModal.outputPath}</Text>
-            <Button size="xs" variant="default" onClick={() => OpenFile(successModal.outputPath)}>
+            <AsyncButton size="xs" variant="default" errorTitle="Failed to open folder" onClick={() => OpenFile(successModal.outputPath)}>
               Open in Finder
-            </Button>
+            </AsyncButton>
           </Group>
           <Divider />
           <div>
@@ -171,7 +162,7 @@ export default function SplitMode({ initialPath }: Props) {
         </Stack>
       </Modal>
       <Toolbar>
-        <Button size="xs" variant="default" onClick={handleOpen}>
+        <Button size="xs" variant="default" disabled={openAction.pending} loading={openAction.pending} onClick={openAction.run}>
           Open PDF
         </Button>
         <TextInput
@@ -183,12 +174,17 @@ export default function SplitMode({ initialPath }: Props) {
           leftSectionWidth={60}
           className={styles.templateInput}
         />
-        <Button size="xs" variant="default" onClick={handlePickOutputFolder}>
+        <AsyncButton size="xs" variant="default" errorTitle="Failed to choose output folder" onClick={handlePickOutputFolder}>
           {outputFolder ? ellipsisPath(outputFolder) : 'Output folder…'}
-        </Button>
-        <Button size="xs" disabled={!pdfPath || !outputFolder || outputFiles.duplicateFirstPages.size > 0} loading={exporting} onClick={handleExport}>
+        </AsyncButton>
+        <AsyncButton
+          size="xs"
+          disabled={!pdfPath || !outputFolder || outputFiles.duplicateFirstPages.size > 0}
+          errorTitle="Export failed"
+          onClick={handleExport}
+        >
           Export
-        </Button>
+        </AsyncButton>
       </Toolbar>
 
       <Box className={styles.body}>
@@ -219,7 +215,7 @@ export default function SplitMode({ initialPath }: Props) {
           </>
         ) : (
           <Box className={styles.emptyState}>
-            <Button onClick={handleOpen}>Open PDF</Button>
+            <Button disabled={openAction.pending} loading={openAction.pending} onClick={openAction.run}>Open PDF</Button>
           </Box>
         )}
       </Box>

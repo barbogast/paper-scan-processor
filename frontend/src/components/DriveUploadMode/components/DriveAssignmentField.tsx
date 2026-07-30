@@ -3,6 +3,7 @@ import { Badge, Box, Tooltip } from '@mantine/core'
 import { IconExternalLink } from '@tabler/icons-react'
 import { DriveAssignment } from '../types'
 import { useIsTruncated } from '../../../lib/useIsTruncated'
+import { useAsyncAction } from '../../../lib/useAsyncAction'
 import styles from './DriveAssignmentField.module.css'
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
   locked: boolean
   onPick: () => void
   onClear: () => void
-  onOpen: () => void
+  onOpen: () => Promise<void>
 }
 
 // Pinned to the right of its row (filename or folder header) by the caller,
@@ -26,12 +27,14 @@ export default function DriveAssignmentField({ label, assignment, isOwn, locked,
   const textRef = useRef<HTMLSpanElement>(null)
   const displayPath = assignment ? assignment.path : 'Not assigned'
   const truncated = useIsTruncated(textRef, displayPath)
+  const openAction = useAsyncAction(onOpen, 'Failed to open Drive folder')
 
   const badge = (
     <Badge
       component="button"
       type="button"
-      onClick={locked ? onOpen : onPick}
+      onClick={locked ? openAction.run : onPick}
+      disabled={locked && openAction.pending}
       aria-label={locked ? `Open Drive folder for ${label}` : `Set Drive folder for ${label}`}
       color={assignment ? 'blue' : 'gray'}
       variant={isOwn ? 'light' : 'outline'}

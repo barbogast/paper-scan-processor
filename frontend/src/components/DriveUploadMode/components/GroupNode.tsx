@@ -7,7 +7,6 @@ import { InclusionHandle } from '../hooks/useInclusion'
 import { SelectionHandle } from '../hooks/useSelection'
 import { LocalFile, LocalFileGroup, DriveAssignment, SelectionItem } from '../types'
 import { OpenDriveFolder } from '../../../../wailsjs/go/main/App'
-import { handlePromiseRejection } from '../../../lib/globalErrorHandler'
 import styles from './GroupNode.module.css'
 
 const INDENT_PER_LEVEL = 16
@@ -85,7 +84,7 @@ export default function GroupNode({ group, collapsedGroups, onToggle, assignment
           locked={locked}
           onPick={() => onPick({ type: 'group', key: groupKey })}
           onClear={() => assignments.clearGroupAssignment(groupKey)}
-          onOpen={() => effective && OpenDriveFolder(effective.driveFolderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
+          onOpen={async () => { if (effective) await OpenDriveFolder(effective.driveFolderId) }}
         />
       </Group>
       {expanded && (

@@ -3,6 +3,7 @@ import { Box, Button, Loader, Stack, Text, Tooltip } from '@mantine/core'
 import DetailPanel from '../DetailPanel'
 import Toolbar from '../Toolbar'
 import TruncatedText from '../TruncatedText'
+import AsyncButton from '../AsyncButton'
 import DriveFolderPickerModal from './components/DriveFolderPickerModal'
 import DriveThumbnailPanel from './components/ThumbnailPanel'
 import GroupNode from './components/GroupNode'
@@ -59,9 +60,9 @@ export default function DriveUploadMode() {
   return (
     <Box className={styles.root}>
       <Toolbar>
-        <Button size="xs" variant="default" onClick={handlePickRoot}>
+        <AsyncButton size="xs" variant="default" errorTitle="Failed to choose root folder" onClick={handlePickRoot}>
           {root ? ellipsisPath(root) : 'Choose root folder…'}
-        </Button>
+        </AsyncButton>
         <Box className={styles.toolbarSpacer} />
         <Button size="xs" variant="default" disabled={uploadFlow.started || !tree} onClick={inclusion.selectAll}>
           Select All

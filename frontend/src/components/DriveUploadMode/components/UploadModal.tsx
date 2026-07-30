@@ -5,7 +5,7 @@ import { flattenFiles } from '../hooks/useFileTree'
 import * as uploadQueue from '../uploadQueue'
 import { LocalFile, LocalFileGroup } from '../types'
 import { OpenDriveFolder } from '../../../../wailsjs/go/main/App'
-import { handlePromiseRejection } from '../../../lib/globalErrorHandler'
+import { useAsyncAction } from '../../../lib/useAsyncAction'
 import styles from './UploadModal.module.css'
 
 interface Props {
@@ -81,6 +81,10 @@ function GroupSection({ group }: { group: LocalFileGroup }) {
 function FileRow({ file }: { file: LocalFile }) {
   const entry = uploadQueue.getStatus(file.path)
   const status = entry?.status
+  const openFolder = useAsyncAction(
+    () => OpenDriveFolder(entry!.folderId),
+    'Opening Drive folder failed',
+  )
 
   return (
     <Group justify="space-between" wrap="nowrap" gap={8}>
@@ -117,7 +121,8 @@ function FileRow({ file }: { file: LocalFile }) {
           variant="subtle"
           size="sm"
           aria-label={`Open destination Drive folder for ${file.name}`}
-          onClick={() => OpenDriveFolder(entry.folderId).catch(handlePromiseRejection('Opening Drive folder failed'))}
+          disabled={openFolder.pending}
+          onClick={openFolder.run}
         >
           <IconExternalLink size={14} />
         </ActionIcon>

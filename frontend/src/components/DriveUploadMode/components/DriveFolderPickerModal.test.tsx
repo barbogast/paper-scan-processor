@@ -81,6 +81,23 @@ describe('DriveFolderPickerModal', () => {
     expect(onSelect).not.toHaveBeenCalled()
   })
 
+  it('ignores rapid re-clicks while a folder is still loading, so only one fetch fires', async () => {
+    setup()
+    await screen.findByText(/Finance/)
+
+    let resolve!: (items: typeof FINANCE_ITEMS) => void
+    vi.mocked(ListDriveFolder).mockImplementationOnce(() => new Promise<any>(res => { resolve = res }))
+
+    const toggle = screen.getByRole('button', { name: 'Expand Finance' })
+    fireEvent.click(toggle)
+    fireEvent.click(toggle)
+    fireEvent.click(toggle)
+    expect(vi.mocked(ListDriveFolder).mock.calls.filter(c => c[0] === 'f1')).toHaveLength(1)
+
+    resolve(FINANCE_ITEMS)
+    expect(await screen.findByText(/Invoices/)).toBeTruthy()
+  })
+
   it('shows an inline error instead of crashing when a fetch fails', async () => {
     vi.mocked(ListDriveFolder).mockReset()
     vi.mocked(ListDriveFolder).mockRejectedValue(new Error('boom'))
