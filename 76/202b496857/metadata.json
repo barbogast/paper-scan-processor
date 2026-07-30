@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "76202b496857",
+  "strategy": "manual-commit",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/hooks/useFileTree.test.ts",
+    "frontend/src/components/DriveUploadMode/index.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/76/202b496857/0/metadata.json",
+      "transcript": "/76/202b496857/0/full.jsonl",
+      "content_hash": "/76/202b496857/0/content_hash.txt",
+      "prompt": "/76/202b496857/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 54,
+    "cache_creation_tokens": 41311,
+    "cache_read_tokens": 2902534,
+    "output_tokens": 15422,
+    "api_call_count": 27
+  }
+}

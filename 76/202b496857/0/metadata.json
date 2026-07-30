@@ -1,0 +1,101 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "76202b496857",
+  "session_id": "6fdbacc5-3bde-4673-8e8e-1f1d50983f36",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-30T09:26:33.533757Z",
+  "branch": "worktree-warm-inventing-lampson",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "frontend/src/components/DriveUploadMode/hooks/useFileTree.test.ts",
+    "frontend/src/components/DriveUploadMode/index.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "4be22f035555",
+  "checkpoint_transcript_start": 319,
+  "transcript_lines_at_start": 319,
+  "token_usage": {
+    "input_tokens": 54,
+    "cache_creation_tokens": 41311,
+    "cache_read_tokens": 2902534,
+    "output_tokens": 15422,
+    "api_call_count": 27
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-30T09:26:33.521039Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 1557,
+    "total_committed": 0,
+    "total_lines_changed": 3104,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1557,
+      "user_lines_removed": 1557,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "frontend/src/components/DriveUploadMode/components/DriveAssignmentField.module.css": 32,
+        "frontend/src/components/DriveUploadMode/components/DriveAssignmentField.tsx": 65,
+        "frontend/src/components/DriveUploadMode/components/DriveFolderPickerModal.module.css": 28,
+        "frontend/src/components/DriveUploadMode/components/DriveFolderPickerModal.test.tsx": 92,
+        "frontend/src/components/DriveUploadMode/components/DriveFolderPickerModal.tsx": 130,
+        "frontend/src/components/DriveUploadMode/components/FileList.module.css": 20,
+        "frontend/src/components/DriveUploadMode/components/FileList.tsx": 93,
+        "frontend/src/components/DriveUploadMode/components/GroupNode.module.css": 35,
+        "frontend/src/components/DriveUploadMode/components/GroupNode.tsx": 125,
+        "frontend/src/components/DriveUploadMode/components/ResizableLeftPanel.module.css": 11,
+        "frontend/src/components/DriveUploadMode/components/ResizableLeftPanel.tsx": 34,
+        "frontend/src/components/DriveUploadMode/components/ThumbnailPanel.module.css": 37,
+        "frontend/src/components/DriveUploadMode/components/ThumbnailPanel.tsx": 110,
+        "frontend/src/components/DriveUploadMode/components/UploadModal.module.css": 12,
+        "frontend/src/components/DriveUploadMode/components/UploadModal.tsx": 127,
+        "frontend/src/components/DriveUploadMode/hooks/useDriveAssignments.test.ts": 65,
+        "frontend/src/components/DriveUploadMode/hooks/useDriveAssignments.ts": 73,
+        "frontend/src/components/DriveUploadMode/hooks/useFileTree.test.ts": 88,
+        "frontend/src/components/DriveUploadMode/hooks/useFileTree.ts": 50,
+        "frontend/src/components/DriveUploadMode/hooks/useInclusion.test.ts": 120,
+        "frontend/src/components/DriveUploadMode/hooks/useInclusion.ts": 72,
+        "frontend/src/components/DriveUploadMode/hooks/useSelection.test.ts": 82,
+        "frontend/src/components/DriveUploadMode/hooks/useSelection.ts": 46,
+        "frontend/src/components/DriveUploadMode/index.tsx": 10
+      },
+      "user_removed_per_file": {
+        "frontend/src/components/DriveUploadMode/DriveAssignmentField.module.css": 32,
+        "frontend/src/components/DriveUploadMode/DriveAssignmentField.tsx": 65,
+        "frontend/src/components/DriveUploadMode/DriveFolderPickerModal.module.css": 28,
+        "frontend/src/components/DriveUploadMode/DriveFolderPickerModal.test.tsx": 92,
+        "frontend/src/components/DriveUploadMode/DriveFolderPickerModal.tsx": 130,
+        "frontend/src/components/DriveUploadMode/FileList.module.css": 20,
+        "frontend/src/components/DriveUploadMode/FileList.tsx": 93,
+        "frontend/src/components/DriveUploadMode/GroupNode.module.css": 35,
+        "frontend/src/components/DriveUploadMode/GroupNode.tsx": 125,
+        "frontend/src/components/DriveUploadMode/ResizableLeftPanel.module.css": 11,
+        "frontend/src/components/DriveUploadMode/ResizableLeftPanel.tsx": 34,
+        "frontend/src/components/DriveUploadMode/ThumbnailPanel.module.css": 37,
+        "frontend/src/components/DriveUploadMode/ThumbnailPanel.tsx": 110,
+        "frontend/src/components/DriveUploadMode/UploadModal.module.css": 12,
+        "frontend/src/components/DriveUploadMode/UploadModal.tsx": 127,
+        "frontend/src/components/DriveUploadMode/index.tsx": 10,
+        "frontend/src/components/DriveUploadMode/useDriveAssignments.test.ts": 65,
+        "frontend/src/components/DriveUploadMode/useDriveAssignments.ts": 73,
+        "frontend/src/components/DriveUploadMode/useFileTree.test.ts": 88,
+        "frontend/src/components/DriveUploadMode/useFileTree.ts": 50,
+        "frontend/src/components/DriveUploadMode/useInclusion.test.ts": 120,
+        "frontend/src/components/DriveUploadMode/useInclusion.ts": 72,
+        "frontend/src/components/DriveUploadMode/useSelection.test.ts": 82,
+        "frontend/src/components/DriveUploadMode/useSelection.ts": 46
+      }
+    }
+  ]
+}
