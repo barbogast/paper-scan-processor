@@ -1,0 +1,5 @@
+now do 1.
+
+---
+
+Rename preview.select() into preview.setFile(), so it matches the preview.setPage() convention
