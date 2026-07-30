@@ -1,0 +1,9 @@
+have a look at "**`PickFolder` rejection is unhandled**"
+
+---
+
+commit
+
+---
+
+You didn't include the " Co-Authored-By" and "Claude-session" lines. Remember to do that in future.
