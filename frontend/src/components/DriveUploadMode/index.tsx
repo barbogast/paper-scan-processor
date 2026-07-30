@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Box, Button, Loader, Stack, Text, Tooltip } from '@mantine/core'
 import DetailPanel from '../DetailPanel'
 import Toolbar from '../Toolbar'
@@ -14,9 +14,9 @@ import { useDriveAssignments } from './hooks/useDriveAssignments'
 import { useInclusion } from './hooks/useInclusion'
 import { useSelection } from './hooks/useSelection'
 import { useUploadFlow } from './hooks/useUploadFlow'
+import { usePreview } from './hooks/usePreview'
 import { pruneSelectionForAssignment } from './pruneSelection'
-import { LocalFile, DriveAssignment, SelectionItem } from './types'
-import * as pageCache from '../../lib/pageCache'
+import { DriveAssignment, SelectionItem } from './types'
 import { ellipsisPath } from '../../utils'
 import styles from './index.module.css'
 
@@ -24,22 +24,7 @@ export default function DriveUploadMode() {
   const { root, tree, loading, error, pickRoot } = useFileTree()
   const isEmpty = tree !== null && tree.files.length === 0 && tree.subgroups.length === 0
 
-  // The last previewable file touched by a click — independent of the
-  // multi-selection (see useSelection): any click on a previewable file
-  // updates this, whether it's adding or removing that file from the
-  // selection, while clicking a subfolder or a non-previewable file leaves
-  // it as whatever was last previewed.
-  const [previewedFile, setPreviewedFile] = useState<LocalFile | null>(null)
-  const [previewedPage, setPreviewedPage] = useState(1)
-  const handlePreviewFile = (file: LocalFile) => {
-    setPreviewedFile(file)
-    setPreviewedPage(1)
-  }
-
-  useEffect(() => {
-    return () => { if (previewedFile) pageCache.evict(previewedFile.path) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewedFile?.path])
+  const preview = usePreview()
 
   // Groups start expanded; presence in this set (keyed by the group's full
   // path, e.g. "invoices/2026") means collapsed.
@@ -143,7 +128,7 @@ export default function DriveUploadMode() {
                       selection={selection}
                       locked={uploadFlow.started}
                       onPick={target => setPickerTargets([target])}
-                      onPreviewFile={handlePreviewFile}
+                      onPreviewFile={preview.setFile}
                     />
                   ))}
                   <FileList
@@ -154,7 +139,7 @@ export default function DriveUploadMode() {
                     selection={selection}
                     locked={uploadFlow.started}
                     onPick={target => setPickerTargets([target])}
-                    onPreviewFile={handlePreviewFile}
+                    onPreviewFile={preview.setFile}
                   />
                 </Stack>
               )}
@@ -162,20 +147,20 @@ export default function DriveUploadMode() {
           }
         >
           <DriveThumbnailPanel
-            pdfPath={previewedFile?.path ?? null}
-            pageCount={previewedFile?.pageCount ?? 0}
-            selectedPage={previewedPage}
-            onSelectPage={setPreviewedPage}
+            pdfPath={preview.file?.path ?? null}
+            pageCount={preview.file?.pageCount ?? 0}
+            selectedPage={preview.page}
+            onSelectPage={preview.setPage}
           />
 
           <Box className={styles.detailColumn}>
-            {previewedFile && (
-              <TruncatedText label={previewedFile.name} size="sm" fw={600} className={styles.detailHeading}>
-                {previewedFile.name}
+            {preview.file && (
+              <TruncatedText label={preview.file.name} size="sm" fw={600} className={styles.detailHeading}>
+                {preview.file.name}
               </TruncatedText>
             )}
-            {previewedFile
-              ? <DetailPanel pdfPath={previewedFile.path} pageNum={previewedPage} pageCount={previewedFile.pageCount} />
+            {preview.file
+              ? <DetailPanel pdfPath={preview.file.path} pageNum={preview.page} pageCount={preview.file.pageCount} />
               : <Box className={styles.emptyDetail} />}
           </Box>
         </ResizableLeftPanel>
