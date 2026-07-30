@@ -17,6 +17,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
@@ -231,6 +232,51 @@ func TestClientWithConfigOtherRefreshErrorNotSwallowed(t *testing.T) {
 	}
 	if reauthCalled {
 		t.Error("reauth was called for a non-invalid_grant refresh error")
+	}
+}
+
+// fakeTokenSource returns successive tokens from a fixed sequence, standing
+// in for the auto-refreshing source persistingTokenSource wraps.
+type fakeTokenSource struct {
+	tokens []*oauth2.Token
+	i      int
+}
+
+func (f *fakeTokenSource) Token() (*oauth2.Token, error) {
+	tok := f.tokens[f.i]
+	if f.i < len(f.tokens)-1 {
+		f.i++
+	}
+	return tok, nil
+}
+
+func TestPersistingTokenSourceWritesOnlyOnAccessTokenChange(t *testing.T) {
+	tokenPath := filepath.Join(t.TempDir(), "drive_token.json")
+	fake := &fakeTokenSource{tokens: []*oauth2.Token{
+		{AccessToken: "initial-access"},
+		{AccessToken: "initial-access"},
+		{AccessToken: "refreshed-access"},
+	}}
+	pts := newPersistingTokenSource(fake, tokenPath, "initial-access")
+
+	for i := 0; i < 2; i++ {
+		if _, err := pts.Token(); err != nil {
+			t.Fatalf("Token: %v", err)
+		}
+	}
+	if _, err := os.Stat(tokenPath); !os.IsNotExist(err) {
+		t.Fatalf("token file was written even though the access token never changed (stat err = %v)", err)
+	}
+
+	if _, err := pts.Token(); err != nil {
+		t.Fatalf("Token: %v", err)
+	}
+	got, err := loadToken(tokenPath)
+	if err != nil {
+		t.Fatalf("loadToken: %v", err)
+	}
+	if got.AccessToken != "refreshed-access" {
+		t.Errorf("persisted AccessToken = %q, want %q", got.AccessToken, "refreshed-access")
 	}
 }
 

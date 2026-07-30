@@ -26,6 +26,13 @@ const oauthCallbackPath = "/oauth/callback"
 // "address already in use" even though the winner's call succeeds.
 var clientMu sync.Mutex
 
+// cachedClient is the authenticated HTTP client built by the most recent
+// call to clientWithConfig, reused by service() across calls so Drive
+// operations don't re-read and re-parse drive_token.json from disk on every
+// call. Safe to share indefinitely because it self-refreshes (see
+// persistingTokenSource) rather than holding a fixed access token.
+var cachedClient *http.Client
+
 // openBrowser launches url in the system default browser. Overridden in
 // tests to simulate the user completing the consent flow, instead of
 // actually opening a browser.
@@ -69,20 +76,30 @@ func service(ctx context.Context) (*drive.Service, error) {
 	clientMu.Lock()
 	defer clientMu.Unlock()
 
-	cfg, err := oauthConfig()
-	if err != nil {
-		return nil, err
-	}
+	if cachedClient == nil {
+		cfg, err := oauthConfig()
+		if err != nil {
+			return nil, err
+		}
 
-	dir, err := configDir()
-	if err != nil {
-		return nil, err
+		dir, err := configDir()
+		if err != nil {
+			return nil, err
+		}
+		// cachedClient's token source outlives this call (that's the point
+		// of caching it), so it must not be built against ctx: callers like
+		// UploadFile pass a per-call context that gets canceled once that
+		// call returns, which would permanently break token refreshes for
+		// the rest of the cached client's life. context.Background() here
+		// only affects auth/refresh machinery, not the Drive API request
+		// below, which still runs under the caller's ctx.
+		client, err := clientWithConfig(context.Background(), cfg, filepath.Join(dir, "drive_token.json"), runOAuthFlow)
+		if err != nil {
+			return nil, err
+		}
+		cachedClient = client
 	}
-	client, err := clientWithConfig(ctx, cfg, filepath.Join(dir, "drive_token.json"), runOAuthFlow)
-	if err != nil {
-		return nil, err
-	}
-	return drive.NewService(ctx, option.WithHTTPClient(client))
+	return drive.NewService(ctx, option.WithHTTPClient(cachedClient))
 }
 
 // reauthFunc performs a full OAuth flow, returning a fresh token pair.
@@ -109,7 +126,7 @@ func clientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath string,
 					return nil, fmt.Errorf("save refreshed token: %w", err)
 				}
 			}
-			return oauth2.NewClient(ctx, oauth2.StaticTokenSource(refreshedToken)), nil
+			return oauth2.NewClient(ctx, newPersistingTokenSource(src, tokenPath, refreshedToken.AccessToken)), nil
 		}
 		var retrieveErr *oauth2.RetrieveError
 		if !errors.As(err, &retrieveErr) || retrieveErr.ErrorCode != "invalid_grant" {
@@ -128,7 +145,42 @@ func clientWithConfig(ctx context.Context, cfg *oauth2.Config, tokenPath string,
 	if err := saveToken(tokenPath, newToken); err != nil {
 		return nil, fmt.Errorf("save token: %w", err)
 	}
-	return cfg.Client(ctx, newToken), nil
+	src := cfg.TokenSource(ctx, newToken)
+	return oauth2.NewClient(ctx, newPersistingTokenSource(src, tokenPath, newToken.AccessToken)), nil
+}
+
+// persistingTokenSource wraps an oauth2.TokenSource that refreshes access
+// tokens in memory (via its own internal caching) and persists each newly
+// issued access/refresh token pair to tokenPath, so a client built once and
+// reused across a long-running session (see cachedClient) keeps
+// drive_token.json in sync without every caller needing to save it.
+type persistingTokenSource struct {
+	src  oauth2.TokenSource
+	path string
+
+	mu         sync.Mutex
+	lastAccess string
+}
+
+func newPersistingTokenSource(src oauth2.TokenSource, path, currentAccessToken string) *persistingTokenSource {
+	return &persistingTokenSource{src: src, path: path, lastAccess: currentAccessToken}
+}
+
+func (p *persistingTokenSource) Token() (*oauth2.Token, error) {
+	tok, err := p.src.Token()
+	if err != nil {
+		return nil, err
+	}
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if tok.AccessToken != p.lastAccess {
+		if err := saveToken(p.path, tok); err != nil {
+			return nil, fmt.Errorf("save refreshed token: %w", err)
+		}
+		p.lastAccess = tok.AccessToken
+	}
+	return tok, nil
 }
 
 var _ reauthFunc = runOAuthFlow // runOAuthFlow must match reauthFunc's signature
