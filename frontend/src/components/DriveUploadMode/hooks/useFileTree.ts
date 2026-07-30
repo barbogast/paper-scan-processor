@@ -22,6 +22,12 @@ export interface FileTreeHandle {
   pickRoot: () => Promise<boolean>
 }
 
+// Owns the currently scanned local folder: which root the user picked, the
+// resulting file/subgroup tree, and loading/error state while ScanLocalRoot
+// runs. The scan is an async Go RPC that can fail (bad permissions, folder
+// moved/deleted mid-pick, etc.), so this state needs to live outside the
+// tree itself — callers can show a spinner or an error message instead of
+// rendering a stale or partial tree while a scan is in flight.
 export function useFileTree(): FileTreeHandle {
   const [root, setRoot] = useState<string | null>(null)
   const [tree, setTree] = useState<LocalFileGroup | null>(null)

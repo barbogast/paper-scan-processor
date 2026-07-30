@@ -12,10 +12,12 @@ export interface DrivePickerHandle {
   close: () => void
 }
 
-// One or more targets for the currently open folder picker: a single-item
-// array for a per-row badge click (pickOne), or the pruned multi-selection
-// for the toolbar batch action (pickSelection) — either way, the picked
-// folder applies to every target here.
+// Manages the Drive folder picker dialog's open/closed state and which
+// item(s) it applies to when a folder is chosen: a single-item array for a
+// per-row badge click (pickOne), or the pruned multi-selection for the
+// toolbar batch action (pickSelection). Tracking both entry points as the
+// same `targets` list means `apply` doesn't need to know which one opened
+// the dialog — it just fans the chosen folder out over whatever is there.
 export function useDrivePicker(tree: LocalFileGroup | null, selection: SelectionHandle, assignments: DriveAssignmentsHandle): DrivePickerHandle {
   const [targets, setTargets] = useState<SelectionItem[] | null>(null)
 
