@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { useFileTree, flattenFiles } from './useFileTree'
-import { LocalFileGroup } from './types'
-import { PickFolder, ScanLocalRoot } from '../../../wailsjs/go/main/App'
+import { LocalFileGroup } from '../types'
+import { PickFolder, ScanLocalRoot } from '../../../../wailsjs/go/main/App'
 
-vi.mock('../../../wailsjs/go/main/App', () => ({
+vi.mock('../../../../wailsjs/go/main/App', () => ({
   PickFolder: vi.fn(),
   ScanLocalRoot: vi.fn(),
 }))

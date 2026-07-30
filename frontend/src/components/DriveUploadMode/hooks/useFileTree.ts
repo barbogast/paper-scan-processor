@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import { PickFolder, ScanLocalRoot } from '../../../wailsjs/go/main/App'
-import { LocalFile, LocalFileGroup } from './types'
+import { PickFolder, ScanLocalRoot } from '../../../../wailsjs/go/main/App'
+import { LocalFile, LocalFileGroup } from '../types'
 
 // Flat, ordered list of every file in the tree (a group's own files, then
 // its subgroups' files, recursively). Shared by the upload worker (order to

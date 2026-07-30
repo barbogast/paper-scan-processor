@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
 import DriveFolderPickerModal from './DriveFolderPickerModal'
-import { ListDriveFolder } from '../../../wailsjs/go/main/App'
+import { ListDriveFolder } from '../../../../wailsjs/go/main/App'
 
-vi.mock('../../../wailsjs/go/main/App', () => ({
+vi.mock('../../../../wailsjs/go/main/App', () => ({
   ListDriveFolder: vi.fn(),
 }))
 

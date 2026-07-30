@@ -1,7 +1,7 @@
 import { useState, ReactNode } from 'react'
 import { Box } from '@mantine/core'
-import { makeResizeDragHandler } from '../../lib/resizableWidth'
-import ResizeHandle from '../ResizeHandle'
+import { makeResizeDragHandler } from '../../../lib/resizableWidth'
+import ResizeHandle from '../../ResizeHandle'
 import styles from './ResizableLeftPanel.module.css'
 
 const DEFAULT_LEFT_PANEL_WIDTH = 300

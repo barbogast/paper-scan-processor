@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { flattenFiles } from './useFileTree'
-import { LocalFileGroup } from './types'
+import { LocalFileGroup } from '../types'
 
 export type GroupSelectionState = 'checked' | 'unchecked' | 'indeterminate'
 

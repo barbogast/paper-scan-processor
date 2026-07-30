@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { useInclusion } from './useInclusion'
-import { LocalFileGroup } from './types'
+import { LocalFileGroup } from '../types'
 
 function file(path: string) {
   return { path, name: path, sizeBytes: 0, isPdf: true, pageCount: 1, corrupt: false }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { resolveEffectiveAssignments } from './useDriveAssignments'
-import { LocalFileGroup, DriveAssignment } from './types'
+import { LocalFileGroup, DriveAssignment } from '../types'
 
 function file(path: string) {
   return { path, name: path, sizeBytes: 0, isPdf: true, pageCount: 1, corrupt: false }

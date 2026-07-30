@@ -1,11 +1,11 @@
 import { useRef, useState, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box, Text } from '@mantine/core'
-import * as pageCache from '../../lib/pageCache'
-import { makeResizeDragHandler } from '../../lib/resizableWidth'
-import { DEFAULT_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../constants'
-import PageThumbnail from '../PageThumbnail'
-import ResizeHandle from '../ResizeHandle'
+import * as pageCache from '../../../lib/pageCache'
+import { makeResizeDragHandler } from '../../../lib/resizableWidth'
+import { DEFAULT_WIDTH, ITEM_PADDING, LABEL_HEIGHT, PAGE_ASPECT } from '../../../constants'
+import PageThumbnail from '../../PageThumbnail'
+import ResizeHandle from '../../ResizeHandle'
 import styles from './ThumbnailPanel.module.css'
 
 const MIN_WIDTH = 120
