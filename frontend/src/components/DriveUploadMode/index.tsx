@@ -20,10 +20,26 @@ import { ellipsisPath } from '../../utils'
 import styles from './index.module.css'
 
 export default function DriveUploadMode() {
+  // Source of truth for the scanned folder tree, and the root-picking state.
   const { root, tree, loading, error, pickRoot } = useFileTree()
-  const isEmpty = tree !== null && tree.files.length === 0 && tree.subgroups.length === 0
-
+  // Which files are checked in/out of the upload — independent of the
+  // multi-selection below.
+  const inclusion = useInclusion(tree)
+  // The multi-selection of rows driving row highlighting and batch Drive
+  // folder assignment.
+  const selection = useSelection(tree)
+  // Per-group/per-file Drive folder assignments.
+  const assignments = useDriveAssignments()
+  // Drives the Drive folder picker modal — single-row or batch — and applies
+  // its result onto assignments.
+  const picker = useDrivePicker(tree, selection, assignments)
+  // Tracks the read-only lock and upload-modal state once Upload All is
+  // clicked, and whether the tree is ready to upload.
+  const uploadFlow = useUploadFlow(tree, inclusion, assignments)
+  // Which file/page is shown in the right-hand preview panel.
   const preview = usePreview()
+
+  const isEmpty = tree !== null && tree.files.length === 0 && tree.subgroups.length === 0
 
   // Groups start expanded; presence in this set (keyed by the group's full
   // path, e.g. "invoices/2026") means collapsed.
@@ -36,12 +52,6 @@ export default function DriveUploadMode() {
     })
   }
 
-  const inclusion = useInclusion(tree)
-  const selection = useSelection(tree)
-  const assignments = useDriveAssignments()
-  const picker = useDrivePicker(tree, selection, assignments)
-
-  const uploadFlow = useUploadFlow(tree, inclusion, assignments)
   const handlePickRoot = async () => {
     if (await pickRoot()) uploadFlow.reset()
   }
