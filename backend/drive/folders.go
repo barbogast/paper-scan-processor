@@ -3,6 +3,7 @@ package drive
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // Item represents a file or folder in Google Drive.
@@ -13,8 +14,12 @@ type Item struct {
 	Size     int64  `json:"size"` // bytes; 0 for folders
 }
 
+// escapeQueryValue escapes a value for embedding in a single-quoted Drive
+// query string literal, per Drive's query syntax rules for special characters.
+var escapeQueryValue = strings.NewReplacer(`\`, `\\`, `'`, `\'`).Replace
+
 // FindFolder returns the ID of the first folder named name within parentID.
-// Use "root" for the Drive root. Folder names with single quotes are not supported.
+// Use "root" for the Drive root.
 func FindFolder(ctx context.Context, parentID, name string) (string, error) {
 	svc, err := service(ctx)
 	if err != nil {
@@ -22,7 +27,7 @@ func FindFolder(ctx context.Context, parentID, name string) (string, error) {
 	}
 	q := fmt.Sprintf(
 		"name = '%s' and mimeType = 'application/vnd.google-apps.folder' and '%s' in parents and trashed = false",
-		name, parentID,
+		escapeQueryValue(name), escapeQueryValue(parentID),
 	)
 	result, err := svc.Files.List().Q(q).Fields("files(id, name)").Do()
 	if err != nil {
@@ -42,7 +47,7 @@ func ListFolder(ctx context.Context, folderID string) ([]Item, error) {
 	if err != nil {
 		return nil, err
 	}
-	q := fmt.Sprintf("'%s' in parents and trashed = false", folderID)
+	q := fmt.Sprintf("'%s' in parents and trashed = false", escapeQueryValue(folderID))
 	result, err := svc.Files.List().
 		Q(q).
 		Fields("files(id, name, mimeType, size)").
