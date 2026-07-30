@@ -1,0 +1,5 @@
+Do "**Drive assignments and collapsed-group state survive a root-folder switch**"
+
+---
+
+Tell me the commit message
