@@ -28,7 +28,7 @@ const TREE: LocalFileGroup = {
 function setup(tree: LocalFileGroup | null) {
   return renderHook(() => {
     const inclusion = useInclusion(tree)
-    const assignments = useDriveAssignments()
+    const assignments = useDriveAssignments(tree)
     const flow = useUploadFlow(tree, inclusion, assignments)
     return { inclusion, assignments, flow }
   })

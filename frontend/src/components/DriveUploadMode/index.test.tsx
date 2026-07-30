@@ -540,6 +540,24 @@ describe('DriveUploadMode upload run', () => {
     await assignAllFolders()
     expect(isDisabled('Upload All')).toBe(false)
   })
+
+  it('a group-level assignment and a collapsed group do not survive a root switch, even when the new root has a same-named subfolder', async () => {
+    await setupWithTree()
+    await assign('invoices')
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse invoices' }))
+    expect(screen.getByRole('button', { name: 'Clear Drive folder for invoices' })).toBeTruthy()
+
+    vi.mocked(PickFolder).mockResolvedValueOnce('/root2')
+    vi.mocked(ScanLocalRoot).mockResolvedValueOnce(TREE2 as any)
+    fireEvent.click(screen.getByRole('button', { name: '…/root' }))
+    await screen.findByRole('button', { name: '…/root2' })
+
+    // TREE2's "invoices" subfolder is unrelated to TREE's, despite sharing a
+    // name/key — it should come in unassigned and expanded (the default),
+    // not inheriting the old root's assignment or collapsed state.
+    expect(screen.queryByRole('button', { name: 'Clear Drive folder for invoices' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Collapse invoices' })).toBeTruthy()
+  })
 })
 
 describe('DriveUploadMode inclusion selection', () => {

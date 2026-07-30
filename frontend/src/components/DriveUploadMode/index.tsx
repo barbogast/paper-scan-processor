@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Button, Loader, Stack, Text, Tooltip } from '@mantine/core'
 import DetailPanel from '../DetailPanel'
 import Toolbar from '../Toolbar'
@@ -30,7 +30,7 @@ export default function DriveUploadMode() {
   // folder assignment.
   const selection = useSelection(tree)
   // Per-group/per-file Drive folder assignments.
-  const assignments = useDriveAssignments()
+  const assignments = useDriveAssignments(tree)
   // Drives the Drive folder picker modal — single-row or batch — and applies
   // its result onto assignments.
   const picker = useDrivePicker(tree, selection, assignments)
@@ -45,6 +45,12 @@ export default function DriveUploadMode() {
   // Groups start expanded; presence in this set (keyed by the group's full
   // path, e.g. "invoices/2026") means collapsed.
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+
+  // Resets on every fresh scan
+  useEffect(() => {
+    setCollapsedGroups(new Set())
+  }, [tree])
+
   const toggleGroup = (groupKey: string) => {
     setCollapsedGroups(prev => {
       const next = new Set(prev)

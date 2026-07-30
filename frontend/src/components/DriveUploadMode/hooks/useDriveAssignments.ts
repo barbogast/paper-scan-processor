@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { LocalFileGroup, DriveAssignment } from '../types'
 
 export interface DriveAssignmentsHandle {
@@ -15,9 +15,15 @@ export interface DriveAssignmentsHandle {
 // Resolving the *effective* assignment for a given group/file (own, else
 // inherited from the nearest ancestor group, else none) is the caller's
 // job, since only the caller knows the tree structure to walk.
-export function useDriveAssignments(): DriveAssignmentsHandle {
+export function useDriveAssignments(tree: LocalFileGroup | null): DriveAssignmentsHandle {
   const [groupAssignments, setGroupAssignments] = useState<Map<string, DriveAssignment>>(new Map())
   const [fileOverrides, setFileOverrides] = useState<Map<string, DriveAssignment>>(new Map())
+
+  // Resets on every fresh scan
+  useEffect(() => {
+    setGroupAssignments(new Map())
+    setFileOverrides(new Map())
+  }, [tree])
 
   const setGroupAssignment = useCallback((groupKey: string, assignment: DriveAssignment) => {
     setGroupAssignments(prev => new Map(prev).set(groupKey, assignment))

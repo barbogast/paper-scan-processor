@@ -25,7 +25,7 @@ function folder(path: string): DriveAssignment {
 function setup(tree: LocalFileGroup | null) {
   return renderHook(() => {
     const selection = useSelection(tree)
-    const assignments = useDriveAssignments()
+    const assignments = useDriveAssignments(tree)
     const picker = useDrivePicker(tree, selection, assignments)
     return { selection, assignments, picker }
   })
