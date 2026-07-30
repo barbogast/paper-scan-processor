@@ -1,0 +1,66 @@
+Have a look at "Prevent buttons that trigger an async..."
+
+---
+
+<task-notification>
+<task-id>a563d5aeffa2ae300</task-id>
+<tool-use-id>toolu_01MzngNPpHbozzrW4yLnMErn</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ben-git-paper-scan-processor--claude-worktrees-warm-inventing-lampson/e83349ab-4383-4b5a-84fa-603e704a36cd/tasks/a563d5aeffa2ae300.output</output-file>
+<status>completed</status>
+<summary>Agent "Find all buttons triggering async RPCs" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result># Findings: Clickable elements triggering Wails RPCs
+
+## GUARDED (lock/loading flips before or synchronously with the await)
+
+| Location | RPC(s) | Guard |
+|---|---|---|
+| `MergeMode/index.tsx:132` Merge &amp; Save | `MergePDFs` (via `handleMerge`) | `loading={merging}` / `disabled={!bothLoaded}`. Note: `setMerging(true)` only happens *after* the `SavePDF` dialog await resolves (line 66-68), so a double-click during the save-dialog window isn't blocked yet — but once past that point it's locked. |
+| `SplitMode/index.tsx:189` Export | `CheckConflicts`, `ExportSplit` (via `handleExport`) | `loading={exporting}`; `setExporting(true)` set synchronously before first await. |
+| `DriveUploadMode/index.tsx:80` Upload All | `uploadQueue.start`→`UploadFile` loop | `disabled={uploadFlow.started || !uploadFlow.readyToUpload}`; `startUpload` sets `setStarted(true)` synchronously (not itself async). |
+| `DriveUploadMode/components/UploadModal.tsx:45-51` Cancel/Resume | `cancelAll`/`resumePaused` → `CancelUpload`, `UploadFile` | `disabled={settled &amp;&amp; !canResume}`; underlying functions flip queue status synchronously, changing `settled`/`canResume` on next render. |
+| `DriveUploadMode/components/UploadModal.tsx:100,110` Retry | `uploadQueue.retry` → `UploadFile` | Buttons only render while status is `cancelled`/`error`; `retry()` synchronously flips status to `queued`, unmounting the button. |
+| `SplitMode/index.tsx:168` Delete (in success modal) | `DeleteFile` (via `handleDeleteInput`) | Not a loading flag, but `closeSuccessModal()` runs synchronously first, unmounting the modal/button before `DeleteFile` fires. |
+
+## NOT GUARDED
+
+| Location | RPC(s) | Notes |
+|---|---|---|
+| `MergeMode/index.tsx:95` Open in Default App | `OpenFile` | No state nearby; none exists. |
+| `MergeMode/index.tsx:177` Choose… (`FilePickerColumn`, both File A/B) | `OpenPDF`, `PageCount` (via `usePDFFile.load`) | `usePDFFile.ts` has no loading state at all — nothing to reuse. |
+| `SplitMode/index.tsx:158` Open in Finder | `OpenFile` | No guard/state. |
+| `SplitMode/index.tsx:174` Open PDF (toolbar) | `OpenPDF`, `PageCount` (via `handleOpen`) | No guard; no loading state exists in `SplitMode/index.tsx` for this. |
+| `SplitMode/index.tsx:222` Open PDF (empty state) | same `handleOpen` | Same — unguarded. |
+| `SplitMode/index.tsx:186` Output folder… | `PickFolder` (via `handlePickOutputFolder`) | No guard/state. |
+| `SplitMode/OutputFileHeader.tsx:43` (`ClippedPath`, per output row) | `PickFolder` (via `useOutputFiles.pickFolderOverride`) | No guard; `useOutputFiles.ts` has no in-flight flag. |
+| `DriveUploadMode/index.tsx:62` Choose root folder… | `PickFolder`, `ScanLocalRoot` (via `handlePickRoot`/`useFileTree.pickRoot`) | `useFileTree` *has* a `loading` state (used only to show a `Loader` below), but it's not wired to `disabled` on this button — reusable if desired. |
+| `DriveUploadMode/components/UploadModal.tsx:116-123` Open Drive folder icon (`ActionIcon`, per file row) | `OpenDriveFolder` | No guard/state. |
+| `DriveUploadMode/components/GroupNode.tsx:88` (`DriveAssignmentField` badge, `locked` case) | `OpenDriveFolder` | No guard; `locked` prop exists but only gates picker-vs-open behavior, not repeat-click. |
+| `DriveUploadMode/components/FileList.tsx:81` (`DriveAssignmentField` badge, `locked` case) | `OpenDriveFolder` | Same as above. |
+| `DriveUploadMode/components/DriveFolderPickerModal.tsx:57` chevron toggle (`DriveTreeNode`) | `ListDriveFolder` (via `load()`) | Has local `loading` state but it's only used to swap the chevron for a `Loader` icon — button isn't `disabled`. Self-guards in the common case (expand flips synchronously so re-click won't re-fire), but rapid collapse/expand while still loading can trigger overlapping calls. |</result>
+<usage><subagent_tokens>52376</subagent_tokens><tool_uses>21</tool_uses><duration_ms>106972</duration_ms></usage>
+</task-notification>
+
+---
+
+Would it make sense to have a full component using the hook?
+
+---
+
+yes
+
+---
+
+go ahead
+
+---
+
+How about doing `onClick={openAction.run}` instead of `onClick={() => openAction.run()}`?
+
+---
+
+What's the reason to use the hook instead of AsyncButton for "Open PDF" in SplitMode/index.tsx?
+
+---
+
+commit
