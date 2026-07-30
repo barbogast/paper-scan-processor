@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Box, Button, Loader, Stack, Text, Tooltip } from '@mantine/core'
 import DetailPanel from '../DetailPanel'
 import Toolbar from '../Toolbar'
+import TruncatedText from '../TruncatedText'
 import DriveFolderPickerModal from './DriveFolderPickerModal'
 import DriveThumbnailPanel from './ThumbnailPanel'
 import GroupNode from './GroupNode'
@@ -21,17 +22,22 @@ export default function DriveUploadMode() {
   const { root, tree, loading, error, pickRoot } = useFileTree()
   const isEmpty = tree !== null && tree.files.length === 0 && tree.subgroups.length === 0
 
-  const [selectedFile, setSelectedFile] = useState<LocalFile | null>(null)
-  const [selectedPage, setSelectedPage] = useState(1)
-  const handleSelectFile = (file: LocalFile) => {
-    setSelectedFile(file)
-    setSelectedPage(1)
+  // The last previewable file touched by a click — independent of the
+  // multi-selection (see useSelection): any click on a previewable file
+  // updates this, whether it's adding or removing that file from the
+  // selection, while clicking a subfolder or a non-previewable file leaves
+  // it as whatever was last previewed.
+  const [previewedFile, setPreviewedFile] = useState<LocalFile | null>(null)
+  const [previewedPage, setPreviewedPage] = useState(1)
+  const handlePreviewFile = (file: LocalFile) => {
+    setPreviewedFile(file)
+    setPreviewedPage(1)
   }
 
   useEffect(() => {
-    return () => { if (selectedFile) pageCache.evict(selectedFile.path) }
+    return () => { if (previewedFile) pageCache.evict(previewedFile.path) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedFile?.path])
+  }, [previewedFile?.path])
 
   // Groups start expanded; presence in this set (keyed by the group's full
   // path, e.g. "invoices/2026") means collapsed.
@@ -151,7 +157,7 @@ export default function DriveUploadMode() {
                       selection={selection}
                       locked={started}
                       onPick={setPickerTarget}
-                      onSelectFile={handleSelectFile}
+                      onPreviewFile={handlePreviewFile}
                     />
                   ))}
                   <FileList
@@ -162,7 +168,7 @@ export default function DriveUploadMode() {
                     selection={selection}
                     locked={started}
                     onPick={setPickerTarget}
-                    onSelectFile={handleSelectFile}
+                    onPreviewFile={handlePreviewFile}
                   />
                 </Stack>
               )}
@@ -170,15 +176,22 @@ export default function DriveUploadMode() {
           }
         >
           <DriveThumbnailPanel
-            pdfPath={selectedFile?.path ?? null}
-            pageCount={selectedFile?.pageCount ?? 0}
-            selectedPage={selectedPage}
-            onSelectPage={setSelectedPage}
+            pdfPath={previewedFile?.path ?? null}
+            pageCount={previewedFile?.pageCount ?? 0}
+            selectedPage={previewedPage}
+            onSelectPage={setPreviewedPage}
           />
 
-          {selectedFile
-            ? <DetailPanel pdfPath={selectedFile.path} pageNum={selectedPage} pageCount={selectedFile.pageCount} />
-            : <Box className={styles.emptyDetail} />}
+          <Box className={styles.detailColumn}>
+            {previewedFile && (
+              <TruncatedText label={previewedFile.name} size="sm" fw={600} className={styles.detailHeading}>
+                {previewedFile.name}
+              </TruncatedText>
+            )}
+            {previewedFile
+              ? <DetailPanel pdfPath={previewedFile.path} pageNum={previewedPage} pageCount={previewedFile.pageCount} />
+              : <Box className={styles.emptyDetail} />}
+          </Box>
         </ResizableLeftPanel>
       </Box>
     </Box>

@@ -18,10 +18,10 @@ interface Props {
   selection: SelectionHandle
   locked: boolean
   onPick: (target: PickerTarget) => void
-  onSelectFile: (file: LocalFile) => void
+  onPreviewFile: (file: LocalFile) => void
 }
 
-export default function FileList({ files, assignments, inheritedAssignment, inclusion, selection, locked, onPick, onSelectFile }: Props) {
+export default function FileList({ files, assignments, inheritedAssignment, inclusion, selection, locked, onPick, onPreviewFile }: Props) {
   return (
     <Stack gap={10} mt={4}>
       {files.map(file => {
@@ -35,7 +35,7 @@ export default function FileList({ files, assignments, inheritedAssignment, incl
         const handleRowClick = (e: React.MouseEvent) => {
           const item = { type: 'file' as const, path: file.path }
           if (e.metaKey || e.ctrlKey) selection.toggle(item); else selection.replace(item)
-          if (previewable) onSelectFile(file)
+          if (previewable) onPreviewFile(file)
         }
         return (
           <Box

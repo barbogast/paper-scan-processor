@@ -23,10 +23,10 @@ interface Props {
   selection: SelectionHandle
   locked: boolean
   onPick: (target: PickerTarget) => void
-  onSelectFile: (file: LocalFile) => void
+  onPreviewFile: (file: LocalFile) => void
 }
 
-export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, inclusion, selection, locked, onPick, onSelectFile }: Props) {
+export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, inclusion, selection, locked, onPick, onPreviewFile }: Props) {
   const expanded = !collapsedGroups.has(groupKey)
   const own = assignments.groupAssignments.get(groupKey) ?? null
   const effective = own ?? inheritedAssignment
@@ -96,7 +96,7 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
             selection={selection}
             locked={locked}
             onPick={onPick}
-            onSelectFile={onSelectFile}
+            onPreviewFile={onPreviewFile}
           />
           {group.subgroups.length > 0 && (
             <Stack gap={8} mt={4}>
@@ -113,7 +113,7 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
                   selection={selection}
                   locked={locked}
                   onPick={onPick}
-                  onSelectFile={onSelectFile}
+                  onPreviewFile={onPreviewFile}
                 />
               ))}
             </Stack>

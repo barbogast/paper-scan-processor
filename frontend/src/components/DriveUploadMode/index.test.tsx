@@ -52,6 +52,15 @@ function textOf(el: HTMLElement) {
   return el.textContent ?? ''
 }
 
+// A previewed file's name is duplicated once it also appears as the detail
+// panel heading, so pick out whichever match sits inside the tree — the
+// heading has no aria-selected ancestor at all, since it lives in the
+// separate preview column.
+function ariaSelected(text: string) {
+  const row = screen.getAllByText(text).find(el => el.closest('[aria-selected]'))
+  return row!.closest('[aria-selected]')!.getAttribute('aria-selected')
+}
+
 async function setupWithTree() {
   vi.mocked(PickFolder).mockResolvedValueOnce('/root')
   vi.mocked(ScanLocalRoot).mockResolvedValueOnce(TREE as any)
@@ -171,6 +180,52 @@ describe('DriveUploadMode file preview', () => {
     expect(await screen.findByAltText('Page 1')).toBeTruthy()
     expect(screen.queryByAltText('Page 2')).toBeNull()
   })
+
+  it('shows the previewed file\'s name as a heading above the detail panel', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('a'))
+    await screen.findByAltText('Page 1')
+
+    // "a" now appears twice: once in the tree, once as the heading.
+    expect(screen.getAllByText('a').length).toBe(2)
+  })
+
+  it('clicking a subfolder leaves the preview showing whatever was last previewed', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('misc'))
+    await screen.findByAltText('Page 1')
+
+    fireEvent.click(screen.getByText('📁 invoices'))
+
+    expect(screen.getByAltText('Page 1')).toBeTruthy()
+    expect(screen.getAllByText('misc').length).toBe(2) // tree row + heading, unchanged
+  })
+
+  it('clicking a non-previewable file leaves the preview showing whatever was last previewed', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('a'))
+    await screen.findByAltText('Page 1')
+
+    fireEvent.click(screen.getByText('📄 scan.jpg'))
+
+    expect(screen.queryByText('Select a file to preview')).toBeNull()
+    expect(screen.getByAltText('Page 1')).toBeTruthy()
+  })
+
+  it('Cmd/Ctrl-clicking the previewed file out of the selection still previews it', async () => {
+    await setupWithTree()
+    fireEvent.click(screen.getByText('a'))
+    fireEvent.click(screen.getByText('misc'), { metaKey: true }) // adds misc, preview follows to misc
+
+    expect(screen.getAllByText('misc').length).toBe(2) // misc is previewed
+    expect(screen.getAllByText('a').length).toBe(1) // a is not
+
+    fireEvent.click(screen.getByText('a'), { metaKey: true }) // removes a from the selection
+
+    expect(ariaSelected('a')).toBe('false')
+    expect(screen.getAllByText('a').length).toBe(2) // preview follows the click regardless
+    expect(screen.getAllByText('misc').length).toBe(1)
+  })
 })
 
 describe('DriveUploadMode multi-selection', () => {
@@ -180,9 +235,6 @@ describe('DriveUploadMode multi-selection', () => {
     vi.mocked(ListDriveFolder).mockReset()
   })
 
-  function ariaSelected(text: string) {
-    return screen.getByText(text).closest('[aria-selected]')!.getAttribute('aria-selected')
-  }
 
   it('plain click selects only the clicked file, replacing any prior selection', async () => {
     await setupWithTree()
@@ -228,7 +280,11 @@ describe('DriveUploadMode multi-selection', () => {
     expect(ariaSelected('a')).toBe('true')
 
     fireEvent.click(screen.getByRole('button', { name: 'Collapse invoices' }))
-    expect(screen.queryByText('a')).toBeNull()
+    // The row is gone from the collapsed tree, but the file stays previewed
+    // (its heading persists) — collapsing isn't a preview- or selection-
+    // clearing action.
+    expect(screen.queryByRole('button', { name: 'Set Drive folder for a' })).toBeNull()
+    expect(screen.getByText('a')).toBeTruthy() // still shown, now only as the heading
 
     fireEvent.click(screen.getByRole('button', { name: 'Expand invoices' }))
     expect(ariaSelected('a')).toBe('true')
