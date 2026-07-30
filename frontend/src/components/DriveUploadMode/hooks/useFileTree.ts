@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { PickFolder, ScanLocalRoot } from '../../../../wailsjs/go/main/App'
+import { filetree } from '../../../../wailsjs/go/models'
 import { LocalFile, LocalFileGroup } from '../types'
 
 // Flat, ordered list of every file in the tree (a group's own files, then
@@ -9,6 +10,18 @@ import { LocalFile, LocalFileGroup } from '../types'
 // one traversal so they can't drift out of sync on how they handle nesting.
 export function flattenFiles(group: LocalFileGroup): LocalFile[] {
   return [...group.files, ...group.subgroups.flatMap(flattenFiles)]
+}
+
+// Assigns every group's lookup key in one pass, right after a scan, so no
+// consumer needs its own tree walk to rebuild it. `key` mirrors the tree's
+// own nesting (parent key + '/' + name), rooted at null for the scan root.
+// `group` is the shape ScanLocalRoot actually returns, before `key` exists.
+function withKeys(group: filetree.LocalFileGroup, key: string | null): LocalFileGroup {
+  return {
+    ...group,
+    key,
+    subgroups: group.subgroups.map(sub => withKeys(sub, key === null ? sub.name : `${key}/${sub.name}`)),
+  }
 }
 
 export interface FileTreeHandle {
@@ -42,7 +55,7 @@ export function useFileTree(): FileTreeHandle {
     setLoading(true)
     setError(null)
     try {
-      setTree(await ScanLocalRoot(folder))
+      setTree(withKeys(await ScanLocalRoot(folder), null))
     } catch (e) {
       setTree(null)
       setError(String(e))

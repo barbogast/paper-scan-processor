@@ -10,13 +10,11 @@ function parentGroupKey(groupKey: string): string | null {
 // root-level file with no group to inherit from.
 function fileParentKeys(tree: LocalFileGroup): Map<string, string | null> {
   const result = new Map<string, string | null>()
-  const walk = (group: LocalFileGroup, groupKey: string | null) => {
-    for (const file of group.files) result.set(file.path, groupKey)
-    for (const sub of group.subgroups) {
-      walk(sub, groupKey !== null ? `${groupKey}/${sub.name}` : sub.name)
-    }
+  const walk = (group: LocalFileGroup) => {
+    for (const file of group.files) result.set(file.path, group.key)
+    for (const sub of group.subgroups) walk(sub)
   }
-  walk(tree, null)
+  walk(tree)
   return result
 }
 

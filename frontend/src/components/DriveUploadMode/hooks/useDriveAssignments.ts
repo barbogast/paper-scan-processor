@@ -47,27 +47,25 @@ export function useDriveAssignments(): DriveAssignmentsHandle {
 }
 
 // Effective Drive assignment for every file in the tree: its own override,
-// else the nearest ancestor group's assignment, else null. Mirrors the
-// inheritance walk GroupNode/FileList do inline during render (same
-// groupKey scheme: joined by '/', rooted at each top-level subgroup's own
-// name), but usable outside a render tree — e.g. to check whether every
-// file is ready to upload, or to build an upload job list.
+// else the nearest ancestor group's assignment (looked up by the tree's own
+// group.key), else null. Usable outside a render tree — e.g. to check
+// whether every file is ready to upload, or to build an upload job list.
 export function resolveEffectiveAssignments(
   tree: LocalFileGroup,
   { groupAssignments, fileOverrides }: Pick<DriveAssignmentsHandle, 'groupAssignments' | 'fileOverrides'>
 ): Map<string, DriveAssignment | null> {
   const result = new Map<string, DriveAssignment | null>()
 
-  const walk = (group: LocalFileGroup, groupKey: string | null, inherited: DriveAssignment | null) => {
-    const effective = (groupKey !== null ? groupAssignments.get(groupKey) : undefined) ?? inherited
+  const walk = (group: LocalFileGroup, inherited: DriveAssignment | null) => {
+    const effective = (group.key !== null ? groupAssignments.get(group.key) : undefined) ?? inherited
     for (const file of group.files) {
       result.set(file.path, fileOverrides.get(file.path) ?? effective)
     }
     for (const sub of group.subgroups) {
-      walk(sub, groupKey !== null ? `${groupKey}/${sub.name}` : sub.name, effective)
+      walk(sub, effective)
     }
   }
-  walk(tree, null, null)
+  walk(tree, null)
 
   return result
 }

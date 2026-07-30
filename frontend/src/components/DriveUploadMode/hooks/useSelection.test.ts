@@ -5,6 +5,7 @@ import { LocalFileGroup } from '../types'
 
 const TREE: LocalFileGroup = {
   name: '',
+  key: null,
   files: [{ path: '/root/misc.pdf', name: 'misc', sizeBytes: 0, isPdf: true, pageCount: 1, corrupt: false }],
   subgroups: [],
 }
@@ -75,7 +76,7 @@ describe('useSelection', () => {
     act(() => result.current.toggle(fileA))
     expect(result.current.size).toBe(1)
 
-    const newTree: LocalFileGroup = { name: '', files: [], subgroups: [] }
+    const newTree: LocalFileGroup = { name: '', key: null, files: [], subgroups: [] }
     rerender({ tree: newTree })
     expect(result.current.size).toBe(0)
   })

@@ -113,7 +113,6 @@ export default function DriveUploadMode() {
                     <GroupNode
                       key={group.name}
                       group={group}
-                      groupKey={group.name}
                       collapsedGroups={collapsedGroups}
                       onToggle={toggleGroup}
                       assignments={assignments}

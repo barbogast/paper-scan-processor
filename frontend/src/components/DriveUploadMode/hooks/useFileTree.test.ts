@@ -17,16 +17,18 @@ describe('flattenFiles', () => {
   it("lists a group's own files before its subgroups, recursively", () => {
     const tree: LocalFileGroup = {
       name: '',
+      key: null,
       files: [file('/root/misc.pdf')],
       subgroups: [
         {
           name: 'invoices',
+          key: 'invoices',
           files: [file('/root/invoices/a.pdf')],
           subgroups: [
-            { name: 'nested', files: [file('/root/invoices/nested/c.pdf')], subgroups: [] },
+            { name: 'nested', key: 'invoices/nested', files: [file('/root/invoices/nested/c.pdf')], subgroups: [] },
           ],
         },
-        { name: 'receipts', files: [file('/root/receipts/b.pdf')], subgroups: [] },
+        { name: 'receipts', key: 'receipts', files: [file('/root/receipts/b.pdf')], subgroups: [] },
       ],
     }
 
@@ -56,20 +58,30 @@ describe('useFileTree', () => {
     expect(ScanLocalRoot).not.toHaveBeenCalled()
   })
 
-  it('scans the chosen root and stores the resulting tree', async () => {
+  it('scans the chosen root and stores the resulting tree, keyed by nesting', async () => {
     vi.mocked(PickFolder).mockResolvedValueOnce('/output/batch')
-    const tree = {
+    const scanned = {
       name: '',
       files: [],
       subgroups: [{ name: 'invoices', files: [{ path: '/output/batch/invoices/a.pdf', name: 'a', sizeBytes: 100, pageCount: 2, corrupt: false }], subgroups: [] }],
     }
-    vi.mocked(ScanLocalRoot).mockResolvedValueOnce(tree as any)
+    vi.mocked(ScanLocalRoot).mockResolvedValueOnce(scanned as any)
 
     const { result } = renderHook(() => useFileTree())
     await act(async () => { await result.current.pickRoot() })
 
     expect(result.current.root).toBe('/output/batch')
-    expect(result.current.tree).toEqual(tree)
+    expect(result.current.tree).toEqual({
+      name: '',
+      key: null,
+      files: [],
+      subgroups: [{
+        name: 'invoices',
+        key: 'invoices',
+        files: [{ path: '/output/batch/invoices/a.pdf', name: 'a', sizeBytes: 100, pageCount: 2, corrupt: false }],
+        subgroups: [],
+      }],
+    })
     expect(result.current.loading).toBe(false)
     expect(result.current.error).toBeNull()
   })

@@ -38,7 +38,7 @@ export default function UploadModal({ opened, tree, onClose }: Props) {
         <Stack gap={10}>
           {tree.files.map(file => <FileRow key={file.path} file={file} />)}
           {tree.subgroups.map(group => (
-            <GroupSection key={group.name} group={group} groupKey={group.name} />
+            <GroupSection key={group.name} group={group} />
           ))}
         </Stack>
         <Group justify="flex-end">
@@ -58,7 +58,7 @@ export default function UploadModal({ opened, tree, onClose }: Props) {
   )
 }
 
-function GroupSection({ group, groupKey }: { group: LocalFileGroup; groupKey: string }) {
+function GroupSection({ group }: { group: LocalFileGroup }) {
   const groupFiles = flattenFiles(group)
   const doneCount = groupFiles.filter(f => uploadQueue.getStatus(f.path)?.status === 'done').length
 
@@ -71,7 +71,7 @@ function GroupSection({ group, groupKey }: { group: LocalFileGroup; groupKey: st
       <Stack gap={10}>
         {group.files.map(file => <FileRow key={file.path} file={file} />)}
         {group.subgroups.map(sub => (
-          <GroupSection key={sub.name} group={sub} groupKey={`${groupKey}/${sub.name}`} />
+          <GroupSection key={sub.name} group={sub} />
         ))}
       </Stack>
     </Box>

@@ -8,16 +8,18 @@ function file(path: string) {
 
 const TREE: LocalFileGroup = {
   name: '',
+  key: null,
   files: [file('/root/misc.pdf')],
   subgroups: [
     {
       name: 'invoices',
+      key: 'invoices',
       files: [file('/root/invoices/a.pdf'), file('/root/invoices/b.pdf')],
       subgroups: [
-        { name: 'nested', files: [file('/root/invoices/nested/c.pdf')], subgroups: [] },
+        { name: 'nested', key: 'invoices/nested', files: [file('/root/invoices/nested/c.pdf')], subgroups: [] },
       ],
     },
-    { name: 'receipts', files: [file('/root/receipts/d.pdf')], subgroups: [] },
+    { name: 'receipts', key: 'receipts', files: [file('/root/receipts/d.pdf')], subgroups: [] },
   ],
 }
 

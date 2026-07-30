@@ -14,7 +14,6 @@ const INDENT_PER_LEVEL = 16
 
 interface Props {
   group: LocalFileGroup
-  groupKey: string
   collapsedGroups: Set<string>
   onToggle: (groupKey: string) => void
   assignments: DriveAssignmentsHandle
@@ -26,7 +25,10 @@ interface Props {
   onPreviewFile: (file: LocalFile) => void
 }
 
-export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, assignments, inheritedAssignment, inclusion, selection, locked, onPick, onPreviewFile }: Props) {
+export default function GroupNode({ group, collapsedGroups, onToggle, assignments, inheritedAssignment, inclusion, selection, locked, onPick, onPreviewFile }: Props) {
+  // Only ever rendered for a real subgroup, never the invisible scan root,
+  // so its key is never null.
+  const groupKey = group.key as string
   const expanded = !collapsedGroups.has(groupKey)
   const own = assignments.groupAssignments.get(groupKey) ?? null
   const effective = own ?? inheritedAssignment
@@ -104,7 +106,6 @@ export default function GroupNode({ group, groupKey, collapsedGroups, onToggle, 
                 <GroupNode
                   key={sub.name}
                   group={sub}
-                  groupKey={`${groupKey}/${sub.name}`}
                   collapsedGroups={collapsedGroups}
                   onToggle={onToggle}
                   assignments={assignments}

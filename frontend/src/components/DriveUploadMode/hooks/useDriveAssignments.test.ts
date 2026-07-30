@@ -12,13 +12,15 @@ function folder(path: string): DriveAssignment {
 
 const TREE: LocalFileGroup = {
   name: '',
+  key: null,
   files: [file('/root/misc.pdf')],
   subgroups: [
     {
       name: 'invoices',
+      key: 'invoices',
       files: [file('/root/invoices/a.pdf')],
       subgroups: [
-        { name: 'nested', files: [file('/root/invoices/nested/b.pdf')], subgroups: [] },
+        { name: 'nested', key: 'invoices/nested', files: [file('/root/invoices/nested/b.pdf')], subgroups: [] },
       ],
     },
   ],

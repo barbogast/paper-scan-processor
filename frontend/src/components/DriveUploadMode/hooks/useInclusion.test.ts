@@ -9,16 +9,18 @@ function file(path: string) {
 
 const TREE: LocalFileGroup = {
   name: '',
+  key: null,
   files: [file('/root/misc.pdf')],
   subgroups: [
     {
       name: 'invoices',
+      key: 'invoices',
       files: [file('/root/invoices/a.pdf'), file('/root/invoices/b.pdf')],
       subgroups: [
-        { name: 'nested', files: [file('/root/invoices/nested/c.pdf')], subgroups: [] },
+        { name: 'nested', key: 'invoices/nested', files: [file('/root/invoices/nested/c.pdf')], subgroups: [] },
       ],
     },
-    { name: 'receipts', files: [file('/root/receipts/d.pdf')], subgroups: [] },
+    { name: 'receipts', key: 'receipts', files: [file('/root/receipts/d.pdf')], subgroups: [] },
   ],
 }
 
@@ -113,7 +115,7 @@ describe('useInclusion', () => {
     act(() => result.current.selectNone())
     expect(result.current.getGroupState(TREE)).toBe('unchecked')
 
-    const newTree: LocalFileGroup = { name: '', files: [file('/other/x.pdf')], subgroups: [] }
+    const newTree: LocalFileGroup = { name: '', key: null, files: [file('/other/x.pdf')], subgroups: [] }
     rerender({ tree: newTree })
     expect(result.current.isFileSelected('/other/x.pdf')).toBe(true)
   })

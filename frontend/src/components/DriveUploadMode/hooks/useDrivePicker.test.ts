@@ -11,9 +11,10 @@ function file(path: string) {
 
 const TREE: LocalFileGroup = {
   name: '',
+  key: null,
   files: [file('/root/misc.pdf')],
   subgroups: [
-    { name: 'invoices', files: [file('/root/invoices/a.pdf')], subgroups: [] },
+    { name: 'invoices', key: 'invoices', files: [file('/root/invoices/a.pdf')], subgroups: [] },
   ],
 }
 
